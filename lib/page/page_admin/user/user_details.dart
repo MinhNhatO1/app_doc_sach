@@ -30,7 +30,15 @@ class _UserDetailsState extends State<UserDetails> {
     );
   }
 
-//update
+  void editUser() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditUser(users: widget.users),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,154 +54,240 @@ class _UserDetailsState extends State<UserDetails> {
           },
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        children: [
-          Center(
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.3),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 16),
+            // User ID
+            Row(
+              children: [
+                const Text(
+                  'ID: ',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  widget.users.id.toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // Full Name
+            RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                  fontSize: 19,
+                  color: Colors.white,
+                ),
+                children: [
+                  const TextSpan(
+                    text: 'Tên đầy đủ: ',
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  TextSpan(
+                    text: widget.users.fullName ?? 'Không có tên đầy đủ',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                    ),
                   ),
                 ],
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+            ),
+            const SizedBox(height: 16),
+            // Email
+            RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                  fontSize: 19,
+                  color: Colors.white,
+                ),
+                children: [
+                  const TextSpan(
+                    text: 'Email: ',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(
+                    text: widget.users.email ?? 'Không có email',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Age
+            RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                  fontSize: 19,
+                  color: Colors.white,
+                ),
+                children: [
+                  const TextSpan(
+                    text: 'Tuổi: ',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(
+                    text: widget.users.age?.toString() ?? 'Không có tuổi',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Avatar
+            Center(
+              child: CachedNetworkImage(
+                imageUrl: '$baseUrl${widget.users.avatar}' ?? '',
+                height: 200,
+                width: 200,
+                fit: BoxFit.cover,
+                placeholder: (context, url) {
+                  return const Center(child: CircularProgressIndicator());
+                },
+                errorWidget: (context, url, error) {
+                  print('Error loading image: $error');
+                  return Container(
+                    height: 200,
+                    width: 200,
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.error),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Phone
+            RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                  fontSize: 19,
+                  color: Colors.white,
+                ),
+                children: [
+                  const TextSpan(
+                    text: 'Số điện thoại: ',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(
+                    text: widget.users.phone ?? 'Không có số điện thoại',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Gender
+            RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                  fontSize: 19,
+                  color: Colors.white,
+                ),
+                children: [
+                  const TextSpan(
+                    text: 'Giới tính: ',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(
+                    text: widget.users.gender ?? 'Không có giới tính',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Address
+            RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                  fontSize: 19,
+                  color: Colors.white,
+                ),
+                children: [
+                  const TextSpan(
+                    text: 'Địa chỉ: ',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(
+                    text: widget.users.address ?? 'Không có địa chỉ',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: SizedBox(
+        height: 60,
+        child: BottomAppBar(
+          color: backgroundColor,
+          shape: const CircularNotchedRectangle(),
+          notchMargin: 8.0,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.blue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: const BorderSide(color: Colors.white),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 24),
+                ),
+                onPressed: editUser,
+                child: const Row(
                   children: [
-                    Text(
-                      'ID: ${widget.users.id}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: backgroundColor,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Full name: ${widget.users.fullName}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Email: ${widget.users.email}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Age: ${widget.users.age}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    CachedNetworkImage(
-                      imageUrl: '$baseUrl${widget.users.avatar}'  ?? '',
-                      height: 200,
-                      width: 200,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) {
-                        return const Center(child: CircularProgressIndicator());
-                      },
-                      errorWidget: (context, url, error) {
-                        print('Error loading image: $error');
-                        return Container(
-                          height: 200,
-                          width: 200,
-                          color: Colors.grey[300],
-                          child: Icon(Icons.error),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Phone: ${widget.users.phone}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Gender: ${widget.users.gender}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Address: ${widget.users.address}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.blue.shade700,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          onPressed: () {
-                            // Edit functionality can be added here
-                             Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => EditUser(users: widget.users)),
-                            );
-                          },
-                          child: const Text('Edit'),
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.red.shade700,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          onPressed: deleteUsers,
-                          child: const Text('Delete'),
-                        ),
-                      ],
-                    ),
+                    Icon(Icons.edit, color: Colors.white),
+                    SizedBox(width: 10), // Khoảng cách giữa icon và văn bản
+                    Text('Cập nhật'), // Văn bản
                   ],
                 ),
               ),
-            ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: const BorderSide(color: Colors.white),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 24),
+                ),
+                onPressed: deleteUsers,
+                child: const Row(
+                  children: [
+                    Icon(Icons.delete, color: Colors.white),
+                    SizedBox(width: 10), // Khoảng cách giữa icon và văn bản
+                    Text('Xóa'), // Văn bản
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
