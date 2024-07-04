@@ -8,6 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
+import '../../const.dart';
+import '../../controller/book_controller.dart';
+import '../../model/book_model.dart';
 import '../../model/product_phobien.dart';
 
 class KhamPhaWidget extends StatefulWidget {
@@ -23,9 +26,38 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
     'https://bizweb.dktcdn.net/thumb/large/100/222/758/articles/fb-tap-noi-tap-doc-1-01-01.jpg?v=1610358102210',
     'https://bizweb.dktcdn.net/100/222/758/themes/549028/assets/slider-img3.jpg?1708567836625'
   ];
-
   int _current = 0;
   final CarouselController _controller = CarouselController();
+
+  final BookController _bookService = BookController();
+  List<Book> _books = [];
+  Future<void> _loadBooks() async {
+    try {
+      final books = await _bookService.getBooks();
+      // Trộn danh sách sách
+      books.shuffle();
+      // Lấy 8 quyển sách đầu tiên sau khi trộn
+      final randomBooks = books.take(8).toList();
+      setState(() {
+
+        _books = randomBooks;
+      });
+    } catch (e) {
+      print('Error loading books: $e');
+      if (!mounted) return; // Kiểm tra nếu widget vẫn còn trong cây widget
+      // Hiển thị thông báo lỗi cho người dùng
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Không thể tải sách. Vui lòng thử lại sau.')),
+      );
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Load sách lần đầu tiên khi initState được gọi
+    _loadBooks();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -105,7 +137,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                       const SizedBox(
                         height: 2,
                       ),
-                      slide(),
+                      slide(_books),
                       const SizedBox(
                         height: 1,
                       ),
@@ -127,7 +159,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                       const SizedBox(
                         height: 5,
                       ),
-                      gridview_goiy(),
+                      gridview_goiy(_books),
                       const SizedBox(
                         height: 10,
                       ),
@@ -149,7 +181,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                       const SizedBox(
                         height: 5,
                       ),
-                      gridview_goiy(),
+                      gridview_goiy(_books),
                       const SizedBox(
                         height: 10,
                       ),
@@ -171,7 +203,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                       const SizedBox(
                         height: 5,
                       ),
-                      gridview_goiy(),
+                      gridview_goiy(_books),
                       const SizedBox(
                         height: 10,
                       ),
@@ -193,7 +225,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                       const SizedBox(
                         height: 5,
                       ),
-                      gridview_goiy(),
+                      gridview_goiy(_books),
                       const SizedBox(
                         height: 10,
                       ),
@@ -215,7 +247,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                       const SizedBox(
                         height: 5,
                       ),
-                      gridview_goiy(),
+                      gridview_goiy(_books),
                       const SizedBox(
                         height: 10,
                       ),
@@ -237,7 +269,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                       const SizedBox(
                         height: 5,
                       ),
-                      gridview_goiy(),
+                      gridview_goiy(_books),
                       const SizedBox(
                         height: 10,
                       ),
@@ -259,7 +291,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                       const SizedBox(
                         height: 5,
                       ),
-                      gridview_goiy(),
+                      gridview_goiy(_books),
                       const SizedBox(
                         height: 10,
                       ),
@@ -281,7 +313,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                       const SizedBox(
                         height: 5,
                       ),
-                      gridview_goiy(),
+                      gridview_goiy(_books),
                       const SizedBox(
                         height: 30,
                       )
@@ -319,49 +351,8 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
   }
 }
 
-List<ProductPhobien> listProduct = [
-  ProductPhobien(
-      id: '1',
-      tenSach: 'Mắt biếc',
-      theLoai: 'Tinh cam',
-      image: 'assets/book/matbiec.png'),
-  ProductPhobien(
-      id: '2',
-      tenSach: 'Truyện Kiều',
-      theLoai: 'Tinh cam',
-      image: 'assets/book/thuykieu.png'),
-  ProductPhobien(
-      id: '3',
-      tenSach: 'Từng bước nở hoa sen',
-      theLoai: 'Tinh cam',
-      image: 'assets/book/nohosenbia2.png'),
-  ProductPhobien(
-      id: '4',
-      tenSach: 'Từng bước nở hoa sen',
-      theLoai: 'Tinh cam',
-      image: 'assets/book/nohosenbia2.png'),
-  ProductPhobien(
-      id: '5',
-      tenSach: 'Từng bước nở hoa sen',
-      theLoai: 'Tinh cam',
-      image: 'assets/book/nohosenbia2.png'),
-  ProductPhobien(
-      id: '6',
-      tenSach: 'Từng bước nở hoa sen',
-      theLoai: 'Tinh cam',
-      image: 'assets/book/nohosenbia2.png'),
-  ProductPhobien(
-      id: '7',
-      tenSach: 'Từng bước nở hoa sen',
-      theLoai: 'Tinh cam',
-      image: 'assets/book/nohosenbia2.png'),
-  ProductPhobien(
-      id: '8',
-      tenSach: 'Từng bước nở hoa sen',
-      theLoai: 'Tinh cam',
-      image: 'assets/book/nohosenbia2.png'),
-];
-Widget slide() {
+
+Widget slide(List<Book> books) {
   return Padding(
     padding: const EdgeInsets.only(bottom: 15, left: 10, right: 10),
     child: Container(
@@ -375,7 +366,7 @@ Widget slide() {
           enlargeCenterPage: true,
           autoPlay: true,
         ),
-        items: listProduct.map((product) {
+        items: books.map((book) {
           return Builder(
             builder: (BuildContext context) {
               return Stack(
@@ -408,13 +399,13 @@ Widget slide() {
                   // Nội dung
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(
+                     /* Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
                               ProductDetailPage(product: product),
                         ),
-                      );
+                      );*/
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 5.0),
@@ -427,8 +418,8 @@ Widget slide() {
                                 left: 5, top: 8, right: 5, bottom: 8),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(10),
-                              child: Image.asset(
-                                product.image,
+                              child: Image.network(
+                                baseUrl + book.coverImage!.url,
                                 height: 160,
                                 width: 110,
                                 fit: BoxFit.cover,
@@ -447,7 +438,7 @@ Widget slide() {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        product.tenSach,
+                                        book.title!,
                                         style: TextStyle(
                                           color: notifier.isDark
                                               ? Colors.white
@@ -458,7 +449,7 @@ Widget slide() {
                                       ),
                                       const SizedBox(height: 10),
                                       Text(
-                                        'Thể loại: ${product.theLoai}',
+                                        'Thể loại: ${book.categories}',
                                         style: TextStyle(
                                           color: notifier.isDark
                                               ? Colors.white
@@ -503,7 +494,7 @@ Widget slide() {
   );
 }
 
-Widget gridview_goiy() {
+Widget gridview_goiy(List<Book> books) {
   return SizedBox(
     height: 465, // Set a fixed height
     child: Padding(
@@ -516,18 +507,18 @@ Widget gridview_goiy() {
           mainAxisSpacing: 2.0,
           crossAxisSpacing: 5.0,
         ),
-        itemCount: listProduct.length,
+        itemCount: books.length,
         itemBuilder: (BuildContext context, index) {
-          final product = listProduct[index];
+          final book = books[index];
           return GestureDetector(
             onTap: () {
-              Navigator.push(
+              /*Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) =>
                       ProductDetailPage(product: product),
                 ),
-              );
+              );*/
             },
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               Card(
@@ -544,8 +535,8 @@ Widget gridview_goiy() {
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(10),
-                            child: Image.asset(
-                              product.image,
+                            child: Image.network(
+                              baseUrl + book.coverImage!.url,
                               fit: BoxFit.cover,
                               height: 160,
                               width: 120,
@@ -562,7 +553,7 @@ Widget gridview_goiy() {
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               child: Text(
-                                product.theLoai,
+                               /* book.categories*/'',
                                 style: TextStyle(
                                     color: Colors.white, fontSize: 10),
                               ),
@@ -580,7 +571,7 @@ Widget gridview_goiy() {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    product.tenSach,
+                    book.title!,
                     textAlign: TextAlign.start,
                     style: const TextStyle(
                       color: Colors.black,
