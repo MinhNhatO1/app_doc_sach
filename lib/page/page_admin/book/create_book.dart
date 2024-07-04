@@ -238,7 +238,7 @@ class _BookCreateState extends State<BookCreate> {
         }
         print('Chapters:');
         for (var chapter in newBook.chapters!) {
-          print('  - ${chapter.nameChapter}, ${chapter.fileUrl}');
+          print('  - ${chapter.nameChapter}, ${chapter.mediaFile}');
         }
         print(newBook.toJson());
         bool success = await BookController.instance.createBook(newBook);

@@ -46,61 +46,33 @@ class SideWidgetMenu extends StatelessWidget {
           ),
           const SizedBox(height: 5),
           ...SideMenuData().menu.map((menuItem) {
-            return Column(
-              children: [
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20.0, vertical: 8.0),
-                  title: Row(
-                    children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Icon(
-                          menuItem.icon,
-                          color: Colors.white,
-                          size: 30,
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            _translateTitle(menuItem.title),
-                            style: const TextStyle(
-                              fontSize: 24,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    switch (menuItem.title) {
-                      case 'Dashboard':
-                        Navigator.pushNamed(context, '/homepage');
-                        break;
-                      case 'Book':
-                        Navigator.pushNamed(context, '/bookpage');
-                        break;
-                      case 'Category':
-                        Navigator.pushNamed(context, '/category');
-                        break;
-                      case 'Author':
-                        Navigator.pushNamed(context, '/author');
-                        break;
-                      case 'User':
-                        Navigator.pushNamed(context, '/user');
-                        break;
-                      case 'SignOut':
-                        break;
-                    }
-                  },
-                ),
-                const Divider(color: Colors.grey),
-              ],
+            return ListTile(
+              leading: menuItem.icon,
+              title: Text(menuItem.title),
+              onTap: () {
+                Navigator.pop(context); // Close the drawer
+                switch (menuItem.title) {
+                  case 'Dashboard':
+                    Navigator.pushNamed(context, '/homepage');
+                    break;
+                  case 'Book':
+                    Navigator.pushNamed(context, '/bookpage');
+                    break;
+                  case 'Chương sách':
+                    Navigator.pushNamed(context, '/chapterpage');
+                    break;
+                  case 'Category':
+                    Navigator.pushNamed(context, '/category');
+                    break;
+                  case 'Author':
+                    Navigator.pushNamed(context, '/author');
+                    break;
+                  case 'User':
+                    Navigator.pushNamed(context, '/user');
+                    break;
+                  // Add other cases for different menu items here
+                }
+              },
             );
           }).toList(),
         ],

@@ -5,6 +5,7 @@ import '../../../const/constant.dart';
 import '../author/author_admin.dart';
 import '../author/display_author.dart';
 import '../category/category_admin.dart';
+import '../chapter/chapter_admin.dart';
 import '../main_screen.dart';
 import '../user/user_admin.dart';
 
@@ -29,6 +30,7 @@ class _BookAdminWidgetState extends State<BookAdminWidget> {
       routes: {
         '/homepage': (context) => const MainScreen(),
         '/bookpage': (context) => const BookAdminWidget(),
+        '/chapterpage': (context) => const ChapterAdminWidget(),
         '/category': (context) => const CategoryAdminWidget(),
         '/author': (context) => const AuthorAdminWidget(),
         '/user': (context) => const UserAdminWidget(),

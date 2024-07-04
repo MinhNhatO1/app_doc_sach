@@ -8,6 +8,7 @@ import 'package:app_doc_sach/widgets/side_widget_menu.dart';
 import 'package:flutter/material.dart';
 
 import '../book/book_admin.dart';
+import '../chapter/chapter_admin.dart';
 
 class CategoryAdminWidget extends StatelessWidget{
     const CategoryAdminWidget({super.key});
@@ -26,6 +27,7 @@ class CategoryAdminWidget extends StatelessWidget{
       routes: {
         '/homepage': (context) => const MainScreen(),
         '/bookpage': (context) => const BookAdminWidget(),
+        '/chapterpage': (context) => const ChapterAdminWidget(),
         '/category': (context) => const CategoryAdminWidget(),
         '/author': (context) => const AuthorAdminWidget(),
         '/user': (context) => const UserAdminWidget(),

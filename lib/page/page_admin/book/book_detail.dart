@@ -2,6 +2,7 @@ import 'package:app_doc_sach/const/constant.dart';
 import 'package:flutter/material.dart';
 
 import '../../../const.dart';
+import '../../../controller/book_controller.dart';
 import '../../../model/book_model.dart';
 import 'edit_book.dart';
 
@@ -13,8 +14,45 @@ class BookDetailAdmin extends StatefulWidget {
 }
 
 class _StateBookDetail extends State<BookDetailAdmin> {
-  void _deleteBook() {
-    // Xử lý logic xóa sách ở đây
+  Future<void> _deleteBook(BuildContext context) async {
+    bool? confirmed = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Xác nhận'),
+          content: Text('Bạn có chắc chắn muốn xóa sách này không?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Huỷ'),
+              onPressed: () {
+                Navigator.of(context).pop(false); // Đóng dialog và trả về false
+              },
+            ),
+            TextButton(
+              child: Text('Xóa'),
+              onPressed: () {
+                Navigator.of(context).pop(true); // Đóng dialog và trả về true
+              },
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      // Gọi phương thức xóa sách nếu người dùng đã xác nhận
+      bool success = await BookController.instance.deleteBook(widget.book.id.toString());
+      if (success) {
+        // Xử lý thành công (ví dụ: quay lại màn hình danh sách sách, cập nhật UI, ...)
+        print('Đã xóa sách thành công');
+      } else {
+        // Xử lý thất bại (ví dụ: thông báo lỗi, ...)
+        print('Xóa sách thất bại');
+      }
+    } else {
+      // Người dùng huỷ bỏ xóa sách
+      print('Huỷ bỏ xóa sách');
+    }
   }
 
   void _editBook() {
@@ -26,6 +64,8 @@ class _StateBookDetail extends State<BookDetailAdmin> {
       ),
     );
   }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,7 +107,7 @@ class _StateBookDetail extends State<BookDetailAdmin> {
                    'Tên sách: ',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 15,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold
                     ,
                   ),
@@ -75,9 +115,9 @@ class _StateBookDetail extends State<BookDetailAdmin> {
                 const SizedBox(width: 8,),
                 Text(
                   widget.book.title ?? 'Không có tiêu đề',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 15,
+                    fontSize: 19,
                   ),
                 ),
               ],
@@ -300,7 +340,7 @@ class _StateBookDetail extends State<BookDetailAdmin> {
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 24),
                 ),
-                onPressed: _deleteBook,
+                onPressed: () => _deleteBook(context),
                 child:
                      const Row(
                       mainAxisAlignment: MainAxisAlignment.start,

@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 
 class SideMenuData {
   final menu = const <MenuModel>[
-    MenuModel(icon: Icons.home, title: 'Dashboard'),
-    MenuModel(icon: Icons.book, title: 'Book'),
-    MenuModel(icon: Icons.category, title: 'Category'),
-    MenuModel(icon: Icons.person_add_alt, title: 'Author'),
-    MenuModel(icon: Icons.person, title: 'User'),
-    MenuModel(icon: Icons.logout, title: 'SignOut'),
+    MenuModel(icon: Icon(Icons.home), title: 'Dashboard'),
+    MenuModel(icon: Icon(Icons.book), title: 'Book'),
+    MenuModel(icon: ImageIcon(AssetImage('assets/icon/chapter.png'),size: 25,), title: 'Chương sách'),
+    MenuModel(icon: Icon(Icons.category), title: 'Category'),
+    MenuModel(icon: Icon(Icons.person_add_alt), title: 'Author'),
+    MenuModel(icon: Icon(Icons.person), title: 'User'),
+    MenuModel(icon: Icon(Icons.logout), title: 'SignOut'),
   ];
 }

@@ -82,22 +82,32 @@ class Book {
       return [];
     }
 
-    return Book(
-      id: json['id']?.toString(),
-      title: json['title']?.toString(),
-      coverImage: json['cover_image'] != null
-          ? FileUpload.fromJson(json['cover_image']['data'][0]['attributes'])
-          : null,
-      description: json['description']?.toString(),
-      pages: json['pages'] != null ? int.tryParse(json['pages'].toString()) : null,
-      isbn: json['isbn']?.toString(),
-      language: json['language']?.toString(),
-      likes: json['likes'] != null ? int.tryParse(json['likes'].toString()) : null,
-      view: json['view'] != null ? int.tryParse(json['view'].toString()) : null,
-      authors: getAuthors(json['authors']),
-      categories: getCategories(json['categories']),
-      chapters: getChapters(json['chapters']),
-    );
+    try {
+      return Book(
+        id: json['id']?.toString(),
+        title: json['title']?.toString(),
+        coverImage: json['cover_image'] != null
+            ? FileUpload.fromJson({
+          'id': json['id'], // Thêm 'id' vào đây
+          ...json['cover_image']['data']?[0]['attributes'] ?? {},
+        })
+            : null,
+        description: json['description']?.toString(),
+        pages: json['pages'] != null ? int.tryParse(json['pages'].toString()) : null,
+        isbn: json['isbn']?.toString(),
+        language: json['language']?.toString(),
+        likes: json['likes'] != null ? int.tryParse(json['likes'].toString()) : null,
+        view: json['view'] != null ? int.tryParse(json['view'].toString()) : null,
+        authors: getAuthors(json['authors']),
+        categories: getCategories(json['categories']),
+        chapters: getChapters(json['chapters']),
+      );
+    } catch (e, stackTrace) {
+      print('Error in Book.fromJson: $e');
+      print('Stack trace: $stackTrace');
+      print('Problematic JSON: $json');
+      rethrow;
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -116,7 +126,20 @@ class Book {
         "categories": {
           "connect": categories?.map((category) => category.id).toList() ?? [], // Kiểm tra nếu categories là null
         },
+        "chapters": {
+          "connect": chapters?.map((chapter) => chapter.id).toList() ?? [], // Kiểm tra nếu categories là null
+        },
         'cover_image': coverImage?.toJson(), // Kiểm tra nếu coverImage là null
+      },
+    };
+  }
+
+  Map<String, dynamic> toJsonChapter() {
+    return {
+      'data': {
+        "chapters": {
+          "connect": chapters?.map((chapter) => chapter.id).toList() ?? [], // Kiểm tra nếu categories là null
+        },
       },
     };
   }

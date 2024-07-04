@@ -7,6 +7,7 @@ import 'package:app_doc_sach/page/page_admin/user/user_admin.dart';
 import 'package:flutter/material.dart';
 
 import 'book/book_admin.dart';
+import 'chapter/chapter_admin.dart';
 
 class DashboardAdminWidget extends StatelessWidget{
   const DashboardAdminWidget({super.key});
@@ -24,6 +25,7 @@ class DashboardAdminWidget extends StatelessWidget{
       routes: {
         '/homepage': (context) => const MainScreen(),
         '/bookpage': (context) => const BookAdminWidget(),
+        '/chapterpage': (context) => const ChapterAdminWidget(),
         '/category': (context) => const CategoryAdminWidget(),
         '/author': (context) => const AuthorAdminWidget(),
         '/user': (context) => const UserAdminWidget(),
