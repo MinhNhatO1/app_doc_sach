@@ -15,7 +15,7 @@ class MyDetails extends StatefulWidget {
   @override
   _MyDetailsState createState() => _MyDetailsState();
 }
-
+//update
 class _MyDetailsState extends State<MyDetails> {
   void deleteCategory() async {
     await http.delete(
