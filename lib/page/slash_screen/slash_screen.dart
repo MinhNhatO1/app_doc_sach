@@ -45,7 +45,7 @@ class _SlashScreenState extends State<SlashScreen>
       });
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const DashBoardScreen() /*DashboardAdminWidget()*/,
+          pageBuilder: (_, __, ___) => const /*DashBoardScreen()*/ DashboardAdminWidget(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(
               opacity: animation,
