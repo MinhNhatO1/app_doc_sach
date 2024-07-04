@@ -1,68 +1,28 @@
 import 'dart:async';
 
-import 'package:app_doc_sach/color/mycolor.dart';
-import 'package:app_doc_sach/const.dart';
-import 'package:app_doc_sach/controller/book_controller.dart';
-import 'package:app_doc_sach/page/page_admin/book/book_detail.dart';
-import 'package:app_doc_sach/page/page_admin/book/create_book.dart';
-import 'package:app_doc_sach/page/page_admin/book/slideleftroutes.dart';
+import 'package:app_doc_sach/page/page_admin/chapter/chapter_detail.dart';
+import 'package:app_doc_sach/page/page_admin/chapter/create_chapter.dart';
 import 'package:flutter/material.dart';
 
+import '../../../const.dart';
 import '../../../const/constant.dart';
+import '../../../controller/book_controller.dart';
 import '../../../model/book_model.dart';
 import '../../../widgets/side_widget_menu.dart';
 
-class DisplayBook extends StatefulWidget {
-  const DisplayBook({super.key});
+class DisplayChapter extends StatefulWidget {
+  const DisplayChapter({super.key});
 
   @override
-  State<DisplayBook> createState() => _DisplayBookState();
+  State<DisplayChapter> createState() => _DisplayChapterState();
 }
 
-class _DisplayBookState extends State<DisplayBook> {
-
+class _DisplayChapterState extends State<DisplayChapter> {
   final BookController _bookService = BookController();
-  final TextEditingController _searchController = TextEditingController();
   List<Book> _books = [];
-  Future<List<Book>>? _booksFuture;
-  late Timer? _timer; // Biến timer
-  @override
-  void initState() {
-    super.initState();
-    // Load sách lần đầu tiên khi initState được gọi
-    _loadBooks();
-
-    // Cài đặt timer để tự động load lại sách sau mỗi 3 giây
-    Timer.periodic(const Duration(seconds: 5), (timer) {
-      _loadBooks();
-    });
-    _searchController.addListener(_onSearchChanged);
-  }
-
- @override
-  void dispose() {
-    // Hủy timer khi widget bị huỷ
-    _timer?.cancel();
-      _searchController.removeListener(_onSearchChanged);
-      _searchController.dispose();
-    super.dispose();
-  }
-  Future<void> _loadBooks() async {
-    try {
-      final books = await _bookService.getBooks();
-      if (!mounted) return; // Kiểm tra nếu widget vẫn còn trong cây widget
-      setState(() {
-        _books = books;
-      });
-    } catch (e) {
-      print('Error loading books: $e');
-      if (!mounted) return; // Kiểm tra nếu widget vẫn còn trong cây widget
-      // Hiển thị thông báo lỗi cho người dùng
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Không thể tải sách. Vui lòng thử lại sau.')),
-      );
-    }
-  }
+  Timer? _timer;
+  final TextEditingController _searchController = TextEditingController();
+  late Future<List<Book>> _booksFuture;
   void _onSearchChanged() {
     setState(() {});
   }
@@ -76,57 +36,50 @@ class _DisplayBookState extends State<DisplayBook> {
         .contains(_searchController.text.toLowerCase()))
         .toList();
   }
-  Widget _buildListCategory(List<String> categories) {
-    return Container(
-      width: double.infinity,
-      height: 200,
-      padding: const EdgeInsets.all(8.0), // Để tăng khoảng cách giữa các phần tử và viền container
-      child: SingleChildScrollView(
-        child: Wrap(
-          spacing: 8.0, // Khoảng cách giữa các Chip
-          runSpacing: 8.0, // Khoảng cách giữa các hàng
-          children: categories.map((category) {
-            return Chip(
-              label: Text(
-                category,
-                style: const TextStyle(fontSize: 12),
-              ),
-              backgroundColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
-                side: const BorderSide(color: Colors.green),
-              ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
+  @override
+  void initState() {
+    super.initState();
+    _booksFuture = _loadBooks();
+    // Thiết lập timer để tải lại sách mỗi 5 giây
+    _timer = Timer.periodic(const Duration(seconds: 6), (timer) {
+      _loadBooks();
+    });
+    _searchController.addListener(_onSearchChanged);
+
+  }
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+  Future<List<Book>> _loadBooks() async {
+    try {
+      final books = await _bookService.getBooks();
+      if (!mounted) return []; // Check if the widget is still in the widget tree
+      setState(() {
+        _books = books;
+      });
+      return books;
+    } catch (e) {
+      print('Error loading books: $e');
+      if (!mounted) return []; // Check if the widget is still in the widget tree
+      // Show error message to the user
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Không thể tải sách. Vui lòng thử lại sau.')),
+      );
+      return [];
+    }
   }
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Quản lý sách') ,
+        title: const Text('Quản lý chương sách',style: TextStyle(fontSize: 20),),
         elevation: 0.0, // Controls the shadow below the app bar
         backgroundColor: backgroundColor,
-        actions: [
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                foregroundColor: secondaryColor,
-                backgroundColor:
-                primaryColor, // Using the custom secondaryColor
-              ),
-              onPressed: () {
-                Navigator.of(context).push(SlideLeftRoute(page: const BookCreate()));
-              },
-              child: const Text('Create'),
-            ),
-          )
-        ],
       ),
-
       drawer: const SideWidgetMenu(),
       body: Padding(
         padding: const EdgeInsets.only( right: 13, left: 13, bottom: 20),
@@ -146,31 +99,20 @@ class _DisplayBookState extends State<DisplayBook> {
               ),
             ),
             Expanded(
-              child: filteredBooks.isEmpty
+              child:
+              filteredBooks.isEmpty
                   ? Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.search_off,
-                      size: 80,
-                      color: Colors.grey[400],
-                    ),
+                    CircularProgressIndicator(), // Thêm biểu tượng xoay tròn
                     SizedBox(height: 16),
                     Text(
-                      'Không tìm thấy kết quả',
+                      'Đang tải...',
                       style: TextStyle(
                         fontSize: 18,
                         color: Colors.grey[600],
                         fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Thử tìm kiếm với từ khóa khác',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[500],
                       ),
                     ),
                   ],
@@ -185,7 +127,7 @@ class _DisplayBookState extends State<DisplayBook> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => BookDetailAdmin(book: book),
+                          builder: (context) => ChapterDetail(book: book),
                         ),
                       );
                     },
@@ -279,24 +221,24 @@ class _DisplayBookState extends State<DisplayBook> {
                                       ),
                                       const SizedBox(height: 15),
                                       const Text(
-                                        'Thể loại:',
+                                        'Danh sách chương:',
                                         style: TextStyle(
-                                          fontSize: 15,
+                                          fontSize: 14,
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                       const SizedBox(height: 5),
-                                      book.categories!.isNotEmpty
+                                      book.chapters!.isNotEmpty
                                           ? SingleChildScrollView(
                                         scrollDirection: Axis.horizontal,
                                         child: Row(
-                                          children: book.categories!.map((category) {
+                                          children: book.chapters!.map((category) {
                                             return Padding(
                                               padding: const EdgeInsets.only(right: 10.0),
                                               child: Chip(
                                                 label: Text(
-                                                  category.nameCategory,
+                                                  category.nameChapter,
                                                   style: const TextStyle(fontSize: 10, color: Colors.white),
                                                 ),
                                                 backgroundColor: Colors.transparent,
@@ -315,43 +257,6 @@ class _DisplayBookState extends State<DisplayBook> {
                                           fontStyle: FontStyle.italic,
                                           color: Colors.grey,
                                         ),
-                                      ),
-                                      const Spacer(),
-                                      const SizedBox(height: 5),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.end,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              const Icon(Icons.visibility_rounded, color: Colors.white),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                '${book.view}',
-                                                style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 30),
-                                              Row(
-                                                children: [
-                                                  const Icon(
-                                                    Icons.favorite,
-                                                    color: Colors.red,
-                                                  ),
-                                                  const SizedBox(width: 5),
-                                                  Text(
-                                                    '${book.likes}',
-                                                    style: const TextStyle(
-                                                      fontSize: 12,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ],
                                       ),
                                     ],
                                   ),

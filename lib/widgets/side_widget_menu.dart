@@ -25,7 +25,7 @@ class SideWidgetMenu extends StatelessWidget {
           //...:nó chèn all phần tử của 1 danh sách vào một list khác
           ...SideMenuData().menu.map((menuItem) {
             return ListTile(
-              leading: Icon(menuItem.icon),
+              leading: menuItem.icon,
               title: Text(menuItem.title),
               onTap: () {
                 Navigator.pop(context); // Close the drawer
@@ -35,6 +35,9 @@ class SideWidgetMenu extends StatelessWidget {
                     break;
                   case 'Book':
                     Navigator.pushNamed(context, '/bookpage');
+                    break;
+                  case 'Chương sách':
+                    Navigator.pushNamed(context, '/chapterpage');
                     break;
                   case 'Category':
                     Navigator.pushNamed(context, '/category');

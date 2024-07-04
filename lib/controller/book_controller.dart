@@ -23,13 +23,33 @@ class BookController extends GetxController{
   }
 
   Future<List<Book>> getBooks() async {
-    final response = await http.get(Uri.parse('$baseUrl/api/books?populate[authors]=*&populate[categories]=*&populate[chapters][populate]=files&populate[cover_image]=*'));
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/api/books?populate[authors]=*&populate[categories]=*&populate[chapters][populate]=files&populate[cover_image]=*'));
 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body)['data'];
-      return data.map((json) => Book.fromJson(json['attributes'])).toList();
-    } else {
-      throw Exception('Failed to load books');
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        print('Raw JSON response: $jsonResponse'); // Thêm dòng này
+        final List<dynamic> data = jsonResponse['data'] ?? [];
+        return data.map((json) {
+          try {
+            return Book.fromJson({
+              'id': json['id'],
+              ...json['attributes'] ?? {},
+            });
+          } catch (e, stackTrace) {
+            print('Error parsing book: $e');
+            print('Stack trace: $stackTrace');
+            print('Problematic JSON: $json');
+            return null;
+          }
+        }).whereType<Book>().toList();
+      } else {
+        throw Exception('Failed to load books: ${response.statusCode}');
+      }
+    } catch (e, stackTrace) {
+      print('Error loading books: $e');
+      print('Stack trace: $stackTrace');
+      rethrow;
     }
   }
 
@@ -53,15 +73,14 @@ class BookController extends GetxController{
       }
     } else {
       // Xử lý cho mobile
-      if (imageData is String) {
-        var file = File(imageData);
-        var stream = http.ByteStream(file.openRead());
-        var length = await file.length();
+      if (imageData is File) {
+        var stream = http.ByteStream(imageData.openRead());
+        var length = await imageData.length();
         request.files.add(http.MultipartFile(
           'files',
           stream,
           length,
-          filename: file.path.split('/').last,
+          filename: imageData.path.split('/').last,
           contentType: MediaType('image', 'png'),
         ));
       } else {
@@ -88,6 +107,7 @@ class BookController extends GetxController{
       return null;
     }
   }
+
   Future<bool> createBook(Book book) async {
     final url = Uri.parse('$baseUrl/api/books');
     final headers = {
@@ -115,47 +135,28 @@ class BookController extends GetxController{
     }
   }
 
-  Future<bool> updateBook(Book book, dynamic newImageData) async {
+  Future<bool> deleteBook(String bookId) async {
     try {
-      // Tải lên ảnh mới nếu có
-      FileUpload? newCoverImage;
-      if (newImageData != null) {
-        newCoverImage = await uploadImage(newImageData);
-        if (newCoverImage == null) {
-          print('Không thể tải lên ảnh mới');
-          return false;
-        }
-        book.coverImage = newCoverImage;
-      }
-
-      // Chuẩn bị dữ liệu để gửi
-      var bookData = book.toJson();
-
-      // Thêm id vào URL để xác định sách cần cập nhật
-      var uri = Uri.parse('$baseUrl/api/books/${book.id}');
-
-      // Gửi yêu cầu PUT
-      var response = await http.put(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-          // Thêm headers xác thực nếu cần
+      final response = await http.delete(
+        Uri.parse('$baseUrl/api/books/$bookId'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          // Các header khác nếu cần thiết
         },
-        body: json.encode(bookData),
       );
 
       if (response.statusCode == 200) {
-        print('Cập nhật sách thành công');
+        print('Xóa sách thành công');
         return true;
       } else {
-        print('Lỗi khi cập nhật sách. Status code: ${response.statusCode}');
-        print('Response body: ${response.body}');
+        print('Lỗi khi xóa sách. Status code: ${response.statusCode}');
         return false;
       }
     } catch (e) {
-      print('Lỗi khi cập nhật sách: $e');
+      print('Lỗi khi xóa sách: $e');
       return false;
     }
   }
 }
+
 
