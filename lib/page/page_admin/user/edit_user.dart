@@ -13,6 +13,7 @@ import 'package:path/path.dart' as path;
 import 'display_user.dart';
 import 'package:app_doc_sach/model/user_model.dart';
 
+//update
 class EditUser extends StatefulWidget {
   final Users? users;
 
@@ -32,7 +33,6 @@ class _EditUserState extends State<EditUser> {
   late TextEditingController addressController;
 
   File? _image;
-  String? _webImagePath;
 
   @override
   void initState() {
