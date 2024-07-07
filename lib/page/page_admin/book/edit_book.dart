@@ -4,6 +4,7 @@ import 'package:app_doc_sach/const.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../model/book_model.dart';
 import '../../../model/author_model.dart';
 import '../../../model/category_model.dart';
@@ -222,11 +223,16 @@ class _EditBookPageState extends State<EditBookPage> {
   }
 
   void _pickImage() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.image);
-    if (result != null) {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
       setState(() {
-        _newImageFile = File(result.files.single.path!);
+        _newImageFile = File(pickedFile.path);
       });
+    } else {
+      // Xử lý khi người dùng không chọn ảnh
+      print('Người dùng không chọn ảnh');
     }
   }
 
@@ -373,7 +379,7 @@ class _EditBookPageState extends State<EditBookPage> {
                               ? Image.file(_newImageFile!, fit: BoxFit.cover)
                               : (_imagePath != null
                               ? Image.network(
-                            baseUrl+_imagePath!,
+                            baseUrl + _imagePath!,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
                               return Center(child: Text('Error loading image'));

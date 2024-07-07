@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../controller/author_controller.dart';
 import '../../../controller/book_controller.dart';
@@ -197,7 +198,7 @@ class _BookCreateState extends State<BookCreate> {
       FileUpload? coverImageUpload;
       try {
         if (_imagePath != null) {
-          coverImageUpload = await BookController.instance.uploadImage(_imagePath);
+          coverImageUpload = await BookController.instance.uploadImage(File(_imagePath!));
           if (coverImageUpload == null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Không thể tải lên ảnh bìa. Vui lòng thử lại')),
@@ -862,13 +863,16 @@ class _BookCreateState extends State<BookCreate> {
   }
 
   void _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-      final result = await FilePicker.platform.pickFiles(type: FileType.image);
-      if (result != null) {
-        setState(() {
-          _filePickerResult = result;
-          _imagePath = _filePickerResult!.files.single.path;
-        });
+    if (pickedFile != null) {
+      setState(() {
+        _imagePath = pickedFile.path;
+      });
+    } else {
+      // Xử lý khi người dùng không chọn ảnh
+      print('Người dùng không chọn ảnh');
     }
   }
   void _refreshForm() {
