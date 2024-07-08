@@ -1,14 +1,83 @@
-import 'package:app_doc_sach/model/gia_han_goi_model.dart';
-import 'package:flutter/material.dart';
+import 'dart:io';
 
+import 'package:app_doc_sach/model/gia_han_goi_model.dart';
+import 'package:app_doc_sach/payment_config.dart';
+import 'package:flutter/material.dart';
+import 'package:pay/pay.dart';
 class GiaHanGoi extends StatefulWidget {
   const GiaHanGoi({super.key});
 
   @override
   State<GiaHanGoi> createState() => GiaHanGoiState();
 }
+void main() {
+  runApp(const MyApp());
+}
 
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      home: GiaHanGoi(),
+    );
+  }
+}
 class GiaHanGoiState extends State<GiaHanGoi> {
+  String os = Platform.operatingSystem;
+  var applePayButton = ApplePayButton(
+    paymentConfiguration: PaymentConfiguration.fromJsonString(defaultApplePay),
+    paymentItems: const[
+      PaymentItem(
+        label: 'Item A',
+        amount: '0.01',
+        status: PaymentItemStatus.final_price,
+      ),
+      PaymentItem(
+        label: 'Item B',
+        amount: '0.01',
+        status: PaymentItemStatus.final_price,
+      ),
+      PaymentItem(
+        label: 'Total',
+        amount: '0.02',
+        status: PaymentItemStatus.final_price,
+      ),
+    ],
+    style: ApplePayButtonStyle.black,
+    width: double.infinity,
+    height: 50,
+    type: ApplePayButtonType.buy,
+    margin: const EdgeInsets.only(top: 15.0),
+    onPaymentResult: (result) => debugPrint('Kết quả thanh toán $result'),
+    loadingIndicator: const Center(child: CircularProgressIndicator()),
+  );
+  var googlePayButton = GooglePayButton(
+    paymentConfiguration: PaymentConfiguration.fromJsonString(defaultGooglePay),
+    paymentItems: const[
+      PaymentItem(
+        label: 'Item A',
+        amount: '0.01',
+        status: PaymentItemStatus.final_price,
+      ),
+      PaymentItem(
+        label: 'Item B',
+        amount: '0.01',
+        status: PaymentItemStatus.final_price,
+      ),
+      PaymentItem(
+        label: 'Total',
+        amount: '0.02',
+        status: PaymentItemStatus.final_price,
+      ),
+    ],
+    width: double.infinity,
+    type: GooglePayButtonType.pay,
+    margin: const EdgeInsets.only(top: 15.0),
+    onPaymentResult: (result) => debugPrint('Kết quả thanh toán $result'),
+    loadingIndicator: const Center(child: CircularProgressIndicator()),
+  );
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -142,7 +211,21 @@ class GiaHanGoiState extends State<GiaHanGoi> {
                             const SizedBox(height: 30),
                             GestureDetector(
                               onTap: () {
-                                // Xử lý khi người dùng nhấn vào nút Đăng ký
+                                if (Platform.isAndroid) {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    builder: (context) {
+                                      return googlePayButton;
+                                    },
+                                  );
+                                } else {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    builder: (context) {
+                                      return applePayButton;
+                                    },
+                                  );
+                                }
                               },
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
