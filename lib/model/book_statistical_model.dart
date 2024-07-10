@@ -1,8 +1,10 @@
 class BookStatisticalModel {
   final String icon;
-  final String value;
+  int value;
   final String title;
 
-  const BookStatisticalModel(
-      {required this.icon, required this.value, required this.title});
+  // const BookStatisticalModel(
+  //     {required this.icon, required this.value, required this.title});
+
+  BookStatisticalModel({required this.icon, required this.value, required this.title});
 }
