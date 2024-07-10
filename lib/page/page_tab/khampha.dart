@@ -1,17 +1,22 @@
+import 'dart:convert';
+import 'dart:math';
 import 'dart:ui';
 
+import 'package:app_doc_sach/model/category_model.dart';
 import 'package:app_doc_sach/page/detail_book/detail_book.dart';
 import 'package:app_doc_sach/provider/ui_provider.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
-
+import 'package:http/http.dart' as http;
 import '../../const.dart';
 import '../../controller/book_controller.dart';
+import '../../model/author_model.dart';
 import '../../model/book_model.dart';
-import '../../model/product_phobien.dart';
+import '../../model/popular_book_model.dart';
 
 class KhamPhaWidget extends StatefulWidget {
   const KhamPhaWidget({super.key});
@@ -31,13 +36,36 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
 
   final BookController _bookService = BookController();
   List<Book> _books = [];
+  List<PopularBook> _popularBooks = [];
+  bool _isLoading = true;
+
+  Future<void> _fetchPopularBooks() async {
+    final url = '$baseUrl/api/book-populars?populate=book.cover_image,book.authors,book.categories,book.chapters.files';
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      List<PopularBook> popularBooks = [];
+      var jsonData = jsonDecode(response.body);
+
+      for (var item in jsonData['data']) {
+        popularBooks.add(PopularBook.fromJson(item));
+      }
+
+      setState(() {
+        _popularBooks = popularBooks;
+      });
+      print(_popularBooks);
+    } else {
+      throw Exception('Failed to load popular books');
+    }
+  }
   Future<void> _loadBooks() async {
     try {
       final books = await _bookService.getBooks();
       // Trộn danh sách sách
       books.shuffle();
       // Lấy 8 quyển sách đầu tiên sau khi trộn
-      final randomBooks = books.take(8).toList();
+      final randomBooks = books.take(10).toList();
       setState(() {
 
         _books = randomBooks;
@@ -52,11 +80,195 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
     }
   }
 
+  //Cập nhật view sách
+
   @override
   void initState() {
     super.initState();
     // Load sách lần đầu tiên khi initState được gọi
     _loadBooks();
+   _fetchPopularBooks();
+    _loadBooksKinhDi_TrinhTham();
+    _loadBooksTieuSu_HoiKy();
+    _loadBooksTruyenNgan();
+    _loadBooksHaihuoc();
+    _loadBooksCoTichDanGian();
+    _loadBooksTamlyGiaoduc();
+    _loadBooksKhoaHocVienTuong_PhieuLuu();
+  }
+  // Function to select random 8 books
+  List<Book> selectRandomBooks(List<Book> books, int count) {
+    final random = Random();
+    List<Book> randomBooks = List.from(books);
+    randomBooks.shuffle(random);
+    return randomBooks.take(count).toList();
+  }
+
+  List<Book> _booksKinhDi_TrinhTham = [];
+  List<Book> _booksTieuSu_HoiKy = [];
+  List<Book> _booksTruyenNgan = [];
+  List<Book> _booksHaiHuoc = [];
+  List<Book> _booksCoTichDanGian = [];
+  List<Book> _booksTamlyGiaoDuc = [];
+  List<Book> _booksKhoaHocVienTuong_PhieuLuu = [];
+  // Load book Kinh dị - Trinh thám
+  Future<void> _loadBooksKinhDi_TrinhTham() async {
+    // Example categories
+    List<String> categories = ['Kinh dị', 'Trinh thám'];
+    loadBooksKhiDi_TrinhTham(categories);
+  }
+  // Function to load books initially
+  Future<void> loadBooksKhiDi_TrinhTham(List<String> categories) async {
+    try {
+      List<Book> books = await getBooksByCategories(categories);
+      List<Book> randomBooks = selectRandomBooks(books, 10); // Select 8 random books
+      setState(() {
+        _booksKinhDi_TrinhTham = randomBooks;
+        // Ensure _bookColors list has the same length as books list
+        _bookColors = List<Color>.generate(books.length, (index) => getRandomColor());
+      });
+    } catch (e) {
+      print('Error loading books: $e');
+      // Handle error as needed
+    }
+  }
+
+  // Load book Truyen ngan
+  Future<void> _loadBooksTruyenNgan() async {
+    // Example categories
+    List<String> categories = ['Truyện ngắn', 'Tuyển tập'];
+    loadBooksTruyenNgan(categories);
+  }
+  // Function to load books initially
+  Future<void> loadBooksTruyenNgan(List<String> categories) async {
+    try {
+      List<Book> books = await getBooksByCategories(categories);
+      List<Book> randomBooks = selectRandomBooks(books, 10); // Select 8 random books
+      setState(() {
+        _booksTruyenNgan = randomBooks;
+        // Ensure _bookColors list has the same length as books list
+        _bookColors = List<Color>.generate(books.length, (index) => getRandomColor());
+      });
+    } catch (e) {
+      print('Error loading books: $e');
+      // Handle error as needed
+    }
+  }
+
+  // Load book Hài hước
+  Future<void> _loadBooksHaihuoc() async {
+    // Example categories
+    List<String> categories = ['Hài hước', 'Truyện cười'];
+    loadBooksHaihuoc(categories);
+  }
+  // Function to load books initially
+  Future<void> loadBooksHaihuoc(List<String> categories) async {
+    try {
+      List<Book> books = await getBooksByCategories(categories);
+      List<Book> randomBooks = selectRandomBooks(books, 10); // Select 8 random books
+      setState(() {
+        _booksHaiHuoc = randomBooks;
+        // Ensure _bookColors list has the same length as books list
+        _bookColors = List<Color>.generate(books.length, (index) => getRandomColor());
+      });
+    } catch (e) {
+      print('Error loading books: $e');
+      // Handle error as needed
+    }
+  }
+
+  // Load book Co tich dan gia
+  Future<void> _loadBooksCoTichDanGian() async {
+    // Example categories
+    List<String> categories = ['Cổ tích', 'Dân gian'];
+    loadBooksCoTichDanGian(categories);
+  }
+  // Function to load books Co tich dan gia
+  Future<void> loadBooksCoTichDanGian(List<String> categories) async {
+    try {
+      List<Book> books = await getBooksByCategories(categories);
+      List<Book> randomBooks = selectRandomBooks(books, 10); // Select 8 random books
+      setState(() {
+        _booksCoTichDanGian = randomBooks;
+        // Ensure _bookColors list has the same length as books list
+        _bookColors = List<Color>.generate(books.length, (index) => getRandomColor());
+      });
+    } catch (e) {
+      print('Error loading books: $e');
+      // Handle error as needed
+      // Handle error as needed
+    }
+  }
+
+  // Load book Tâm lý Giáo dục
+  Future<void> _loadBooksTamlyGiaoduc() async {
+    // Example categories
+    List<String> categories = ['Tâm lý', 'Giáo dục'];
+    loadBooksTamlyGiaoduc(categories);
+  }
+  // Function to load books Co tich dan gia
+  Future<void> loadBooksTamlyGiaoduc(List<String> categories) async {
+    try {
+      List<Book> books = await getBooksByCategories(categories);
+      List<Book> randomBooks = selectRandomBooks(books, 10); // Select 8 random books
+      setState(() {
+        _booksTamlyGiaoDuc = randomBooks;
+        // Ensure _bookColors list has the same length as books list
+        _bookColors = List<Color>.generate(books.length, (index) => getRandomColor());
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading books: $e');
+      // Handle error as needed
+      // Handle error as needed
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+
+  // Load book Khoa học viễn tưởng - Phiêu lưu
+  Future<void> _loadBooksKhoaHocVienTuong_PhieuLuu() async {
+    // Example categories
+    List<String> categories = ['Viễn tưởng', 'Phiêu lưu'];
+    loadBooksKhoaHocVienTuong_PhieuLuu(categories);
+  }
+  // Function to load
+  Future<void> loadBooksKhoaHocVienTuong_PhieuLuu(List<String> categories) async {
+    try {
+      List<Book> books = await getBooksByCategories(categories);
+      List<Book> randomBooks = selectRandomBooks(books, 10); // Select 8 random books
+      setState(() {
+        _booksKhoaHocVienTuong_PhieuLuu = randomBooks;
+        // Ensure _bookColors list has the same length as books list
+        _bookColors = List<Color>.generate(books.length, (index) => getRandomColor());
+      });
+    } catch (e) {
+      print('Error loading books: $e');
+      // Handle error as needed
+      // Handle error as needed
+    }
+  }
+  // Load book Tieu su - Hồi ký
+  Future<void> _loadBooksTieuSu_HoiKy() async {
+    // Example categories
+    List<String> categories = ['Kinh dị', 'Trinh thám'];
+    loadBooksKhiDi_TrinhTham(categories);
+  }
+  // Function to load books initially
+  Future<void> loadBooksTieuSu_HoiKy(List<String> categories) async {
+    try {
+      List<Book> books = await getBooksByCategories(categories);
+      setState(() {
+        _booksTieuSu_HoiKy = books;
+        // Ensure _bookColors list has the same length as books list
+        _bookColors = List<Color>.generate(books.length, (index) => getRandomColor());
+      });
+    } catch (e) {
+      print('Error loading books: $e');
+      // Handle error as needed
+    }
   }
   @override
   Widget build(BuildContext context) {
@@ -128,7 +340,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                             textAlign: TextAlign.start,
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 14,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -137,7 +349,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                       const SizedBox(
                         height: 2,
                       ),
-                      slide(_books),
+                      slide(_popularBooks),
                       const SizedBox(
                         height: 1,
                       ),
@@ -150,7 +362,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                             textAlign: TextAlign.start,
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 14,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -172,7 +384,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                             textAlign: TextAlign.start,
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 14,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -181,8 +393,8 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                       const SizedBox(
                         height: 5,
                       ),
-                      gridview_goiy(_books),
-                      const SizedBox(
+                      gridview_category(_booksKinhDi_TrinhTham),
+                      /*const SizedBox(
                         height: 10,
                       ),
                       const Padding(
@@ -203,7 +415,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                       const SizedBox(
                         height: 5,
                       ),
-                      gridview_goiy(_books),
+                      gridview_category(_booksTieuSu_HoiKy),*/
                       const SizedBox(
                         height: 10,
                       ),
@@ -216,7 +428,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                             textAlign: TextAlign.start,
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 14,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -225,7 +437,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                       const SizedBox(
                         height: 5,
                       ),
-                      gridview_goiy(_books),
+                      gridview_category(_booksTruyenNgan),
                       const SizedBox(
                         height: 10,
                       ),
@@ -238,7 +450,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                             textAlign: TextAlign.start,
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 14,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -247,7 +459,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                       const SizedBox(
                         height: 5,
                       ),
-                      gridview_goiy(_books),
+                      gridview_category(_booksHaiHuoc),
                       const SizedBox(
                         height: 10,
                       ),
@@ -260,7 +472,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                             textAlign: TextAlign.start,
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 14,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -269,7 +481,9 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                       const SizedBox(
                         height: 5,
                       ),
-                      gridview_goiy(_books),
+                      _isLoading
+                          ? Center(child: CircularProgressIndicator())
+                          : gridview_category(_booksCoTichDanGian),
                       const SizedBox(
                         height: 10,
                       ),
@@ -282,7 +496,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                             textAlign: TextAlign.start,
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 14,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -291,7 +505,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                       const SizedBox(
                         height: 5,
                       ),
-                      gridview_goiy(_books),
+                       gridview_category(_booksTamlyGiaoDuc),
                       const SizedBox(
                         height: 10,
                       ),
@@ -304,7 +518,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                             textAlign: TextAlign.start,
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 14,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -313,7 +527,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
                       const SizedBox(
                         height: 5,
                       ),
-                      gridview_goiy(_books),
+                      gridview_category(_booksKhoaHocVienTuong_PhieuLuu),
                       const SizedBox(
                         height: 30,
                       )
@@ -352,11 +566,24 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
 }
 
 
-Widget slide(List<Book> books) {
+String getAuthorNames(List<Author> authors) {
+  return authors.map((author) => author.authorName).join(', ');
+}
+String getCategoryNames(List<CategoryModel> categories) {
+  return categories.map((category) => category.nameCategory).join(', ');
+}
+
+String getFirstCategoryName(List<CategoryModel> categories) {
+  if (categories.isNotEmpty) {
+    return categories.first.nameCategory;
+  }
+  return '';
+}
+Widget slide(List<PopularBook> books) {
   return Padding(
     padding: const EdgeInsets.only(bottom: 15, left: 10, right: 10),
     child: Container(
-      height: 240,
+      height: 250,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
       ),
@@ -399,17 +626,18 @@ Widget slide(List<Book> books) {
                   // Nội dung
                   GestureDetector(
                     onTap: () {
-                     /* Navigator.push(
+                      incrementView(book.book!);
+                      Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              ProductDetailPage(product: product),
+                              ProductDetailPage(book: book.book!),
                         ),
-                      );*/
+                      );
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 5.0),
-                      height: 200,
+                      height: 300,
                       width: 280,
                       child: Row(
                         children: [
@@ -419,9 +647,9 @@ Widget slide(List<Book> books) {
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(10),
                               child: Image.network(
-                                baseUrl + book.coverImage!.url,
-                                height: 160,
-                                width: 110,
+                                baseUrl + book.book!.coverImage!.url,
+                                height: 180,
+                                width: 130,
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -432,48 +660,45 @@ Widget slide(List<Book> books) {
                               builder: (context, UiProvider notifier, child) {
                                 return Padding(
                                   padding: const EdgeInsets.only(
-                                      bottom: 3, left: 20, right: 20, top: 5),
+                                      bottom: 10, left: 20, top: 15),
                                   child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        book.title!,
+                                        book.book!.title!,
                                         style: TextStyle(
                                           color: notifier.isDark
                                               ? Colors.white
                                               : Colors.black,
-                                          fontSize: 13,
+                                          fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                         ),
+                                        maxLines: 2,
                                       ),
                                       const SizedBox(height: 10),
                                       Text(
-                                        'Thể loại: ${book.categories}',
+                                        'Tác giả: ${getAuthorNames(book.book?.authors ?? [])}',
                                         style: TextStyle(
                                           color: notifier.isDark
                                               ? Colors.white
                                               : Colors.black,
-                                          fontSize: 13,
+                                          fontSize: 14,
                                         ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                       const SizedBox(
                                         height: 5,
                                       ),
-                                      const Row(
-                                        children: [
-                                          Icon(Icons.favorite),
-                                          SizedBox(
-                                            width: 8,
-                                          ),
                                           Text(
-                                            '10',
+                                            'Thể loại: ${getCategoryNames(book.book?.categories ?? [])}',
                                             style: TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 12),
-                                          )
-                                        ],
-                                      )
+                                              color: notifier.isDark ? Colors.white : Colors.black,
+                                              fontSize: 14,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                     ],
                                   ),
                                 );
@@ -484,6 +709,31 @@ Widget slide(List<Book> books) {
                       ),
                     ),
                   ),
+                  // Thêm phần likes và icon favorite
+                  Positioned(
+                    bottom: 10,
+                    right: 10,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            book.book!.likes.toString(),
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 3,
+                          ),
+                          const Icon(Icons.favorite, color: Colors.redAccent),
+                        ],
+                      ),
+                    ),
+                  ),
+
                 ],
               );
             },
@@ -494,31 +744,115 @@ Widget slide(List<Book> books) {
   );
 }
 
+List<Color> _colors = [
+  Colors.blue,
+  Colors.green,
+  Colors.amberAccent,
+  Colors.purple,
+];
+
+Color getRandomColor() {
+  final random = Random();
+  return _colors[random.nextInt(_colors.length)];
+}
+
+//Cập nhật view sách
+
+Future<Book> fetchBookById(String id) async {
+  final url = Uri.parse('$baseUrl/api/books/$id?populate[authors]=*&populate[categories]=*&populate[chapters][populate]=files&populate[cover_image]=*');
+
+  try {
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final jsonBody = json.decode(response.body);
+      final bookJson = jsonBody['data']; // Trích xuất phần dữ liệu của sách từ JSON
+
+      final book = Book.fromJson({
+        'id': bookJson['id'],
+        ...bookJson['attributes'] ?? {},
+      });
+      return book;
+    } else {
+      throw Exception('Failed to load book: ${response.statusCode}');
+    }
+  } catch (e) {
+    throw Exception('Failed to load book: $e');
+  }
+}
+Future<void> incrementView(Book book) async {
+  try {
+    final updatedBook = await fetchBookById(book.id!);
+    final updatedView = (updatedBook.view ?? 0) + 1;
+
+    final url = Uri.parse('$baseUrl/api/books/${book.id}');
+    final response = await http.put(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'data': {
+          'view': updatedView,
+        }
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // Optional: Update local state or notify listeners
+      print('View count updated successfully');
+    } else {
+      throw Exception('Failed to update view count');
+    }
+  } catch (e) {
+    print('Error incrementing view count: $e');
+    throw Exception('Failed to update view count');
+  }
+}
+
+// Tạo danh sách để lưu màu sắc đã được random cho mỗi cuốn sách
+List<Color> _bookColors = [];
+String getFirstAuthorName(List<Author> authors) {
+  if (authors.isNotEmpty) {
+    return authors.first.authorName;
+  }
+  return '';
+}
 Widget gridview_goiy(List<Book> books) {
+  final bookController = BookController();
+
+  // Đảm bảo rằng danh sách _bookColors có cùng số lượng phần tử với danh sách books
+  if (_bookColors.length != books.length) {
+    _bookColors = List<Color>.generate(books.length, (index) => getRandomColor());
+  }
   return SizedBox(
-    height: 465, // Set a fixed height
+    height: 485, // Set a fixed height
     child: Padding(
       padding: const EdgeInsets.all(5),
       child: GridView.builder(
         scrollDirection: Axis.horizontal,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 1.95,
+          childAspectRatio: 1.75,
           mainAxisSpacing: 2.0,
-          crossAxisSpacing: 5.0,
+          crossAxisSpacing: 6,
         ),
         itemCount: books.length,
         itemBuilder: (BuildContext context, index) {
           final book = books[index];
+          final bookColor = _bookColors[index];
           return GestureDetector(
-            onTap: () {
-              /*Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      ProductDetailPage(product: product),
-                ),
-              );*/
+            onTap: () async {
+              try {
+                incrementView(book);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProductDetailPage(book: book),
+                  ),
+                );
+              } catch (e) {
+                print('Error updating view count: $e');
+                // Bạn có thể hiển thị một thông báo lỗi ở đây nếu muốn
+              }
             },
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               Card(
@@ -538,24 +872,194 @@ Widget gridview_goiy(List<Book> books) {
                             child: Image.network(
                               baseUrl + book.coverImage!.url,
                               fit: BoxFit.cover,
-                              height: 160,
-                              width: 120,
+                              height: 180,
+                              width: 130,
                             ),
                           ),
                           Positioned(
                             top: 5,
                             left: 5,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 3),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                               decoration: BoxDecoration(
-                                color: Colors.blue,
+                                color: bookColor.withOpacity(0.7), // Sử dụng màu với độ trong suốt để tăng độ rõ nét
                                 borderRadius: BorderRadius.circular(5),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.5), // Màu bóng đổ
+                                    spreadRadius: 1,
+                                    blurRadius: 3,
+                                    offset: Offset(0, 1), // Thay đổi vị trí bóng đổ
+                                  ),
+                                ],
                               ),
                               child: Text(
-                               /* book.categories*/'',
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 10),
+                                getFirstCategoryName(book.categories ?? []),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Padding(
+                padding: const EdgeInsets.only(left: 5),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    book.title!,
+                    textAlign: TextAlign.start,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 3),
+               Padding(
+                padding: const EdgeInsets.only(left: 5),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                      getFirstAuthorName(book.authors ?? []),
+                    textAlign: TextAlign.start,
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 14,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ]),
+          );
+        },
+      ),
+    ),
+  );
+}
+
+// Function to get books by categories
+Future<List<Book>> getBooksByCategories(List<String> categoryNames) async {
+  try {
+    // Build a query string for category names
+    String categoryFilter = categoryNames.map((name) => 'filters[categories][name][\$eq]=$name').join('&');
+
+    final response = await http.get(Uri.parse('$baseUrl/api/books?populate[authors]=*&populate[categories]=*&populate[chapters][populate]=files&populate[cover_image]=*&$categoryFilter'));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = json.decode(response.body);
+      print('Raw JSON response: $jsonResponse');
+      final List<dynamic> data = jsonResponse['data'] ?? [];
+      return data.map((json) {
+        try {
+          return Book.fromJson({
+            'id': json['id'],
+            ...json['attributes'] ?? {},
+          });
+        } catch (e, stackTrace) {
+          print('Error parsing book: $e');
+          print('Stack trace: $stackTrace');
+          print('Problematic JSON: $json');
+          return null;
+        }
+      }).whereType<Book>().toList();
+    } else {
+      throw Exception('Failed to load books: ${response.statusCode}');
+    }
+  } catch (e, stackTrace) {
+    print('Error loading books: $e');
+    print('Stack trace: $stackTrace');
+    rethrow;
+  }
+}
+Widget gridview_category(List<Book> books) {
+  return SizedBox(
+    height: 485, // Set a fixed height
+    child: Padding(
+      padding: const EdgeInsets.all(5),
+      child: GridView.builder(
+        scrollDirection: Axis.horizontal,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 1.75,
+          mainAxisSpacing: 2.0,
+          crossAxisSpacing: 6,
+        ),
+        itemCount: books.length,
+        itemBuilder: (BuildContext context, index) {
+          final book = books[index];
+          final bookColor = _bookColors[index];
+          return GestureDetector(
+            onTap: () {
+              incrementView(book);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProductDetailPage(book: book),
+                ),
+              );
+            },
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Card(
+                color: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.network(
+                              baseUrl + book.coverImage!.url,
+                              fit: BoxFit.cover,
+                              height: 180,
+                              width: 130 ,
+                            ),
+                          ),
+                          Positioned(
+                            top: 5,
+                            left: 5,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: bookColor.withOpacity(0.7), // Sử dụng màu với độ trong suốt để tăng độ rõ nét
+                                borderRadius: BorderRadius.circular(5),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.5), // Màu bóng đổ
+                                    spreadRadius: 1,
+                                    blurRadius: 3,
+                                    offset: Offset(0, 1), // Thay đổi vị trí bóng đổ
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                getFirstCategoryName(book.categories ?? []),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
@@ -575,7 +1079,7 @@ Widget gridview_goiy(List<Book> books) {
                     textAlign: TextAlign.start,
                     style: const TextStyle(
                       color: Colors.black,
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
                     maxLines: 1,
@@ -584,16 +1088,16 @@ Widget gridview_goiy(List<Book> books) {
                 ),
               ),
               const SizedBox(height: 3),
-              const Padding(
-                padding: EdgeInsets.only(left: 5),
+              Padding(
+                padding: const EdgeInsets.only(left: 5),
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Tac Gia',
+                    getFirstAuthorName(book.authors ?? []),
                     textAlign: TextAlign.start,
-                    style: TextStyle(
-                      color: Colors.black54,
-                      fontSize: 11,
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 14,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

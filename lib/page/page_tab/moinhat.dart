@@ -78,13 +78,13 @@ class _MoiNhatWidgetState extends State<MoiNhatWidget> {
             final product = listProduct[index];
             return GestureDetector(
               onTap: () {
-                Navigator.push(
+               /* Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
                         ProductDetailPage(product: product),
                   ),
-                );
+                );*/
               },
               child: Column(mainAxisSize: MainAxisSize.min, children: [
                 Card(

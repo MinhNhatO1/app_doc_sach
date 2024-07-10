@@ -88,7 +88,9 @@ class _DangXuatWidgetState extends State<DangXuatWidget> {
                 Navigator.of(context).pop(); // Close the dialog
                 AuthController authController = Get.find();
                 authController.signOut();
-                Restart.restartApp(); // Gọi hàm restart ứng dụng sau khi đăng xuất
+                setState(() {
+                  users = null;
+                });
               },
             ),
           ],

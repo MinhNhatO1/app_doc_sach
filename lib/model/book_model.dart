@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import '../const.dart';
 import 'author_model.dart';
 import 'category_model.dart';
 import 'chapter_model.dart';
@@ -16,6 +19,8 @@ class Book {
   List<Author>? authors;
   List<CategoryModel>? categories;
   List<Chapter>? chapters;
+  DateTime? createdAt;
+  DateTime? updatedAt;
 
   Book({
     this.id,
@@ -30,6 +35,8 @@ class Book {
     this.authors,
     this.categories,
     this.chapters,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory Book.fromJson(Map<String, dynamic> json) {
@@ -101,6 +108,8 @@ class Book {
         authors: getAuthors(json['authors']),
         categories: getCategories(json['categories']),
         chapters: getChapters(json['chapters']),
+        createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+        updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
       );
     } catch (e, stackTrace) {
       print('Error in Book.fromJson: $e');
@@ -127,9 +136,11 @@ class Book {
           "connect": categories?.map((category) => category.id).toList() ?? [], // Kiểm tra nếu categories là null
         },
         "chapters": {
-          "connect": chapters?.map((chapter) => chapter.id).toList() ?? [], // Kiểm tra nếu categories là null
+          "connect": chapters?.map((chapter) => chapter.id).toList() ?? [], // Kiểm tra nếu chapters là null
         },
         'cover_image': coverImage?.toJson(), // Kiểm tra nếu coverImage là null
+        'createdAt': createdAt?.toIso8601String(),
+        'updatedAt': updatedAt?.toIso8601String(),
       },
     };
   }
@@ -138,7 +149,7 @@ class Book {
     return {
       'data': {
         "chapters": {
-          "connect": chapters?.map((chapter) => chapter.id).toList() ?? [], // Kiểm tra nếu categories là null
+          "connect": chapters?.map((chapter) => chapter.id).toList() ?? [], // Kiểm tra nếu chapters là null
         },
       },
     };

@@ -78,6 +78,7 @@ dev_dependencies:
   fl_chart: ^0.68.0
   adaptive_dialog: ^2.1.0
   quickalert: ^1.1.0
+  font_awesome_flutter: ^10.7.0
 flutter_launcher_icons:
     android: "launcher_icon"
     ios: true

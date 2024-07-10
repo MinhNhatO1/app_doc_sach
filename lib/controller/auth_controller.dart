@@ -1,5 +1,7 @@
 
 import 'dart:convert';
+import 'package:app_doc_sach/const.dart';
+import 'package:app_doc_sach/controller/controller.dart';
 import 'package:app_doc_sach/model/user_model.dart';
 import 'package:app_doc_sach/service/local_service/local_auth_service.dart';
 import 'package:app_doc_sach/service/remote_auth_service.dart';
@@ -7,16 +9,125 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../page/page_tab_kesach/lichsu.dart';
 import '../view/dashboard/dashboard_screen.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:http/http.dart' as http;
 class AuthController extends GetxController {
   static AuthController instance = Get.find();
+  final RxBool isLoggedIn = false.obs;
   Rxn<Users> user = Rxn<Users>();
   final LocalAuthService _localAuthService = LocalAuthService();
   RxBool hasHiveData = false.obs;
   late BuildContext context;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email', 'profile'],
+  );
+  Future<String?> signInWithGoogle({required BuildContext context}) async {
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        // Người dùng hủy đăng nhập
+        return null;
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final accessToken = googleAuth.accessToken;
+
+      // Gửi accessToken đến backend để đăng nhập và lấy JWT
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/connect/google/callback'), // Thay YOUR_BACKEND_LOGIN_ENDPOINT bằng endpoint của bạn
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{
+          'accessToken': accessToken!,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // Trả về JWT từ backend
+        final jwt = jsonDecode(response.body)['token'];
+        var userResult = await RemoteAuthService().getUserByEmail(email: googleUser.email, token: jwt);
+        if (userResult.statusCode == 200) {
+          user.value = usersFromJson(userResult.body);
+          await _saveUserInfoAndNavigate(
+            context: context,
+            token: jwt,
+            email: googleUser.email,
+            user: user.value!,
+          );
+        } else if (userResult.statusCode == 404) {
+          // Người dùng chưa có profile, tạo mới
+          var createProfileResult = await RemoteAuthService().createProfile(
+            token: jwt,
+            fullName: googleUser.displayName ?? googleUser.email,
+          );
+          if (createProfileResult.statusCode == 200) {
+            user.value = usersFromJson(createProfileResult.body);
+            await _saveUserInfoAndNavigate(
+              context: context,
+              token: jwt,
+              email: googleUser.email,
+              user: user.value!,
+            );
+          } else {
+            // Xử lý lỗi khi tạo profile
+            _handleError(createProfileResult);
+          }
+        } else {
+          // Xử lý lỗi từ backend khi lấy profile
+          _handleError(userResult);
+        }
+      } else {
+        // Xử lý lỗi từ backend khi đăng nhập
+        return null;
+      }
+    } catch (error) {
+      print('Error signing in with Google: $error');
+      return null;
+    }
+    return null;
+  }
+
+  Future<void> _saveUserInfoAndNavigate({
+    required BuildContext context,
+    required String token,
+    required String email,
+    required Users user,
+  }) async {
+    await _localAuthService.addToken(token: token);
+    await _localAuthService.addUser(user: user);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
+    await prefs.setString('email', email);
+    _succesMessage(context);
+    await Future.delayed(const Duration(seconds: 2));
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 500),
+        pageBuilder: (context, animation, secondaryAnimation) => const DashBoardScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          const curve = Curves.ease;
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var offsetAnimation = animation.drive(tween);
+          return SlideTransition(
+            position: offsetAnimation,
+            child: child,
+          );
+        },
+      ),
+    );
+    isLoggedIn.value = true;
+    update();
+  }
+
   @override
   void onInit() async {
    await  _localAuthService.init();
@@ -71,11 +182,14 @@ class AuthController extends GetxController {
         String token = json.decode(result.body)['jwt'];
         var userResult = await RemoteAuthService().createProfile(
             token: token,
-            fullName: fullName,);
+            fullName: email,);
         if(userResult.statusCode == 200){
           user.value = usersFromJson(userResult.body);
           await _localAuthService.addToken(token: token);
           await _localAuthService.addUser(user: user.value!);
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('token', token);
+          await prefs.setString('email', email);
           _succesMessage(context);
           // Chờ 2 giây trước khi chuyển đến trang chủ
           await Future.delayed(const Duration(seconds: 2));
@@ -98,6 +212,8 @@ class AuthController extends GetxController {
               },
             ),
           );
+          isLoggedIn.value = true;
+          update();
         }
         else{
           _handleError(result);
@@ -130,13 +246,16 @@ class AuthController extends GetxController {
       );
 
       if(result.statusCode == 200){
-
+        EasyLoading.dismiss();
         String token = json.decode(result.body)['jwt'];
         var userResult = await RemoteAuthService().getProfile(token: token,);
         if(userResult.statusCode == 200){
           user.value = usersFromJson(userResult.body);
           await _localAuthService.addToken(token: token);
           await _localAuthService.addUser(user: user.value!);
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('token', token);
+          await prefs.setString('email', email);
           // Save login state
          /* await saveLoginState(token);
 */
@@ -166,6 +285,8 @@ class AuthController extends GetxController {
               },
             ),
           );
+          isLoggedIn.value = true;
+          update();
         }
         else{
           _handleError(userResult);
@@ -183,9 +304,18 @@ class AuthController extends GetxController {
   }
 
   void signOut() async {
+    try {
+      // Đăng xuất Google
+      await _googleSignIn.signOut();
+    } catch (error) {
+      print('Error signing out from Google: $error');
+    }
     user.value = null;
     await _localAuthService.clear();
+    isLoggedIn.value = false;
+    authController.update();
   }
+
   void _handleError(dynamic result) {
     print('Error response: ${result.body}');
     EasyLoading.showError('Đăng ký không thành công. Vui lòng thử lại sau.');

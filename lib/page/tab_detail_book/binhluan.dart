@@ -47,7 +47,7 @@ class _CommentScreenState extends State<CommentScreen> {
         ),
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 80),
+        padding: const EdgeInsets.only(bottom: 30),
         child: FloatingActionButton(
           onPressed: () {
 

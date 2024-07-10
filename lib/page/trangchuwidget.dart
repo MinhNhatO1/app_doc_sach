@@ -27,8 +27,8 @@ class _TrangChuWidgetState extends State<TrangChuWidget>
   //Trang thai cua Tab
   final _tabState = TabState();
 
-  final _selectedColor = const Color(0xFF38A938);
-  final _unselectedColor = const Color(0xff5f6368);
+  final _selectedColor = const Color(0xFF38A938) /*Color.fromRGBO(230, 133, 46,1)*/;
+  final _unselectedColor =  Colors.black;
   final _tabs = const [
     Tab(text: 'Khám phá'),
     Tab(child: Text('Nổi bật')),
@@ -41,21 +41,25 @@ class _TrangChuWidgetState extends State<TrangChuWidget>
       Tab(
         child: Text(
           'Khám phá',
+          style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),
         ),
       ),
       Tab(
         child: Text(
           'Nổi bật',
+          style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),
         ),
       ),
       Tab(
         child: Text(
           'Mới nhất',
+          style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),
         ),
       ),
       Tab(
         child: Text(
           'Danh mục',
+          style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),
         ),
       ),
     ];
@@ -114,6 +118,7 @@ class _TrangChuWidgetState extends State<TrangChuWidget>
                 color: notifier.isDark
                     ? Colors.black12
                     : const Color.fromRGBO(232, 245, 233, 1.0),
+                padding: const EdgeInsets.only(top: 10), // Thêm padding ở đây
                 child: TabBar(
                   controller: _tabController,
                   tabs: generateTabs(notifier),
