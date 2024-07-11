@@ -53,40 +53,18 @@ class BookController extends GetxController{
     }
   }
 
-  Future<FileUpload?> uploadImage(dynamic imageData) async {
-    var uri = Uri.parse('$baseUrl/api/upload/');
+  Future<FileUpload?> uploadImage(File imageFile) async {
+    var uri = Uri.parse('$baseUrl/api/upload');
     var request = http.MultipartRequest('POST', uri);
 
-    if (kIsWeb) {
-      // Xử lý cho web
-      if (imageData is String && imageData.startsWith('data:image')) {
-        // Đây là một Data URL
-        var bytes = base64Decode(imageData.split(',').last);
-        request.files.add(http.MultipartFile.fromBytes(
-          'files',
-          bytes,
-          filename: 'image.png',
-          contentType: MediaType('image', 'png'),
-        ));
-      } else {
-        throw Exception('Invalid image data for web');
-      }
-    } else {
-      // Xử lý cho mobile
-      if (imageData is File) {
-        var stream = http.ByteStream(imageData.openRead());
-        var length = await imageData.length();
-        request.files.add(http.MultipartFile(
-          'files',
-          stream,
-          length,
-          filename: imageData.path.split('/').last,
-          contentType: MediaType('image', 'png'),
-        ));
-      } else {
-        throw Exception('Invalid image data for mobile');
-      }
-    }
+    List<int> imageBytes = await imageFile.readAsBytes();
+
+    request.files.add(http.MultipartFile.fromBytes(
+      'files',
+      imageBytes,
+      filename: 'image.png',
+      contentType: MediaType('image', 'png'),
+    ));
 
     try {
       var streamedResponse = await request.send();
@@ -94,9 +72,16 @@ class BookController extends GetxController{
 
       if (response.statusCode == 200) {
         var jsonResponse = json.decode(response.body);
-        var fileUpload = FileUpload.fromJson(jsonResponse[0]);
-        print('Upload thành công: ${fileUpload.url}');
-        return fileUpload;
+        if (jsonResponse is List && jsonResponse.isNotEmpty) {
+          // Lấy phần tử đầu tiên nếu response là một List
+          return FileUpload.fromJson(jsonResponse[0]);
+        } else if (jsonResponse is Map<String, dynamic>) {
+          // Nếu response là một Map, sử dụng nó trực tiếp
+          return FileUpload.fromJson(jsonResponse);
+        } else {
+          print('Unexpected response format');
+          return null;
+        }
       } else {
         print('Lỗi khi tải lên ảnh. Status code: ${response.statusCode}');
         print('Response body: ${response.body}');
@@ -157,6 +142,8 @@ class BookController extends GetxController{
       return false;
     }
   }
+
+
 }
 
 
