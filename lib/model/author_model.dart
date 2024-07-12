@@ -37,6 +37,8 @@ class Author {
   @override
   String toString() {
     final DateFormat formatter = DateFormat('yyyy-MM-dd');
-    return 'Author(id: $id, authorName: $authorName, birthDate: ${formatter.format(birthDate!)}, born: $born, telphone: $telphone, nationality: $nationality, bio: $bio)';
+    String formattedBirthDate = birthDate != null ? formatter.format(birthDate!) : 'null';
+    return 'Author(id: $id, authorName: $authorName, birthDate: $formattedBirthDate, born: $born, telphone: $telphone, nationality: $nationality, bio: $bio)';
   }
+
 }

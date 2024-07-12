@@ -39,8 +39,15 @@ class Chapter {
   String toString() {
     return 'Chapter(id: $id, name: $nameChapter, mediaFile: $mediaFile)';
   }
-}
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'nameChaper': nameChapter,
+      'mediaFile': mediaFile?.toJson(), // Chuyển đổi đối tượng MediaFile thành JSON nếu có
+    };
+  }
+}
 // Method to parse list of chapters from JSON
 List<Chapter> parseChapters(String jsonString) {
   final parsed = json.decode(jsonString);

@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/user_model.dart';
 
 class LocalAuthService {
@@ -6,10 +7,15 @@ class LocalAuthService {
   late Box<Users> _userBox;
 
   Future<void> init() async {
-    _tokenBox = await Hive.openBox<String>('token');
-    _userBox = await Hive.openBox<Users>('user');
-    print('Token box opened: ${_tokenBox.isOpen}');
-    print('User box opened: ${_userBox.isOpen}');
+    try {
+      _tokenBox = await Hive.openBox<String>('token');
+      _userBox = await Hive.openBox<Users>('user');
+      print('Token box opened: ${_tokenBox.isOpen}');
+      print('User box opened: ${_userBox.isOpen}');
+    } catch (e) {
+      print('Error initializing Hive boxes: $e');
+      rethrow; // Rethrow the error to handle it elsewhere if needed
+    }
   }
 
   Future<void> addToken({required String token}) async {
@@ -23,6 +29,8 @@ class LocalAuthService {
   Future<void> clear() async {
     await _tokenBox.clear();
     await _userBox.clear();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
   }
 
   String? getToken() => _tokenBox.get('token');

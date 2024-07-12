@@ -34,14 +34,15 @@ class Users {
 
   factory Users.fromJson(Map<String, dynamic> data) {
     return Users(
-      id: data['id'] is String ? int.tryParse(data['id']) : data['id'],
-      fullName: data['fullName']?.toString() ?? 'N/A',
-      email: data['email']?.toString() ?? 'N/A',
-      phone: data['phone']?.toString() ?? 'N/A',
-      gender: data['gender']?.toString() ?? 'N/A',
-      address: data['address']?.toString() ?? 'N/A',
+      id: data['id'] != null ? (data['id'] is String ? int.tryParse(data['id']) : data['id']) : null,
+      fullName: data['fullName'] != null ? data['fullName'].toString() : 'N/A',
+      email: data['email'] != null ? data['email'].toString() : 'N/A',
+      phone: data['phone'] != null ? data['phone'].toString() : 'N/A',
+      gender: data['gender'] != null ? data['gender'].toString() : 'N/A',
+      address: data['address'] != null ? data['address'].toString() : 'N/A',
       age: data['age'] != null ? DateTime.tryParse(data['age']) : null,
-      avatar: data['image']?.toString() ?? '',
+      avatar: data['image'] != null ? data['image'].toString() : '',
+
     );
   }
 

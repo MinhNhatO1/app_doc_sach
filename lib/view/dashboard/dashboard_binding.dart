@@ -3,6 +3,8 @@ import 'package:app_doc_sach/controller/author_controller.dart';
 import 'package:app_doc_sach/controller/book_controller.dart';
 import 'package:app_doc_sach/controller/category_controller.dart';
 import 'package:app_doc_sach/controller/chapter_controller.dart';
+import 'package:app_doc_sach/controller/favorite_controller.dart';
+import 'package:app_doc_sach/controller/historyreading_controller.dart';
 
 import 'package:get/get.dart';
 
@@ -14,6 +16,8 @@ class DashboardBinding extends Bindings {
     Get.put(AuthorController());
     Get.put(CategoryController());
     Get.put(ChapterController());
+    Get.put(ReadingHistoryController());
+    Get.put(FavoriteService());
   }
 
 }

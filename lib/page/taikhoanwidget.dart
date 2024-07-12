@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:app_doc_sach/color/mycolor.dart';
 import 'package:app_doc_sach/const.dart';
@@ -7,6 +8,7 @@ import 'package:app_doc_sach/page/login_register/chon_dangnhap.dart';
 import 'package:app_doc_sach/page/profile/profilescreen.dart';
 import 'package:app_doc_sach/provider/ui_provider.dart';
 import 'package:app_doc_sach/page/page_tab_taikhoanwidget/gia_han_goi.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -28,22 +30,50 @@ class TaiKhoanWidget extends StatefulWidget {
 
 class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
   AuthController authController = Get.find();
+  // Khai báo một biến bool để kiểm soát xem dữ liệu đã được load hay chưa
+  bool _isDataInitialized = false;
   Users? users;
+  Timer? _timer = Timer(Duration.zero, () {});
   @override
   void initState() {
     super.initState();
+    Get.put(this);
     checkUserLogin();
   }
 
+  @override
+  void dispose() {
+    _timer?.cancel(); // Hủy timer khi widget bị hủy
+    super.dispose();
+  }
   void checkUserLogin() {
     if (authController.user.value != null) {
       initializeData();
+
+      _timer = Timer.periodic(Duration(seconds: 8), (timer) {
+        initializeData();
+      });
     } else {
-      // Handle case when user is not logged in (optional)
+      // Xử lý khi user là null, ví dụ:
+      _timer?.cancel();
+      setState(() {
+        users = null;
+        _isDataInitialized = false;
+      });
     }
   }
 
+  // Hàm để khởi tạo dữ liệu
   Future<void> initializeData() async {
+    if (authController.user.value == null) {
+      // Xử lý khi user là null, ví dụ:
+      setState(() {
+        users = null;
+        _isDataInitialized = false;
+      });
+      return;
+    }
+
     String userEmail = authController.user.value!.email;
     String? token = authController.getToken();
 
@@ -54,6 +84,7 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
         setState(() {
           users = Users.fromJson(userData);
         });
+        _isDataInitialized = true;
       } else {
         throw Exception('Error fetching user by email: ${userResult.statusCode}');
       }
@@ -63,11 +94,13 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
   }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: users != null
-          ? buildLoggedInUI()
-          : buildNotLoggedInUI(),
-    );
+    return Obx(() {
+      if ( authController.user.value != null) {
+        return buildLoggedInUI();
+      } else {
+        return buildNotLoggedInUI();
+      }
+    });
   }
   Widget buildLoggedInUI(){
     return Scaffold(
@@ -96,10 +129,22 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                       height: 90,
                                       width: 90,
                                       margin: const EdgeInsets.only(top: 15),
-                                      child:  CircleAvatar(
+                                      child: users != null && users!.avatar != null && users!.avatar!.isNotEmpty
+                                          ? CachedNetworkImage(
+                                        imageUrl: baseUrl + users!.avatar!,
+                                        imageBuilder: (context, imageProvider) => CircleAvatar(
+                                          radius: 55,
+                                          backgroundImage: imageProvider,
+                                        ),
+                                        placeholder: (context, url) => const CircularProgressIndicator(),
+                                        errorWidget: (context, url, error) => const CircleAvatar(
+                                          radius: 55,
+                                          child: Icon(Icons.error, size: 50, color: Colors.red),
+                                        ),
+                                      )
+                                          : const CircleAvatar(
                                         radius: 55,
-                                        backgroundImage:  users!.avatar != null ? NetworkImage(baseUrl + authController.user.value!.avatar!) as ImageProvider<Object>?
-                                            : const AssetImage('assets/icon/logoapp.png'),
+                                        backgroundImage: AssetImage('assets/icon/logoapp.png'),
                                       ),
                                     ),
                                     const SizedBox(height: 15,),
@@ -630,27 +675,6 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                 ),
                               )
                           ),
-                          const SizedBox(height: 50,),
-
-                          Center(
-                            child: Material(
-                              borderRadius: BorderRadius.circular(10),
-                              child: InkWell(
-                                onTap: () {},
-                                child: Container(
-                                  width: 150,
-                                  height: 35,
-                                  decoration: BoxDecoration(
-                                      border: Border.all(width: 1,color: notifier.isDark ? Colors.white :  MyColor.primaryColor),
-                                      borderRadius: BorderRadius.circular(10),
-                                      color: notifier.isDark ? Colors.transparent : Colors.white
-                                  ),
-                                  child: Center(child: Text('Xóa tài khoản',style: TextStyle(color: notifier.isDark ? Colors.white :  Colors.black87,fontSize: 13,fontStyle: FontStyle.italic))),
-                                ),
-                              ),
-                            ),
-                          ),
-
                           const SizedBox(height: 50,),
                         ]
                     ),
@@ -1222,27 +1246,6 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                 ),
                               )
                           ),
-                          const SizedBox(height: 50,),
-
-                          Center(
-                            child: Material(
-                              borderRadius: BorderRadius.circular(10),
-                              child: InkWell(
-                                onTap: () {},
-                                child: Container(
-                                  width: 150,
-                                  height: 35,
-                                  decoration: BoxDecoration(
-                                      border: Border.all(width: 1,color: notifier.isDark ? Colors.white :  MyColor.primaryColor),
-                                      borderRadius: BorderRadius.circular(10),
-                                      color: notifier.isDark ? Colors.transparent : Colors.white
-                                  ),
-                                  child: Center(child: Text('Xóa tài khoản',style: TextStyle(color: notifier.isDark ? Colors.white :  Colors.black87,fontSize: 13,fontStyle: FontStyle.italic))),
-                                ),
-                              ),
-                            ),
-                          ),
-
                           const SizedBox(height: 50,),
                         ]
                     ),

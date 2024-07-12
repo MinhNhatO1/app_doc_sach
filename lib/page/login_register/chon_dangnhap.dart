@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:app_doc_sach/controller/auth_controller.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:app_doc_sach/controller/controller.dart';
 import 'package:app_doc_sach/page/login_register/dangnhap.dart';
@@ -29,11 +30,7 @@ class ChonDangNhapWidget extends StatefulWidget {
 }
 
 class _ChonDangNhapWidgetState extends State<ChonDangNhapWidget> {
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email'],
-  );
 
-  final AuthService _auth = AuthService();
   void  _getStatusBarStyle(UiProvider uiProvider) {
     if (uiProvider.isDark) {
       SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light.copyWith(
@@ -101,8 +98,18 @@ class _ChonDangNhapWidgetState extends State<ChonDangNhapWidget> {
                 ),
 
                 ElevatedButton(
-                  onPressed: () {
-                    signInWithGoogle;
+                  onPressed: () async {
+                    final authService = AuthController();
+                    final jwt = await authService.signInWithGoogle(context: context);
+                    if (jwt != null) {
+                      // Lưu JWT và chuyển hướng người dùng
+                      print('Đăng nhập thành công: $jwt');
+                      // TODO: Lưu JWT vào local storage hoặc state management
+                      // TODO: Chuyển hướng người dùng đến màn hình chính
+                    } else {
+                      print('Đăng nhập thất bại');
+                      // TODO: Hiển thị thông báo lỗi cho người dùng
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent, // Đặt màu nền là trong suốt
@@ -293,7 +300,7 @@ class _ChonDangNhapWidgetState extends State<ChonDangNhapWidget> {
     );
   }
 
-  void signInWithGoogle({
+  /*void signInWithGoogle({
     required BuildContext context,
   }) async {
     try {
@@ -368,7 +375,7 @@ class _ChonDangNhapWidgetState extends State<ChonDangNhapWidget> {
       EasyLoading.dismiss();
     }
   }
-
+*/
   Future<dynamic> createProfile({
     required String token,
     required String fullName,
@@ -398,3 +405,4 @@ class _ChonDangNhapWidgetState extends State<ChonDangNhapWidget> {
     EasyLoading.showError('Đăng nhập thất bại: ${response.body}');
   }
 }
+

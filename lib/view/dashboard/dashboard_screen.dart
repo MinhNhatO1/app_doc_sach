@@ -6,6 +6,7 @@ import 'package:app_doc_sach/page/timkiemwidget.dart';
 import 'package:app_doc_sach/page/trangchuwidget.dart';
 import 'package:app_doc_sach/provider/tab_provider.dart';
 import 'package:app_doc_sach/state/tab_state.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_statusbarcolor_ns/flutter_statusbarcolor_ns.dart';
@@ -13,7 +14,7 @@ import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../provider/ui_provider.dart';
 import '../../service/local_service/local_auth_service.dart';
 class DashBoardScreen extends StatefulWidget {
@@ -91,11 +92,11 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                 iconSize: 18,
                 padding: const EdgeInsets.symmetric(horizontal: 15,vertical: 10),
                 gap: 8,tabs: const[
-                GButton(icon: Icons.home, text: 'Trang chủ',textStyle: TextStyle(fontSize: 9,color: MyColor.primaryColor),),
-                GButton(icon: Icons.book_sharp,text: 'Kệ sách',textStyle: TextStyle(fontSize: 9,color: MyColor.primaryColor),),
-                GButton(icon: Icons.search_outlined,text: 'Tìm kiếm',textStyle: TextStyle(fontSize: 9,color: MyColor.primaryColor),),
-                GButton(icon: Icons.notification_important,text: 'Thông báo',textStyle: TextStyle(fontSize: 9,color: MyColor.primaryColor),),
-                GButton(icon: Icons.person,text: 'Tài khoản',textStyle: TextStyle(fontSize: 9,color: MyColor.primaryColor),)
+                GButton(icon: CupertinoIcons.home, text: 'Trang chủ',textStyle: TextStyle(fontSize: 13,color: MyColor.primaryColor),),
+                GButton(icon: FontAwesomeIcons.bookBookmark,text: 'Kệ sách',textStyle: TextStyle(fontSize: 13,color: MyColor.primaryColor),),
+                GButton(icon: CupertinoIcons.search,text: 'Tìm kiếm',textStyle: TextStyle(fontSize: 13,color: MyColor.primaryColor),),
+                GButton(icon: Icons.notification_important_rounded,text: 'Thông báo',textStyle: TextStyle(fontSize: 13,color: MyColor.primaryColor),),
+                GButton(icon: CupertinoIcons.person_alt_circle,text: 'Tài khoản',textStyle: TextStyle(fontSize: 13,color: MyColor.primaryColor),)
               ],
 
                 selectedIndex: _tabState.selectedTab,
