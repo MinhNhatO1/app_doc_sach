@@ -6,6 +6,7 @@ import 'package:app_doc_sach/view/dashboard/dashboard_screen.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
@@ -80,101 +81,107 @@ class _DangKyWidgetState extends State<DangKyWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: SafeArea(
-        child: Container(
-          width: double.infinity,
-          color: Colors.grey.shade50,
-          height: double.infinity,
-          padding: const EdgeInsets.all(15),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                InkWell(
-                    onTap: () {
-                      /* Future.delayed(const Duration(milliseconds: 300), () {
-                        _getStatusBarStyle();
-                      });
-*/
-                      Navigator.pop(context);
-                    },
-                    child: const Icon(
-                      Icons.arrow_back_sharp, size: 30, color: Colors.black,)),
-                Container(
-                  alignment: Alignment.center,
-                  child: Container(
-                    height: 80,
-                    width: 80,
-                    child: const Image(
-                        image: AssetImage('assets/icon/logoapp.png')),
-                  ),
-                ),
-
-                const SizedBox(height: 50,),
-                const Text(
-                  'Tạo tài khoản',
-                  style: TextStyle(
-                    color: MyColor.primaryColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 15,),
-                // Email Input
-                TextFormGlobal(
-                  controller: emailController,
-                  text: 'Email',
-                  obscure: false,
-                  textInputType: TextInputType.emailAddress,
-                  icon: const Icon(Icons.email_outlined),
-                  suffixIcon: _hasEmailText
-                      ? IconButton(
-                    icon: Icon(Icons.clear,color: Colors.grey.shade700),
-                    onPressed: clearEmail,
-                  )
-                      : null,
-                ),
-
-                const SizedBox(height: 15,),
-                // Password Input
-                TextFormGlobal(
-                  controller: passwordController,
-                  text: 'Password',
-                  obscure: obscurePassword,
-                  textInputType: TextInputType.text,
-                  icon: const Icon(Icons.lock_outline),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      obscurePassword ? Icons.visibility_off : Icons.visibility,color: Colors.grey.shade700,
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent, // Làm trong suốt status bar
+          statusBarIconBrightness: Brightness.dark, // Màu sắc icon trên status bar
+        ),
+        child: SafeArea(
+          child: Container(
+            width: double.infinity,
+            color: Colors.grey.shade50,
+            height: double.infinity,
+            padding: const EdgeInsets.all(15),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  InkWell(
+                      onTap: () {
+                        /* Future.delayed(const Duration(milliseconds: 300), () {
+                          _getStatusBarStyle();
+                        });
+        */
+                        Navigator.pop(context);
+                      },
+                      child: const Icon(
+                        Icons.arrow_back_sharp, size: 30, color: Colors.black,)),
+                  Container(
+                    alignment: Alignment.center,
+                    child: Container(
+                      height: 90,
+                      width: 90,
+                      child: const Image(
+                          image: AssetImage('assets/icon/logoapp.png')),
                     ),
-                    onPressed: togglePasswordVisibility, // Gọi hàm togglePasswordVisibility khi nhấn vào IconButton
                   ),
-                ),
 
-                const SizedBox(height: 15,),
-                // Password Input
-                TextFormGlobal(
-                  controller: repasswordController,
-                  text: 'Re-Password',
-                  obscure: obscureRePassword,
-                  textInputType: TextInputType.text,
-                  icon: const Icon(Icons.lock_reset),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      obscureRePassword ? Icons.visibility_off : Icons.visibility,color: Colors.grey.shade700
+                  const SizedBox(height: 50,),
+                  const Text(
+                    'Tạo tài khoản',
+                    style: TextStyle(
+                      color: MyColor.primaryColor,
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
                     ),
-                    onPressed: toggleRePasswordVisibility, // Gọi hàm togglePasswordVisibility khi nhấn vào IconButton
                   ),
-                ),
-                const SizedBox(height: 20,),
-                const SizedBox(height: 30,),
-                ButtonGlobal_DK(
-                  text: 'Đăng ký',
-                  onPressed: _handleSignUp, // Truyền hàm _dangky vào onPressed
-                ),
-                const SizedBox(height: 20,),
-              ],
+
+                  const SizedBox(height: 15,),
+                  // Email Input
+                  TextFormGlobal(
+                    controller: emailController,
+                    text: 'Email',
+                    obscure: false,
+                    textInputType: TextInputType.emailAddress,
+                    icon: const Icon(Icons.email_outlined),
+                    suffixIcon: _hasEmailText
+                        ? IconButton(
+                      icon: Icon(Icons.clear,color: Colors.grey.shade700),
+                      onPressed: clearEmail,
+                    )
+                        : null,
+                  ),
+
+                  const SizedBox(height: 15,),
+                  // Password Input
+                  TextFormGlobal(
+                    controller: passwordController,
+                    text: 'Password',
+                    obscure: obscurePassword,
+                    textInputType: TextInputType.text,
+                    icon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscurePassword ? Icons.visibility_off : Icons.visibility,color: Colors.grey.shade700,
+                      ),
+                      onPressed: togglePasswordVisibility, // Gọi hàm togglePasswordVisibility khi nhấn vào IconButton
+                    ),
+                  ),
+
+                  const SizedBox(height: 15,),
+                  // Password Input
+                  TextFormGlobal(
+                    controller: repasswordController,
+                    text: 'Re-Password',
+                    obscure: obscureRePassword,
+                    textInputType: TextInputType.text,
+                    icon: const Icon(Icons.lock_reset),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscureRePassword ? Icons.visibility_off : Icons.visibility,color: Colors.grey.shade700
+                      ),
+                      onPressed: toggleRePasswordVisibility, // Gọi hàm togglePasswordVisibility khi nhấn vào IconButton
+                    ),
+                  ),
+                  const SizedBox(height: 20,),
+                  const SizedBox(height: 30,),
+                  ButtonGlobal_DK(
+                    text: 'Đăng ký',
+                    onPressed: _handleSignUp, // Truyền hàm _dangky vào onPressed
+                  ),
+                  const SizedBox(height: 20,),
+                ],
+              ),
             ),
           ),
         ),
@@ -300,13 +307,13 @@ _succesMessage(BuildContext context){
                 Expanded(child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Succes", style: TextStyle(fontSize: 15,color: Colors.white),),
+                    Text("Succes", style: TextStyle(fontSize: 15,color: Colors.white,fontWeight: FontWeight.bold),),
 
                     Spacer(),
                     Text('Tạo tài khoản thành công...',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
+                      fontSize: 14,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,)
@@ -342,13 +349,13 @@ _errorNullMessage(BuildContext context){
               Expanded(child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Opps. An Error Occured", style: TextStyle(fontSize: 15,color: Colors.white),),
+                  Text("Opps. An Error Occured", style: TextStyle(fontSize: 15,color: Colors.white,fontWeight: FontWeight.bold),),
 
                   Spacer(),
                   Text('Vui lòng điền đầy đủ thông tin.',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
+                      fontSize: 14,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,)
@@ -384,13 +391,13 @@ _errorEmailMessage(BuildContext context){
               Expanded(child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Opps. An Error Occured", style: TextStyle(fontSize: 15,color: Colors.white),),
+                  Text("Opps. An Error Occured", style: TextStyle(fontSize: 15,color: Colors.white,fontWeight: FontWeight.bold),),
 
                   Spacer(),
                   Text('Email không hợp lệ. Vui lòng kiểm tra lại.',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
+                      fontSize: 14,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,)
@@ -426,7 +433,7 @@ _errorPassMessage(BuildContext context){
               Expanded(child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Opps. An Error Occured", style: TextStyle(fontSize: 15,color: Colors.white),),
+                  Text("Opps. An Error Occured", style: TextStyle(fontSize: 15,color: Colors.white,fontWeight: FontWeight.bold),),
 
                   Spacer(),
                   Text('Mật khẩu không hợp lệ. Mật khẩu phải có '
@@ -434,7 +441,7 @@ _errorPassMessage(BuildContext context){
                       'chữ hoa, chữ thường và số.',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
+                      fontSize: 14,
                     ),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,)
@@ -470,13 +477,13 @@ _errorRePassMessage(BuildContext context){
               Expanded(child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Opps. An Error Occured", style: TextStyle(fontSize: 15,color: Colors.white),),
+                  Text("Opps. An Error Occured", style: TextStyle(fontSize: 15,color: Colors.white,fontWeight: FontWeight.bold),),
 
                   Spacer(),
                   Text('Mật khẩu nhập lại không trùng khớp. Vui lòng nhập lại.',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
+                      fontSize: 14,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,)
@@ -514,14 +521,14 @@ _errorAccountExistMessage(BuildContext context) {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("Opps. An Error Occured",
-                    style: TextStyle(fontSize: 15, color: Colors.white),),
+                    style: TextStyle(fontSize: 15, color: Colors.white,fontWeight: FontWeight.bold),),
 
                   Spacer(),
                   Text(
                     'Tài khoản đã tồn tại trong hệ thông, Không thể tạo tài khoản!.',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
+                      fontSize: 14,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,)

@@ -48,251 +48,275 @@ class _ChonDangNhapWidgetState extends State<ChonDangNhapWidget> {
   void  _getStatusBarStyleDN() {
       SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
         statusBarColor: Colors.white,
-        statusBarIconBrightness: Brightness.dark,
+        statusBarIconBrightness: Brightness.light,
         statusBarBrightness: Brightness.dark,
       ));
+  }
+// Biến để lưu trữ SystemUiOverlayStyle trước khi thay đổi
+  SystemUiOverlayStyle? _previousSystemOverlayStyle;
+
+// Hàm để cập nhật SystemUiOverlayStyle cho màn hình gọi
+  void updateSystemUiOverlayStyle(BuildContext context) {
+    _previousSystemOverlayStyle = SystemUiOverlayStyle.light.copyWith(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    );
+    SystemChrome.setSystemUIOverlayStyle(_previousSystemOverlayStyle!);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.green.shade400 ,Colors.amber.shade300],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent, // Làm trong suốt status bar
+          statusBarIconBrightness: Brightness.dark, // Màu sắc icon trên status bar
         ),
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 30),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  height: 90,
-                  width: 90,
-                  margin: const EdgeInsets.only(top: 15),
-                  child: const CircleAvatar(
-                    backgroundImage: AssetImage('assets/icon/logoapp.png'),
-                    radius: 55,
-                  ),
-                ),
-
-                const SizedBox(
-                  height: 20,
-                ),
-                const Text(
-                  'Read Book Online',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontSize: 18,
-                  ),
-                ),
-
-                const SizedBox(
-                  height: 20,
-                ),
-
-                ElevatedButton(
-                  onPressed: () async {
-                    final authService = AuthController();
-                    final jwt = await authService.signInWithGoogle(context: context);
-                    if (jwt != null) {
-                      // Lưu JWT và chuyển hướng người dùng
-                      print('Đăng nhập thành công: $jwt');
-                      // TODO: Lưu JWT vào local storage hoặc state management
-                      // TODO: Chuyển hướng người dùng đến màn hình chính
-                    } else {
-                      print('Đăng nhập thất bại');
-                      // TODO: Hiển thị thông báo lỗi cho người dùng
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent, // Đặt màu nền là trong suốt
-                    elevation: 0, // Loại bỏ hiệu ứng độ nâng
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    padding: EdgeInsets.zero, // Loại bỏ padding mặc định
-                  ),
-                  child: Ink(
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.green.shade400 ,Colors.green.shade400],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 30),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    height: 90,
+                    width: 90,
+                    margin: const EdgeInsets.only(top: 15),
                     decoration: BoxDecoration(
-                      gradient:  LinearGradient(
-                        colors: [MyColor.googleColor2, Colors.blue, MyColor.googleColor],
-                        begin: Alignment.topRight,
-                        end: Alignment.bottomLeft,
-                      ),
-                      borderRadius: BorderRadius.circular(13),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2), // Màu sắc của bóng
+                          spreadRadius: 2, // Độ lan của bóng
+                          blurRadius: 5, // Độ mờ của bóng
+                          offset: Offset(0, 3), // Vị trí của bóng (x, y)
+                        ),
+                      ],
                     ),
-                    child: Container(
-                      width: 230,
-                      height: 75,
-                      child: Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 30, left: 10),
-                              child: Container(
-                                width: 20,
-                                height: 20,
+                    child: const CircleAvatar(
+                      backgroundImage: AssetImage('assets/icon/logoapp.png'),
+                      radius: 45, // Đảm bảo bán kính phù hợp với kích thước của CircleAvatar
+                    ),
+                  ),
+
+
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  const Text(
+                    'Read Book Online',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 20,
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: 30,
+                  ),
+
+                  ElevatedButton(
+                    onPressed: () async {
+                      final authService = AuthController();
+                      final jwt = await authService.signInWithGoogle(context: context);
+                      if (jwt != null) {
+                        // Lưu JWT và chuyển hướng người dùng
+                        print('Đăng nhập thành công: $jwt');
+                        // TODO: Lưu JWT vào local storage hoặc state management
+                        // TODO: Chuyển hướng người dùng đến màn hình chính
+                      } else {
+                        print('Đăng nhập thất bại');
+                        // TODO: Hiển thị thông báo lỗi cho người dùng
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent, // Đặt màu nền là trong suốt
+                      elevation: 0, // Loại bỏ hiệu ứng độ nâng
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: EdgeInsets.zero, // Loại bỏ padding mặc định
+                    ),
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        gradient:  LinearGradient(
+                          colors: [MyColor.googleColor2, Colors.blue, MyColor.googleColor],
+                          begin: Alignment.topRight,
+                          end: Alignment.bottomLeft,
+                        ),
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                      child: Container(
+                        width: 300,
+                        height: 60,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top:  5,left: 35,right: 5,bottom: 5),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 30,
+                                height: 30,
                                 child: Image.asset('assets/icon/google.png'),
                               ),
-                            ),
-                            const SizedBox(width: 20,),
-                            const Padding(
-                              padding: EdgeInsets.only(top: 5),
-                              child: Column(
-                                children: [
-                                  Text('Đăng nhập bằng',style: TextStyle(
-                                    fontSize: 15,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold
-                                  ),),
-                                  Text('Google',style: TextStyle(
-                                      fontSize: 15,
+                              const SizedBox(width: 10,),
+                              const Padding(
+                                padding: EdgeInsets.only(top: 12),
+                                child: Column(
+                                  children: [
+                                    Text('Đăng nhập bằng Google',style: TextStyle(
+                                      fontSize: 18,
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold
-                                  ),)
-                                ],
-                              ),
-                            )
-                          ],
+                                    ),),
+                                    /*Text('Google',style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold
+                                    ),)*/
+                                  ],
+                                ),
+                              )
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20,),
-                Consumer <UiProvider>(
-                  builder: (context,UiProvider notifier, child) {
-                    return ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                            transitionDuration: const Duration(milliseconds: 300),
-                            transitionsBuilder: (
-                                BuildContext context,
-                                Animation<double> animation,
-                                Animation<double> secondaryAnimation,
-                                Widget child,
-                                ) {
-                              return SlideTransition(
-                                position: Tween<Offset>(
-                                  begin: const Offset(1.0, 0.0), // Bắt đầu từ bên phải
-                                  end: Offset.zero, // Kết thúc tại vị trí ban đầu
-                                ).animate(animation),
-                                child: child,
-                              );
-                            },
-                            pageBuilder: (
-                                BuildContext context,
-                                Animation<double> animation,
-                                Animation<double> secondaryAnimation,
-                                ) {
-                              return DangNhapWidget();
+                  const SizedBox(height: 20,),
+                  Consumer <UiProvider>(
+                    builder: (context,UiProvider notifier, child) {
+                      return ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                              transitionDuration: const Duration(milliseconds: 300),
+                              transitionsBuilder: (
+                                  BuildContext context,
+                                  Animation<double> animation,
+                                  Animation<double> secondaryAnimation,
+                                  Widget child,
+                                  ) {
+                                return SlideTransition(
+                                  position: Tween<Offset>(
+                                    begin: const Offset(1.0, 0.0), // Bắt đầu từ bên phải
+                                    end: Offset.zero, // Kết thúc tại vị trí ban đầu
+                                  ).animate(animation),
+                                  child: child,
+                                );
+                              },
+                              pageBuilder: (
+                                  BuildContext context,
+                                  Animation<double> animation,
+                                  Animation<double> secondaryAnimation,
+                                  ) {
+                                return DangNhapWidget();
 
-                            },
+                              },
 
+                            ),
+                          );
+                          /*
+                          Future.delayed(Duration(milliseconds: 100), () {
+                            _getStatusBarStyleDN();
+                          });
+        */
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent, // Đặt màu nền là trong suốt
+                          elevation: 0, // Loại bỏ hiệu ứng độ nâng
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                        );
-                        Future.delayed(Duration(milliseconds: 100), () {
-                          _getStatusBarStyleDN();
-                        });
-
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent, // Đặt màu nền là trong suốt
-                        elevation: 0, // Loại bỏ hiệu ứng độ nâng
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          padding: EdgeInsets.zero, // Loại bỏ padding mặc định
                         ),
-                        padding: EdgeInsets.zero, // Loại bỏ padding mặc định
-                      ),
-                      child: Ink(
-                        decoration: BoxDecoration(
-                          gradient:  LinearGradient(
-                            colors: [Colors.cyanAccent.shade700, Colors.cyanAccent.shade400],
-                            begin: Alignment.topRight,
-                            end: Alignment.bottomLeft,
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            gradient:  LinearGradient(
+                              colors: [Colors.cyanAccent.shade700, Colors.cyanAccent.shade400],
+                              begin: Alignment.topRight,
+                              end: Alignment.bottomLeft,
+                            ),
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          borderRadius: BorderRadius.circular(13),
-                        ),
-                        child: Container(
-                          width: 230,
-                          height: 75,
-                          child: Padding(
-                            padding: const EdgeInsets.all(5),
-                            child: Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 30, left: 10),
-                                  child: Container(
-                                    width: 20,
-                                    height: 20,
+                          child: Container(
+                            width: 300,
+                            height: 60,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top:  5,left: 35,right: 5,bottom: 5),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 30,
+                                    height: 30,
                                     child: Image.asset('assets/icon/email.png'),
                                   ),
-                                ),
-                                const SizedBox(width: 20,),
-                                const Padding(
-                                  padding: EdgeInsets.only(top: 5),
-                                  child: Column(
-                                    children: [
-                                      Text('Đăng nhập bằng',style: TextStyle(
-                                          fontSize: 15,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold
-                                      ),),
-                                      Text('Email',style: TextStyle(
-                                          fontSize: 15,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold
-                                      ),)
-                                    ],
-                                  ),
-                                )
-                              ],
+                                  const SizedBox(width: 10,),
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 12),
+                                    child: Column(
+                                      children: [
+                                        Text('Đăng nhập bằng Email',style: TextStyle(
+                                            fontSize: 18,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold
+                                        ),),
+                                        /*Text('Email',style: TextStyle(
+                                            fontSize: 18,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold
+                                        ),)*/
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  }
-                ),
-                Transform.translate(
-                  offset: Offset(0, 100), // Điều chỉnh vị trí dịch chuyển xuống dưới,
-                  child: Center(
-                    child: Consumer <UiProvider>(
-                      builder: (context,UiProvider notifier, child)  {
-                        return ElevatedButton(
-                          onPressed: () {
-                            _getStatusBarStyle(notifier);
-                            Navigator.of(context).pop();
-                            // Kiểm tra điều kiện trạng thái và áp dụng kiểu thanh trạng thái tương ứng
-
-                          },
-                          style: ElevatedButton.styleFrom(
-                            shape: const CircleBorder(),
-                            backgroundColor: Colors.orange,
-                            padding: const EdgeInsets.all(15), // Điều chỉnh kích thước
-                            elevation: 5, // Tạo bóng với độ nâng là 5
-                          ),
-                          child: const Icon(
-                            Icons.close,
-                            size: 20, // Điều chỉnh kích thước biểu tượng
-                            color: Colors.white,
-                          ),
-                        );
-                      }
-                    ),
+                      );
+                    }
                   ),
-                ),
-              ],
+                  Transform.translate(
+                    offset: Offset(0, 100), // Điều chỉnh vị trí dịch chuyển xuống dưới
+                    child: Center(
+                      child: Consumer<UiProvider>(
+                        builder: (context, UiProvider notifier, child) {
+                          return ElevatedButton(
+                            onPressed: () {
+                              // Cập nhật lại SystemUiOverlayStyle cho màn hình gọi
+                              updateSystemUiOverlayStyle(context);
+                              Navigator.of(context).pop();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              shape: const CircleBorder(),
+                              backgroundColor: Colors.white,
+                              padding: const EdgeInsets.all(11), // Điều chỉnh kích thước nút tròn bằng cách thay đổi padding
+                              elevation: 5, // Tạo bóng với độ nâng là 5
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              size: 30, // Điều chỉnh kích thước biểu tượng
+                              color: Colors.black,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  )
+
+                ],
+              ),
             ),
           ),
         ),

@@ -231,13 +231,14 @@ class AuthController extends GetxController {
   }
 
   void signIn({
-    required BuildContext context, // Add context as a required parameter
-    required String email ,
-    required String password}) async{
-    try{
+    required BuildContext context,
+    required String email,
+    required String password,
+  }) async {
+    try {
       EasyLoading.show(
-          status: 'Loading...',
-          dismissOnTap: false
+        status: 'Loading...',
+        dismissOnTap: false,
       );
 
       var result = await RemoteAuthService().signIn(
@@ -245,58 +246,74 @@ class AuthController extends GetxController {
         password: password,
       );
 
-      if(result.statusCode == 200){
-        EasyLoading.dismiss();
+      if (result.statusCode == 200) {
         String token = json.decode(result.body)['jwt'];
-        var userResult = await RemoteAuthService().getProfile(token: token,);
-        if(userResult.statusCode == 200){
+        var userResult = await RemoteAuthService().getProfile(token: token);
+        if (userResult.statusCode == 200) {
           user.value = usersFromJson(userResult.body);
           await _localAuthService.addToken(token: token);
           await _localAuthService.addUser(user: user.value!);
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('token', token);
           await prefs.setString('email', email);
-          // Save login state
-         /* await saveLoginState(token);
-*/
-          _succesMessageLogin(context);
-          // Chờ một khoảng thời gian trước khi điều hướng
-          await Future.delayed(const Duration(milliseconds: 500));
-          Navigator.of(context).pushReplacement(
-            PageRouteBuilder(
-              transitionDuration: const Duration(milliseconds: 500),
-              // Độ dài của animation
-              pageBuilder: (context, animation,
-                  secondaryAnimation) => const DashBoardScreen(),
-              // Builder cho trang chủ
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                const begin = Offset(1.0, 0.0); // Bắt đầu từ ngoài phải
-                const end = Offset.zero; // Kết thúc ở vị trí ban đầu
-                const curve = Curves.ease; // Kiểu animation
-                var tween = Tween(begin: begin, end: end).chain(
-                    CurveTween(curve: curve)); // Tạo tween
-                var offsetAnimation = animation.drive(
-                    tween); // Áp dụng tween vào animation
-                return SlideTransition(
-                  position: offsetAnimation,
-                  // Sử dụng SlideTransition với animation đã thiết lập
-                  child: child,
-                );
-              },
-            ),
-          );
+
+          // Đóng EasyLoading
+          EasyLoading.dismiss();
+
+          // Hiển thị thông báo đăng nhập thành công
+          _successMessageLogin(context);
+
+          // Chờ một khoảng thời gian ngắn (2 giây) trước khi chuyển trang
+          Future.delayed(const Duration(seconds: 2), () {
+            Navigator.of(context).pushReplacement(
+              PageRouteBuilder(
+                transitionDuration: const Duration(milliseconds: 800),
+                pageBuilder: (context, animation, secondaryAnimation) => const DashBoardScreen(),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  const begin = Offset(-1.0, 0.0); // Bắt đầu từ trái
+                  const end = Offset.zero;
+                  const curve = Curves.easeInOutCubic;
+
+                  var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                  var offsetAnimation = animation.drive(tween);
+                  var fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+                    CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+                  );
+
+                  return FadeTransition(
+                    opacity: fadeAnimation,
+                    child: SlideTransition(
+                      position: offsetAnimation,
+                      child: child,
+                    ),
+                  );
+                },
+              ),
+            );
+          });
+
           isLoggedIn.value = true;
           update();
+        } else {
+          EasyLoading.dismiss();
+          _errorEmailOrPasswordMessage(context);
         }
-        else{
-          _handleError(userResult);
+      } else {
+        EasyLoading.dismiss();
+        if (result.statusCode == 401) {
+          // Email hoặc mật khẩu không đúng
+          _errorEmailOrPasswordMessage(context);
+        } else if (result.statusCode == 404) {
+          // Tài khoản không tồn tại
+          _errorAccountNoExistMessage(context);
+        } else {
+          _errorEmailOrPasswordMessage(context);
         }
       }
-      else{
-        _handleError(result);
+    } finally {
+      if (EasyLoading.isShow) {
+        EasyLoading.dismiss();
       }
-    }finally{
-      EasyLoading.dismiss();
     }
   }
   String? getToken() {
@@ -339,13 +356,13 @@ class AuthController extends GetxController {
                 Expanded(child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Succes", style: TextStyle(fontSize: 15,color: Colors.white),),
+                    Text("Succes", style: TextStyle(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold),),
 
                     Spacer(),
                     Text('Tạo tài khoản thành công...',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 10,
+                        fontSize: 14,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,)
@@ -382,14 +399,14 @@ class AuthController extends GetxController {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text("Opps. An Error Occured",
-                      style: TextStyle(fontSize: 15, color: Colors.white),),
+                      style: TextStyle(fontSize: 18, color: Colors.white,fontWeight: FontWeight.bold),),
 
                     Spacer(),
                     Text(
                       'Tài khoản đã tồn tại trong hệ thông, Không thể tạo tài khoản!.',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 10,
+                        fontSize: 14,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,)
@@ -405,36 +422,36 @@ class AuthController extends GetxController {
     );
   }
 
-  //Thong bao dang nhap thanh cong
-  _succesMessageLogin(BuildContext context) {
+  _errorAccountNoExistMessage(BuildContext context) {
     return ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Container(
             padding: const EdgeInsets.all(8),
-            height: 80,
+            height: 105,
             decoration: const BoxDecoration(
-                color: Color.fromARGB(255, 81, 146, 83),
+                color: Color.fromARGB(255, 179, 89, 89),
                 borderRadius: BorderRadius.all(Radius.circular(10))
             ),
             child: const Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.white, size: 40,),
+                Icon(Icons.error_outline, color: Colors.white, size: 40,),
 
                 SizedBox(width: 15,),
 
                 Expanded(child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Succes",
-                      style: TextStyle(fontSize: 15, color: Colors.white),),
+                    Text("Opps. An Error Occured",
+                      style: TextStyle(fontSize: 18, color: Colors.white,fontWeight: FontWeight.bold),),
 
                     Spacer(),
-                    Text('Đăng nhập thành công',
+                    Text(
+                      'Tài khoản không tồn tại trong hệ thông, Vui lòng tạo tài khoản để tiếp tục!.',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 10,
+                        fontSize: 14,
                       ),
-                      maxLines: 2,
+                      maxLines: 3,
                       overflow: TextOverflow.ellipsis,)
                   ],
                 ))
@@ -446,6 +463,93 @@ class AuthController extends GetxController {
           elevation: 0,
         )
     );
+  }
+
+  _errorEmailOrPasswordMessage(BuildContext context) {
+    return ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Container(
+            padding: const EdgeInsets.all(8),
+            height: 105,
+            decoration: const BoxDecoration(
+                color: Color.fromARGB(255, 179, 89, 89),
+                borderRadius: BorderRadius.all(Radius.circular(10))
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.white, size: 40,),
+
+                SizedBox(width: 15,),
+
+                Expanded(child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Opps. An Error Occured",
+                      style: TextStyle(fontSize: 18, color: Colors.white,fontWeight: FontWeight.bold),),
+
+                    Spacer(),
+                    Text(
+                      'Email hoặc mật khẩu không đúng, Không thể đăng nhập!',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,)
+                  ],
+                ))
+              ],
+            ),
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        )
+    );
+  }
+  //Thong bao dang nhap thanh cong
+  void _successMessageLogin(BuildContext context) {
+    final snackBar = SnackBar(
+      content: Container(
+        padding: const EdgeInsets.all(8),
+        height: 80,
+        decoration: const BoxDecoration(
+          color: Color.fromARGB(255, 81, 146, 83),
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.white, size: 40,),
+            SizedBox(width: 15,),
+            Expanded(child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Success",
+                  style: TextStyle(fontSize: 18, color: Colors.white,fontWeight: FontWeight.bold),),
+                Spacer(),
+                Text('Đăng nhập thành công',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,)
+              ],
+            )),
+          ],
+        ),
+      ),
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      duration: const Duration(milliseconds: 1500), // Thời gian hiển thị thông báo
+      animation: CurvedAnimation(
+        parent: AlwaysStoppedAnimation(1.0),
+        curve: Curves.easeInOutCubic,
+      ),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   // Function to save login state
@@ -475,13 +579,13 @@ class AuthController extends GetxController {
                 Expanded(child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Succes", style: TextStyle(fontSize: 15,color: Colors.white),),
+                    Text("Succes", style: TextStyle(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold),),
 
                     Spacer(),
                     Text('Tạo tài khoản thành công...',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 10,
+                        fontSize: 14,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,)

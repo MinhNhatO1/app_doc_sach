@@ -9,6 +9,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
@@ -270,274 +271,282 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
       // Handle error as needed
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Consumer<UiProvider>(
-        builder: (BuildContext context, UiProvider value, Widget? child) {
-          return Container(
-            color: value.isDark
-                ? Colors.black12
-                : const Color.fromRGBO(232, 245, 233, 1.0),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Column(
-                    children: [
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      CarouselSlider(
-                        items: imgList
-                            .map((item) => Container(
-                                  margin: const EdgeInsets.symmetric(
-                                      horizontal: 5.0),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                    boxShadow: const [
-                                      BoxShadow(
-                                        color: Colors.black26,
-                                        blurRadius: 10,
-                                        spreadRadius: 1,
-                                        offset: Offset(0, 5),
-                                      ),
-                                    ],
+      extendBodyBehindAppBar: true, // Lấn lên cả phần status bar
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent, // Làm trong suốt status bar
+          statusBarIconBrightness: Brightness.dark, // Màu sắc icon trên status bar
+        ),
+        child: Consumer<UiProvider>(
+          builder: (BuildContext context, UiProvider value, Widget? child) {
+            return Container(
+              color: value.isDark
+                  ? Colors.black12
+                  : const Color.fromRGBO(232, 245, 233, 1.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Column(
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          height: 250, // Giảm chiều cao xuống một chút
+                          child: CarouselSlider(
+                            items: imgList
+                                .map((item) => Container(
+                              margin: EdgeInsets.symmetric(horizontal: 5), // Thêm margin ngang
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10.0),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
+                                    offset: Offset(0, 5),
                                   ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                    child: Image.network(
-                                      item,
-                                      fit: BoxFit.cover,
-                                      width: 1000,
-                                    ),
-                                  ),
-                                ))
-                            .toList(),
-                        options: CarouselOptions(
-                          autoPlay: true,
-                          autoPlayInterval: const Duration(seconds: 3),
-                          enlargeCenterPage: true,
-                          aspectRatio: 2.0,
-                          height: 180,
-                          onPageChanged: (index, reason) {
-                            setState(() {
-                              _current = index;
-                            });
-                          },
-                        ),
-                        carouselController: _controller,
-                      ),
-                      buildCarouseIndicator(),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.only(left: 10),
-                        child: const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Sách phổ biến',
-                            textAlign: TextAlign.start,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10.0),
+                                child: Image.network(
+                                  item,
+                                  fit: BoxFit.cover,
+                                  width: 1000,
+                                ),
+                              ),
+                            ))
+                                .toList(),
+                            options: CarouselOptions(
+                              autoPlay: true,
+                              autoPlayInterval: const Duration(seconds: 3),
+                              enlargeCenterPage: true,
+                              aspectRatio: 2.0,
+                              viewportFraction: 0.85, // Điều chỉnh để hình ảnh lớn hơn một chút
+                              onPageChanged: (index, reason) {
+                                setState(() {
+                                  _current = index;
+                                });
+                              },
                             ),
+                            carouselController: _controller,
+                          ),
+                        ), // Khoảng cách giữa slider và indicator
+                        buildCarouseIndicator(),
+                      ],
+                    ),
+                    const SizedBox(
+                      height:10,
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(left: 10),
+                      child: const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Sách phổ biến',
+                          textAlign: TextAlign.start,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      const SizedBox(
-                        height: 2,
-                      ),
-                      slide(_popularBooks),
-                      const SizedBox(
-                        height: 1,
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.only(left: 10),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Gợi ý cho bạn',
-                            textAlign: TextAlign.start,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    ),
+                    const SizedBox(
+                      height: 2,
+                    ),
+                    slide(_popularBooks),
+                    const SizedBox(
+                      height: 1,
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(left: 10),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Gợi ý cho bạn',
+                          textAlign: TextAlign.start,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      gridview_goiy(_books),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.only(left: 10),
-                        child: const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Kinh dị - Trinh thám',
-                            textAlign: TextAlign.start,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    gridview_goiy(_books),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(left: 10),
+                      child: const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Kinh dị - Trinh thám',
+                          textAlign: TextAlign.start,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      gridview_category(_booksKinhDi_TrinhTham),
-                      /*const SizedBox(
-                        height: 10,
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.only(left: 10),
-                        child: const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Tiểu sử - Hồi ký - Danh nhân',
-                            textAlign: TextAlign.start,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    gridview_category(_booksKinhDi_TrinhTham),
+                    /*const SizedBox(
+                      height: 10,
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(left: 10),
+                      child: const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Tiểu sử - Hồi ký - Danh nhân',
+                          textAlign: TextAlign.start,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      gridview_category(_booksTieuSu_HoiKy),*/
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.only(left: 10),
-                        child: const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Truyện ngắn - Tuyển tập',
-                            textAlign: TextAlign.start,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    gridview_category(_booksTieuSu_HoiKy),*/
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(left: 10),
+                      child: const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Truyện ngắn - Tuyển tập',
+                          textAlign: TextAlign.start,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      gridview_category(_booksTruyenNgan),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.only(left: 10),
-                        child: const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Truyện cười - Hài hước',
-                            textAlign: TextAlign.start,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    gridview_category(_booksTruyenNgan),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(left: 10),
+                      child: const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Truyện cười - Hài hước',
+                          textAlign: TextAlign.start,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      gridview_category(_booksHaiHuoc),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.only(left: 10),
-                        child: const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Cổ tích - Dân gian',
-                            textAlign: TextAlign.start,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    gridview_category(_booksHaiHuoc),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(left: 10),
+                      child: const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Cổ tích - Dân gian',
+                          textAlign: TextAlign.start,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      _isLoading
-                          ? Center(child: CircularProgressIndicator())
-                          : gridview_category(_booksCoTichDanGian),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.only(left: 10),
-                        child: const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Tâm lý - Giáo dục',
-                            textAlign: TextAlign.start,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    _isLoading
+                        ? Center(child: CircularProgressIndicator())
+                        : gridview_category(_booksCoTichDanGian),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(left: 10),
+                      child: const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Tâm lý - Giáo dục',
+                          textAlign: TextAlign.start,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                       gridview_category(_booksTamlyGiaoDuc),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.only(left: 10),
-                        child: const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Khoa học viễn tưởng - Phiêu lưu',
-                            textAlign: TextAlign.start,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                     gridview_category(_booksTamlyGiaoDuc),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(left: 10),
+                      child: const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Khoa học viễn tưởng - Phiêu lưu',
+                          textAlign: TextAlign.start,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      gridview_category(_booksKhoaHocVienTuong_PhieuLuu),
-                      const SizedBox(
-                        height: 30,
-                      )
-                    ],
-                  ),
-                ],
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    gridview_category(_booksKhoaHocVienTuong_PhieuLuu),
+                    const SizedBox(
+                      height: 30,
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -843,10 +852,22 @@ Widget gridview_goiy(List<Book> books) {
             onTap: () async {
               try {
                 incrementView(book);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProductDetailPage(book: book),
+                Navigator.of(context).push(
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) => ProductDetailPage(book: book),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(1.0, 0.0);
+                      const end = Offset.zero;
+                      const curve = Curves.easeInOut;
+
+                      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+                      return SlideTransition(
+                        position: animation.drive(tween),
+                        child: child,
+                      );
+                    },
+                    transitionDuration: Duration(milliseconds: 300), // Thời gian chuyển đổi
                   ),
                 );
               } catch (e) {
@@ -1007,10 +1028,22 @@ Widget gridview_category(List<Book> books) {
           return GestureDetector(
             onTap: () {
               incrementView(book);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ProductDetailPage(book: book),
+              Navigator.of(context).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => ProductDetailPage(book: book),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(1.0, 0.0);
+                    const end = Offset.zero;
+                    const curve = Curves.easeInOut;
+
+                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+                    return SlideTransition(
+                      position: animation.drive(tween),
+                      child: child,
+                    );
+                  },
+                  transitionDuration: Duration(milliseconds: 300), // Thời gian chuyển đổi
                 ),
               );
             },

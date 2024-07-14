@@ -332,7 +332,7 @@ class _LichSuDocWidgetState extends State<LichSuDocWidget> {
         crossAxisCount: 3,
         childAspectRatio: 0.5,
         crossAxisSpacing: 12,
-        mainAxisSpacing: 7,
+        mainAxisSpacing: 3,
       ),
       itemCount: histories.length,
       itemBuilder: (context, index) {
@@ -341,11 +341,22 @@ class _LichSuDocWidgetState extends State<LichSuDocWidget> {
         return GestureDetector(
           onTap: () {
             incrementView(history.book!);
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    ProductDetailPage(book: history.book!),
+            Navigator.of(context).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => ProductDetailPage(book: history.book!),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  const begin = Offset(1.0, 0.0);
+                  const end = Offset.zero;
+                  const curve = Curves.easeInOut;
+
+                  var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+                  return SlideTransition(
+                    position: animation.drive(tween),
+                    child: child,
+                  );
+                },
+                transitionDuration: Duration(milliseconds: 300), // Thời gian chuyển đổi
               ),
             );
           },

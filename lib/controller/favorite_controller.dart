@@ -53,18 +53,8 @@ class FavoriteService extends GetxController{
               ...bookData['attributes'] ?? {},
             });
           }).toList();
-          // Sắp xếp danh sách sách theo thời gian thêm vào
-          books.sort((a, b) {
-            if (a.createdAt == null && b.createdAt == null) {
-              return 0; // Cả hai đều null thì coi như bằng nhau
-            } else if (a.createdAt == null) {
-              return 1; // `a` null thì `a` lớn hơn `b`
-            } else if (b.createdAt == null) {
-              return -1; // `b` null thì `b` lớn hơn `a`
-            } else {
-              return b.createdAt!.compareTo(a.createdAt!); // So sánh bình thường nếu cả hai không null
-            }
-          });
+          // Đảo ngược danh sách sách
+          books = books.reversed.toList();
 /*
           // Parsing profile data
           final profileData = attributes['profile']['data'];

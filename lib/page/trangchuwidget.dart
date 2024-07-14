@@ -109,52 +109,59 @@ class _TrangChuWidgetState extends State<TrangChuWidget>
     return ChangeNotifierProvider.value(
       value: _tabState,
       child: Scaffold(
-        body: SafeArea(
-          child: Consumer<UiProvider>(
-              builder: (context, UiProvider notifier, child) {
-            return Column(children: [
-              Container(
-                width: double.infinity,
-                color: notifier.isDark
-                    ? Colors.black12
-                    : const Color.fromRGBO(232, 245, 233, 1.0),
-                padding: const EdgeInsets.only(top: 10), // Thêm padding ở đây
-                child: TabBar(
-                  controller: _tabController,
-                  tabs: generateTabs(notifier),
-                  dividerColor: Colors.transparent,
-                  labelColor: _selectedColor,
-                  indicatorColor: _selectedColor,
-                  unselectedLabelColor:
-                      notifier.isDark ? Colors.white : _unselectedColor,
-                  tabAlignment: TabAlignment.center,
-                  isScrollable: true,
-                  onTap: (index) {
-                    _tabState.setSelectedTab(index);
-                  },
+        extendBodyBehindAppBar: true, // Lấn lên cả phần status bar
+        body: AnnotatedRegion(
+          value: const SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent, // Làm trong suốt status bar
+            statusBarIconBrightness: Brightness.dark, // Màu sắc icon trên status bar
+          ),
+          child: SafeArea(
+            child: Consumer<UiProvider>(
+                builder: (context, UiProvider notifier, child) {
+              return Column(children: [
+                Container(
+                  width: double.infinity,
+                  color: notifier.isDark
+                      ? Colors.black12
+                      : const Color.fromRGBO(232, 245, 233, 1.0),
+                  padding: const EdgeInsets.only(top: 10), // Thêm padding ở đây
+                  child: TabBar(
+                    controller: _tabController,
+                    tabs: generateTabs(notifier),
+                    dividerColor: Colors.transparent,
+                    labelColor: _selectedColor,
+                    indicatorColor: _selectedColor,
+                    unselectedLabelColor:
+                        notifier.isDark ? Colors.white : _unselectedColor,
+                    tabAlignment: TabAlignment.center,
+                    isScrollable: true,
+                    onTap: (index) {
+                      _tabState.setSelectedTab(index);
+                    },
+                  ),
                 ),
-              ),
 
-              // TabBarView
-              Expanded(
-                child: Consumer<TabState>(
-                  builder: (context, tabState, child) {
-                    // Update the TabController index
-                    return IndexedStack(
-                      index: _tabState.selectedTab,
-                      children: [
-                        // Nội dung cho mỗi Tab
-                        _buildTabContent(const KhamPhaWidget()),
-                        _buildTabContent(const NoiBatWidget()),
-                        _buildTabContent(const MoiNhatWidget()),
-                        _buildTabContent(const DanhMucWidget()),
-                      ],
-                    );
-                  },
+                // TabBarView
+                Expanded(
+                  child: Consumer<TabState>(
+                    builder: (context, tabState, child) {
+                      // Update the TabController index
+                      return IndexedStack(
+                        index: _tabState.selectedTab,
+                        children: [
+                          // Nội dung cho mỗi Tab
+                          _buildTabContent(const KhamPhaWidget()),
+                          _buildTabContent(const NoiBatWidget()),
+                          _buildTabContent(const MoiNhatWidget()),
+                          _buildTabContent(const DanhMucWidget()),
+                        ],
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ]);
-          }),
+              ]);
+            }),
+          ),
         ),
       ),
     );

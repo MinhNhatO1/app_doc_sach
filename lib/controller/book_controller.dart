@@ -53,6 +53,71 @@ class BookController extends GetxController{
     }
   }
 
+  //Get Book By Category
+  Future<List<Book>> getBooksByCategory(String categoryName) async {
+    try {
+      // Build a query string for category name filter
+      String categoryFilter = 'filters[categories][name]=$categoryName';
+
+      final response = await http.get(Uri.parse('$baseUrl/api/books?populate[authors]=*&populate[categories]=*&populate[chapters][populate]=files&populate[cover_image]=*&$categoryFilter'));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        print('Raw JSON response: $jsonResponse');
+        final List<dynamic> data = jsonResponse['data'] ?? [];
+        return data.map((json) {
+          try {
+            return Book.fromJson({
+              'id': json['id'],
+              ...json['attributes'] ?? {},
+            });
+          } catch (e, stackTrace) {
+            print('Error parsing book: $e');
+            print('Stack trace: $stackTrace');
+            print('Problematic JSON: $json');
+            return null;
+          }
+        }).whereType<Book>().toList();
+      } else {
+        throw Exception('Failed to load books: ${response.statusCode}');
+      }
+    } catch (e, stackTrace) {
+      print('Error loading books: $e');
+      print('Stack trace: $stackTrace');
+      rethrow;
+    }
+  }
+
+  Future<List<Book>> getBooksByStatus(String status) async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/api/books?populate[authors]=*&populate[categories]=*&populate[chapters][populate]=files&populate[cover_image]=*&filters[status]=$status'));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        print('Raw JSON response: $jsonResponse'); // Thêm dòng này
+        final List<dynamic> data = jsonResponse['data'] ?? [];
+        return data.map((json) {
+          try {
+            return Book.fromJson({
+              'id': json['id'],
+              ...json['attributes'] ?? {},
+            });
+          } catch (e, stackTrace) {
+            print('Error parsing book: $e');
+            print('Stack trace: $stackTrace');
+            print('Problematic JSON: $json');
+            return null;
+          }
+        }).whereType<Book>().toList();
+      } else {
+        throw Exception('Failed to load books: ${response.statusCode}');
+      }
+    } catch (e, stackTrace) {
+      print('Error loading books: $e');
+      print('Stack trace: $stackTrace');
+      rethrow;
+    }
+  }
   Future<FileUpload?> uploadImage(File imageFile) async {
     var uri = Uri.parse('$baseUrl/api/upload');
     var request = http.MultipartRequest('POST', uri);
