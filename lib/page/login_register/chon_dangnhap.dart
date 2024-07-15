@@ -127,23 +127,14 @@ class _ChonDangNhapWidgetState extends State<ChonDangNhapWidget> {
 
                   ElevatedButton(
                     onPressed: () async {
-                      final authService = AuthController();
-                      final jwt = await authService.signInWithGoogle(context: context);
-                      if (jwt != null) {
-                        // Lưu JWT và chuyển hướng người dùng
-                        print('Đăng nhập thành công: $jwt');
-                        // TODO: Lưu JWT vào local storage hoặc state management
-                        // TODO: Chuyển hướng người dùng đến màn hình chính
-                      } else {
-                        print('Đăng nhập thất bại');
-                        // TODO: Hiển thị thông báo lỗi cho người dùng
-                      }
+                      final AuthController authController = AuthController.instance;
+                      authController.signInWithGoogle(context: context);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent, // Đặt màu nền là trong suốt
                       elevation: 0, // Loại bỏ hiệu ứng độ nâng
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       padding: EdgeInsets.zero, // Loại bỏ padding mặc định
                     ),
@@ -154,7 +145,7 @@ class _ChonDangNhapWidgetState extends State<ChonDangNhapWidget> {
                           begin: Alignment.topRight,
                           end: Alignment.bottomLeft,
                         ),
-                        borderRadius: BorderRadius.circular(13),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: Container(
                         width: 300,
@@ -408,7 +399,7 @@ class _ChonDangNhapWidgetState extends State<ChonDangNhapWidget> {
       "fullName": fullName,
     };
     var response = await http.post(
-      Uri.parse('https://your-strapi-api.com/api/profile/me'),
+      Uri.parse('$baseUrl/api/profile/me'),
       headers: {
         "Content-Type": "application/json",
         "Authorization": "Bearer $token",

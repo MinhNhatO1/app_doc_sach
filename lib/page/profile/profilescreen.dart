@@ -277,7 +277,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                                 _imageFile!,
                                 fit: BoxFit.cover,
                               )
-                                  :  user.avatar != null
+                                  :  user.avatar != ''
                                   ? Image.network(
                                 baseUrl + user.avatar!,
                                 fit: BoxFit.cover,

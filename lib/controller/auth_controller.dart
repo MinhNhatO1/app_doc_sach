@@ -1,5 +1,6 @@
 
 import 'dart:convert';
+import 'dart:io';
 import 'package:app_doc_sach/const.dart';
 import 'package:app_doc_sach/controller/controller.dart';
 import 'package:app_doc_sach/model/user_model.dart';
@@ -7,14 +8,17 @@ import 'package:app_doc_sach/service/local_service/local_auth_service.dart';
 import 'package:app_doc_sach/service/remote_auth_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hive/hive.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../page/page_tab_kesach/lichsu.dart';
 import '../view/dashboard/dashboard_screen.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 class AuthController extends GetxController {
   static AuthController instance = Get.find();
@@ -24,120 +28,22 @@ class AuthController extends GetxController {
   RxBool hasHiveData = false.obs;
   late BuildContext context;
   final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email', 'profile'],
+    scopes: [
+      'email',
+      'profile',
+    ],
   );
-  Future<String?> signInWithGoogle({required BuildContext context}) async {
-    try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        // Người dùng hủy đăng nhập
-        return null;
-      }
-
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final accessToken = googleAuth.accessToken;
-
-      // Gửi accessToken đến backend để đăng nhập và lấy JWT
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/connect/google/callback'), // Thay YOUR_BACKEND_LOGIN_ENDPOINT bằng endpoint của bạn
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, String>{
-          'accessToken': accessToken!,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        // Trả về JWT từ backend
-        final jwt = jsonDecode(response.body)['token'];
-        var userResult = await RemoteAuthService().getUserByEmail(email: googleUser.email, token: jwt);
-        if (userResult.statusCode == 200) {
-          user.value = usersFromJson(userResult.body);
-          await _saveUserInfoAndNavigate(
-            context: context,
-            token: jwt,
-            email: googleUser.email,
-            user: user.value!,
-          );
-        } else if (userResult.statusCode == 404) {
-          // Người dùng chưa có profile, tạo mới
-          var createProfileResult = await RemoteAuthService().createProfile(
-            token: jwt,
-            fullName: googleUser.displayName ?? googleUser.email,
-          );
-          if (createProfileResult.statusCode == 200) {
-            user.value = usersFromJson(createProfileResult.body);
-            await _saveUserInfoAndNavigate(
-              context: context,
-              token: jwt,
-              email: googleUser.email,
-              user: user.value!,
-            );
-          } else {
-            // Xử lý lỗi khi tạo profile
-            _handleError(createProfileResult);
-          }
-        } else {
-          // Xử lý lỗi từ backend khi lấy profile
-          _handleError(userResult);
-        }
-      } else {
-        // Xử lý lỗi từ backend khi đăng nhập
-        return null;
-      }
-    } catch (error) {
-      print('Error signing in with Google: $error');
-      return null;
-    }
-    return null;
-  }
-
-  Future<void> _saveUserInfoAndNavigate({
-    required BuildContext context,
-    required String token,
-    required String email,
-    required Users user,
-  }) async {
-    await _localAuthService.addToken(token: token);
-    await _localAuthService.addUser(user: user);
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('token', token);
-    await prefs.setString('email', email);
-    _succesMessage(context);
-    await Future.delayed(const Duration(seconds: 2));
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 500),
-        pageBuilder: (context, animation, secondaryAnimation) => const DashBoardScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          const begin = Offset(1.0, 0.0);
-          const end = Offset.zero;
-          const curve = Curves.ease;
-          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-          var offsetAnimation = animation.drive(tween);
-          return SlideTransition(
-            position: offsetAnimation,
-            child: child,
-          );
-        },
-      ),
-    );
-    isLoggedIn.value = true;
-    update();
-  }
 
   @override
   void onInit() async {
-   await  _localAuthService.init();
-  await _checkHiveData();
+    await  _localAuthService.init();
+    await _checkHiveData();
     if (_localAuthService.getUser() != null && _localAuthService.getToken() != null) {
       user.value = _localAuthService.getUser(); // Lấy thông tin tài khoản từ LocalAuthService
     }
     super.onInit();
   }
- Future<void> _checkHiveData() async {
+  Future<void> _checkHiveData() async {
     // Kiểm tra xem "box" đã được mở trước đó chưa
     if (!Hive.isBoxOpen('token')) {
       // Nếu chưa mở, thì mở "box"
@@ -160,6 +66,212 @@ class AuthController extends GetxController {
       print('No data found!');
     }
   }
+  void signInWithGoogle({required BuildContext context}) async {
+    try {
+      // Attempt to sign in with Google
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) return;
+
+      // Get authentication details
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final accessToken = googleAuth.accessToken;
+
+      // Make a request to your backend with the access token
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/auth/google/callback?access_token=$accessToken'),
+      );
+
+      // Handle successful response from backend
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        String jwt = data['jwt'];
+        final userData = data['user'];
+
+        // Retrieve user profile from your backend
+        var userResult = await RemoteAuthService().getProfile(token: jwt);
+
+        // Handle successful profile retrieval
+        if (userResult.statusCode == 200) {
+          var userProfile = usersFromJson(userResult.body);
+          var userId = await getUserIdByUsername(userProfile.email);
+
+          // Update user profile on backend if needed
+          await updateUserProfile(
+            token: jwt,
+            userId: userId,
+          );
+
+          // Handle user photo if available
+          String? photoUrl = googleUser.photoUrl;
+          if (photoUrl != null) {
+            var response = await http.get(Uri.parse(photoUrl));
+            if (response.statusCode == 200) {
+              var tempDir = await getTemporaryDirectory();
+              var filePath = '${tempDir.path}/profile_image.jpg';
+              File file = File(filePath);
+              await file.writeAsBytes(response.bodyBytes);
+
+              var imageUrl = await uploadImageToStrapi(file, jwt);
+              userProfile.avatar = imageUrl;
+            } else {
+              print('Failed to load user photo from Google');
+            }
+          }
+
+          // Handle successful login UI and local storage
+          _successMessageLogin(context);
+          user.value = usersFromJson(userResult.body);
+
+          await _localAuthService.addToken(token: jwt);
+          await _localAuthService.addUser(user: user.value!);
+
+          final savedUser = _localAuthService.getUser();
+          final savedToken = _localAuthService.getToken();
+
+          if (savedUser != null && savedToken != null) {
+            await Future.delayed(const Duration(seconds: 2));
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            Navigator.of(context).pop();
+            isLoggedIn.value = true;
+            update();
+          } else {
+            print('Không thể lấy dữ liệu từ Hive');
+          }
+        } else if (userResult.statusCode == 404) {
+          // Handle case where user profile doesn't exist, create new profile
+          var createProfileResult = await RemoteAuthService().createProfileGoogle(
+            token: jwt,
+            fullName: googleUser.displayName ?? googleUser.email,
+            photoUrl: googleUser.photoUrl ?? '',
+          );
+          if (createProfileResult.statusCode == 200) {
+            final userProfile = usersFromJson(createProfileResult.body);
+
+            await _localAuthService.addToken(token: jwt);
+            await _localAuthService.addUser(user: userProfile);
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            await prefs.setString('token', jwt);
+            await prefs.setString('email', googleUser.email);
+            _successMessageLogin(context);
+            await Future.delayed(const Duration(seconds: 2));
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            Navigator.of(context).pop();
+            isLoggedIn.value = true;
+            update();
+          } else {
+            _handle1Error(createProfileResult);
+          }
+        } else {
+          _handle1Error(userResult);
+        }
+      } else {
+        print('Error: ${response.statusCode}');
+        print('Response body: ${response.body}');
+      }
+    } catch (error) {
+      print('Error signing in with Google: $error');
+    }
+  }
+
+
+  Future<String?> getUserIdByUsername(String email) async {
+    final url = Uri.parse('$baseUrl/api/users');
+    final response = await http.get(url, headers: {
+      'Content-Type': 'application/json',
+    });
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      if (data.isEmpty) {
+        return null; // Return null if no users are found
+      }
+
+      for (var user in data) {
+        if (user['email'] == email) {
+          return user['id'].toString(); // Return the ID as a string
+        }
+      }
+      return null; // Return null if username is not found
+    } else {
+      return null; // Handle connection error or other HTTP errors here
+    }
+  }
+  Future<String> uploadImageToStrapi(File imageFile, String jwt) async {
+    try {
+      // Tạo một request multipart để tải ảnh lên Strapi
+      var uri = Uri.parse('$baseUrl/api/upload'); // Thay đổi URL upload của Strapi
+      var request = http.MultipartRequest('POST', uri);
+
+      // Thêm hình ảnh vào request
+      var stream = http.ByteStream(imageFile.openRead());
+      var length = await imageFile.length();
+      var multipartFile = http.MultipartFile(
+        'files',
+        stream,
+        length,
+        filename: imageFile.path.split('/').last,
+        contentType: MediaType('image', 'png'), // Thay đổi nếu là file khác
+      );
+      request.files.add(multipartFile);
+
+      // Thêm token vào header
+      request.headers.addAll({
+        "Content-Type": "multipart/form-data",
+        'Authorization': 'Bearer $jwt',
+      });
+
+      // Gửi request và chờ response
+      var response = await request.send();
+
+      // Đọc response từ Strapi và trả về URL của ảnh đã tải lên
+      if (response.statusCode == 200) {
+        var responseData = await response.stream.toBytes();
+        var responseJson = jsonDecode(utf8.decode(responseData));
+        var imageUrl = responseJson[0]['url']; // Đổi lại key nếu API Strapi trả về dữ liệu khác
+        return imageUrl;
+      } else {
+        print('Failed to upload image to Strapi: ${response.statusCode}');
+        return '';
+      }
+    } catch (e) {
+      print('Error uploading image to Strapi: $e');
+      return '';
+    }
+  }
+
+  Future<dynamic> updateUserProfile({
+    required String token,
+    required String? userId,
+  }) async {
+    var body = {
+      'role_user': "client",
+      'type': "email",
+    };
+
+    var response = await http.put(
+      Uri.parse('$baseUrl/api/users/$userId'),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+      body: jsonEncode(body),
+    );
+
+    return response;
+  }
+  void _handle1Error(http.Response response) {
+    print('Error: ${response.statusCode}');
+    print('Response body: ${response.body}');
+    // Hiển thị thông báo lỗi cho người dùng hoặc xử lý lỗi tại đây
+  }
+
+  void _succes1Message(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Đăng nhập thành công!')),
+    );
+  }
+
+
 
   void signUp({
     required BuildContext context, // Add context as a required parameter

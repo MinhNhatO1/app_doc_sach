@@ -58,7 +58,6 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
       _timer?.cancel();
       setState(() {
         users = null;
-        _isDataInitialized = false;
       });
     }
   }
