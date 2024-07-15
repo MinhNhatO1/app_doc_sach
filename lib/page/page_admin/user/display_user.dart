@@ -22,44 +22,16 @@ class DisplayUser extends StatefulWidget {
 class _DisplayUsersState extends State<DisplayUser> {
   List<Users> users = [];
 
-  // Future<List<Users>> getAll() async {
-  //   try {
-  //     var response = await http.get(Uri.parse("http://10.21.1.33:1337/api/profiles/"));
-  //     if (response.statusCode == 200) {
-  //       users.clear();
-  //       final decodedData = jsonDecode(response.body);
-  //       for (var u in decodedData["data"]) {
-  //         try {
-  //           var attributes = u['attributes'];
-  //           Users user = Users(
-  //             id: u['id'] is int ? u['id'] : int.tryParse(u['id'].toString()) ?? 0,
-  //             fullName: attributes["fullName"]?.toString() ?? 'N/A',
-  //             email: attributes["email"]?.toString() ?? 'N/A',
-  //             phone: attributes["phone"]?.toString() ?? 'N/A',
-  //             gender: attributes["gender"]?.toString() ?? 'N/A',
-  //             address: attributes["address"]?.toString() ?? 'N/A',
-  //             age: attributes["age"] != null ? DateTime.tryParse(attributes["age"].toString()) : null,
-  //             avatar: attributes["image"]?.toString(),
-  //           );
-  //           users.add(user);
-  //         } catch (e) {
-  //           print('Error parsing user data: $e\nData: $u');
-  //         }
-  //       }
-  //     } else {
-  //       print('Failed to load users, status code: ${response.statusCode}');
-  //     }
-  //   } catch (e) {
-  //     print('Error fetching users: $e');
-  //   }
-  //   return users;
-  // }
 
   Future<List<Users>> fetchUsers() async {
-  final response = await http.get(Uri.parse('$baseUrl/api/profiles/'));
+   //Từ khóa await được sử dụng để chờ đợi cho đến khi yêu cầu HTTP hoàn thành và trả về kết quả. 
+  final response = await http.get(Uri.parse("$baseUrl/api/profiles/"));
 
   if (response.statusCode == 200) {
-    List<dynamic> body = json.decode(response.body);
+    List<dynamic> body = json.decode(response.body);//Giải mã nội dung phản hồi (dạng JSON) thành một đối tượng Dart.
+    //body.map: Áp dụng hàm map lên mỗi phần tử của body.
+    //
+    //chuyển đổi json thành đối tượng
     users = body.map((dynamic item) => Users.fromJson(item)).toList();
     return users;
   } else {
@@ -86,10 +58,13 @@ class _DisplayUsersState extends State<DisplayUser> {
           )
         ],
       ),
-      drawer: const SideWidgetMenu(),
+      drawer: const SideWidgetMenu(), // Assuming you have a SideWidgetMenu
       body: FutureBuilder<List<Users>>(
+        //là hàm trả về Future<List<Users>>
         future: fetchUsers(),
+        //snapshot (trạng thái hiện tại của Future).
         builder: (context, snapshot) {
+          //ktra nếu đang ở trạng thái chờ đợi
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(),
@@ -102,6 +77,7 @@ class _DisplayUsersState extends State<DisplayUser> {
             return ListView.builder(
               itemCount: snapshot.data!.length,
               itemBuilder: (BuildContext context, int index) {
+                //Widget này cho phép các phần tử trong danh sách có thể tương tác (như bắt sự kiện chạm).
                 return InkWell(
                   child: ListTile(
                     title: Text(snapshot.data![index].fullName),

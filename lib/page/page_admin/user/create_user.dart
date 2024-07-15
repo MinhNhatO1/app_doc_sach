@@ -43,7 +43,6 @@ TextEditingController emailController = TextEditingController();
 TextEditingController ageController = TextEditingController(
   text: users.age != null ? DateFormat('yyyy-MM-dd').format(users.age!) : '',
 );
-TextEditingController imageController = TextEditingController();
 TextEditingController phoneController = TextEditingController();
 TextEditingController genderController = TextEditingController();
 TextEditingController addressController = TextEditingController();
@@ -52,40 +51,19 @@ class _CreateUserState extends State<CreateUser> {
   File? _imageFile;
   String? _webImagePath;
 
-  Future<FileUpload?> uploadImage(dynamic imageData) async {
+  Future<FileUpload?> uploadImage(File imageData) async {
     var uri = Uri.parse('$baseUrl/api/upload/');
     var request = http.MultipartRequest('POST', uri);
 
-    if (kIsWeb) {
-      // Handling for web
-      if (imageData is String && imageData.startsWith('data:image')) {
-        // This is a Data URL
-        var bytes = base64Decode(imageData.split(',').last);
-        request.files.add(http.MultipartFile.fromBytes(
-          'files',
-          bytes,
-          filename: 'image.png',
-          contentType: MediaType('image', 'png'),
-        ));
-      } else {
-        throw Exception('Invalid image data for web');
-      }
-    } else {
-      // Handling for mobile
-      if (imageData is File) {
-        var stream = http.ByteStream(imageData.openRead());
-        var length = await imageData.length();
-        request.files.add(http.MultipartFile(
-          'files',
-          stream,
-          length,
-          filename: imageData.path.split('/').last,
-          contentType: MediaType('image', 'png'),
-        ));
-      } else {
-        throw Exception('Invalid image data for mobile');
-      }
-    }
+    var stream = http.ByteStream(imageData.openRead());
+    var length = await imageData.length();
+    request.files.add(http.MultipartFile(
+      'files',
+      stream,
+      length,
+      filename: imageData.path.split('/').last,
+      contentType: MediaType('image', 'png'),
+    ));
 
     try {
       var streamedResponse = await request.send();
@@ -109,10 +87,12 @@ class _CreateUserState extends State<CreateUser> {
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
+    // Mở thư viện hình ảnh và cho phép người dùng chọn một hình ảnh. Kết quả trả về là một PickedFile.
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      File imageFile = File(pickedFile.path);
+      File imageFile = File(pickedFile
+          .path); // Tạo một đối tượng File từ đường dẫn của hình ảnh đã chọn.
 
       setState(() {
         _imageFile = imageFile;
@@ -130,7 +110,8 @@ class _CreateUserState extends State<CreateUser> {
       } catch (e) {
         print('Error uploading image or updating profile: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error uploading image or updating profile: $e')),
+          SnackBar(
+              content: Text('Error uploading image or updating profile: $e')),
         );
       }
     }
@@ -153,7 +134,7 @@ class _CreateUserState extends State<CreateUser> {
       };
       var body = json.encode(data);
       var response = await http.post(
-        Uri.parse("$baseUrl:1337/api/profiles/"),
+        Uri.parse("$baseUrl/api/profiles/"),
         headers: <String, String>{
           'content-type': 'application/json; charset=UTF-8',
         },
@@ -171,6 +152,7 @@ class _CreateUserState extends State<CreateUser> {
       print(e);
     }
   }
+
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -253,23 +235,28 @@ class _CreateUserState extends State<CreateUser> {
                         hintText: 'Nhập tên đầy đủ',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+                          borderSide:
+                              const BorderSide(color: Colors.grey, width: 1.0),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.blue, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.blue, width: 2.0),
                         ),
                         errorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.red, width: 2.0),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+                          borderSide:
+                              const BorderSide(color: Colors.grey, width: 1.0),
                         ),
                         focusedErrorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.red, width: 2.0),
                         ),
                       ),
                     ),
@@ -302,23 +289,28 @@ class _CreateUserState extends State<CreateUser> {
                         hintText: 'Nhập email người dùng',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+                          borderSide:
+                              const BorderSide(color: Colors.grey, width: 1.0),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.blue, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.blue, width: 2.0),
                         ),
                         errorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.red, width: 2.0),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+                          borderSide:
+                              const BorderSide(color: Colors.grey, width: 1.0),
                         ),
                         focusedErrorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.red, width: 2.0),
                         ),
                       ),
                     ),
@@ -354,23 +346,28 @@ class _CreateUserState extends State<CreateUser> {
                             suffixIcon: const Icon(Icons.date_range),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10.0),
-                              borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+                              borderSide: const BorderSide(
+                                  color: Colors.grey, width: 1.0),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10.0),
-                              borderSide: const BorderSide(color: Colors.blue, width: 2.0),
+                              borderSide: const BorderSide(
+                                  color: Colors.blue, width: 2.0),
                             ),
                             errorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10.0),
-                              borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                              borderSide: const BorderSide(
+                                  color: Colors.red, width: 2.0),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10.0),
-                              borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+                              borderSide: const BorderSide(
+                                  color: Colors.grey, width: 1.0),
                             ),
                             focusedErrorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10.0),
-                              borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                              borderSide: const BorderSide(
+                                  color: Colors.red, width: 2.0),
                             ),
                           ),
                         ),
@@ -426,23 +423,28 @@ class _CreateUserState extends State<CreateUser> {
                         hintText: 'Nhập số điện thoại',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+                          borderSide:
+                              const BorderSide(color: Colors.grey, width: 1.0),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.blue, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.blue, width: 2.0),
                         ),
                         errorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.red, width: 2.0),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+                          borderSide:
+                              const BorderSide(color: Colors.grey, width: 1.0),
                         ),
                         focusedErrorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.red, width: 2.0),
                         ),
                       ),
                     ),
@@ -475,23 +477,28 @@ class _CreateUserState extends State<CreateUser> {
                         hintText: 'Nhập giới tính',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+                          borderSide:
+                              const BorderSide(color: Colors.grey, width: 1.0),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.blue, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.blue, width: 2.0),
                         ),
                         errorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.red, width: 2.0),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+                          borderSide:
+                              const BorderSide(color: Colors.grey, width: 1.0),
                         ),
                         focusedErrorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.red, width: 2.0),
                         ),
                       ),
                     ),
@@ -524,23 +531,28 @@ class _CreateUserState extends State<CreateUser> {
                         hintText: 'Nhập địa chỉ',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+                          borderSide:
+                              const BorderSide(color: Colors.grey, width: 1.0),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.blue, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.blue, width: 2.0),
                         ),
                         errorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.red, width: 2.0),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.grey, width: 1.0),
+                          borderSide:
+                              const BorderSide(color: Colors.grey, width: 1.0),
                         ),
                         focusedErrorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(color: Colors.red, width: 2.0),
+                          borderSide:
+                              const BorderSide(color: Colors.red, width: 2.0),
                         ),
                       ),
                     ),
@@ -566,10 +578,15 @@ class _CreateUserState extends State<CreateUser> {
                     children: [
                       ElevatedButton(
                         style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all<Color>(MyColor.primaryColor), // Màu nền
-                          foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Màu chữ
-                          minimumSize: MaterialStateProperty.all(Size(120, 50)), // Kích thước tối thiểu của button
-                          padding: MaterialStateProperty.all<EdgeInsetsGeometry>(EdgeInsets.all(16)), // Đệm bên trong button
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                              MyColor.primaryColor), // Màu nền
+                          foregroundColor: MaterialStateProperty.all<Color>(
+                              Colors.white), // Màu chữ
+                          minimumSize: MaterialStateProperty.all(
+                              Size(120, 50)), // Kích thước tối thiểu của button
+                          padding:
+                              MaterialStateProperty.all<EdgeInsetsGeometry>(
+                                  EdgeInsets.all(16)), // Đệm bên trong button
                           textStyle: MaterialStateProperty.all<TextStyle>(
                             TextStyle(fontSize: 15), // Cỡ chữ
                           ),
@@ -578,67 +595,135 @@ class _CreateUserState extends State<CreateUser> {
                           if (_formKey.currentState!.validate()) {
                             if (fullNameController.text.isEmpty ||
                                 emailController.text.isEmpty ||
-                                DateFormat('dd-MM-yyyy').parse(ageController.text).year > 2006 ||
-                                imageController.text.isEmpty ||
+                                DateFormat('dd-MM-yyyy')
+                                        .parse(ageController.text)
+                                        .year >
+                                    2006 ||
                                 phoneController.text.isEmpty ||
                                 genderController.text.isEmpty ||
-                                addressController.text.isEmpty) {
+                                addressController.text.isEmpty ||
+                                _imageFile == null) {
+                              // Check if image is empty
                               showDialog(
                                 context: context,
                                 builder: (BuildContext context) {
                                   return Dialog(
                                     child: Container(
                                       decoration: BoxDecoration(
-                                          color: const Color(0xff2A303E),
-                                          borderRadius: BorderRadius.circular(12)
+                                        color: const Color(0xff2A303E),
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          const SizedBox(height: 20,),
-                                          Image.asset('assets/icon/error.png',width: 50,),
-                                          const SizedBox(height: 20,),
-                                          Text('Thông tin bạn nhập chưa đầy đủ',
-                                              style: GoogleFonts.montserrat(fontSize: 11, color: const Color(0xffEC5B5B), fontWeight: FontWeight.bold)),
-                                          const SizedBox(height: 5,),
+                                          const SizedBox(height: 20),
+                                          Image.asset('assets/icon/error.png',
+                                              width: 50),
+                                          const SizedBox(height: 20),
+                                          Text(
+                                            'Thông tin bạn nhập chưa đầy đủ',
+                                            style: GoogleFonts.montserrat(
+                                              fontSize: 11,
+                                              color: const Color(0xffEC5B5B),
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 5),
                                           Column(
                                             mainAxisSize: MainAxisSize.min,
-                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
                                             children: [
-                                              if (fullNameController.text.isEmpty)
-                                                Text('• Vui lòng nhập tên đầy đủ',
-                                                    style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
+                                              if (fullNameController
+                                                  .text.isEmpty)
+                                                Text(
+                                                  '• Vui lòng nhập tên đầy đủ',
+                                                  style: GoogleFonts.montserrat(
+                                                    fontSize: 10,
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w300,
+                                                  ),
+                                                ),
                                               if (emailController.text.isEmpty)
-                                                Text('• Vui lòng nhập email',
-                                                    style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
-                                              if (DateFormat('dd-MM-yyyy').parse(ageController.text).year > 2006)
-                                                Text('• Vui lòng nhập ngày sinh',
-                                                    style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
-                                              if (imageController.text.isEmpty)
-                                                Text('• Vui lòng thêm ảnh',
-                                                    style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
+                                                Text(
+                                                  '• Vui lòng nhập email',
+                                                  style: GoogleFonts.montserrat(
+                                                    fontSize: 10,
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w300,
+                                                  ),
+                                                ),
+                                              if (DateFormat('dd-MM-yyyy')
+                                                      .parse(ageController.text)
+                                                      .year >
+                                                  2006)
+                                                Text(
+                                                  '• Vui lòng nhập ngày sinh',
+                                                  style: GoogleFonts.montserrat(
+                                                    fontSize: 10,
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w300,
+                                                  ),
+                                                ),
                                               if (phoneController.text.isEmpty)
-                                                Text('• Vui lòng nhập số điện thoại',
-                                                    style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
+                                                Text(
+                                                  '• Vui lòng nhập số điện thoại',
+                                                  style: GoogleFonts.montserrat(
+                                                    fontSize: 10,
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w300,
+                                                  ),
+                                                ),
                                               if (genderController.text.isEmpty)
-                                                Text('• Vui lòng nhập giới tính',
-                                                    style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
-                                              if (addressController.text.isEmpty)
-                                                Text('• Vui lòng nhập địa chỉ',
-                                                    style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
-                                              const SizedBox(height: 20,),
+                                                Text(
+                                                  '• Vui lòng nhập giới tính',
+                                                  style: GoogleFonts.montserrat(
+                                                    fontSize: 10,
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w300,
+                                                  ),
+                                                ),
+                                              if (addressController
+                                                  .text.isEmpty)
+                                                Text(
+                                                  '• Vui lòng nhập địa chỉ',
+                                                  style: GoogleFonts.montserrat(
+                                                    fontSize: 10,
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w300,
+                                                  ),
+                                                ),
+                                              if (_imageFile == null)
+                                                Text(
+                                                  '• Vui lòng chọn ảnh đại diện',
+                                                  style: GoogleFonts.montserrat(
+                                                    fontSize: 10,
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w300,
+                                                  ),
+                                                ),
+                                              const SizedBox(height: 20),
                                               Center(
                                                 child: OutlinedButton(
-                                                  onPressed: () {Navigator.of(context).pop();},
-                                                  style: OutlinedButton.styleFrom(
-                                                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-                                                      foregroundColor: const Color(0xffEC5B5B),
-                                                      side: const BorderSide(color: Color(0xffEC5B5B),)
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                  style:
+                                                      OutlinedButton.styleFrom(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 8,
+                                                        horizontal: 20),
+                                                    foregroundColor:
+                                                        const Color(0xffEC5B5B),
+                                                    side: const BorderSide(
+                                                        color:
+                                                            Color(0xffEC5B5B)),
                                                   ),
                                                   child: const Text('Đóng'),
                                                 ),
                                               ),
-                                              const SizedBox(height: 10,),
+                                              const SizedBox(height: 10),
                                             ],
                                           ),
                                         ],
@@ -651,17 +736,24 @@ class _CreateUserState extends State<CreateUser> {
                               save();
                             }
                           }
+                          // save();
                         },
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.add_circle_outline_sharp,color: Colors.white,), // Biểu tượng
-                            SizedBox(width: 5), // Khoảng cách giữa icon và văn bản
+                            Icon(
+                              Icons.add_circle_outline_sharp,
+                              color: Colors.white,
+                            ), // Biểu tượng
+                            SizedBox(
+                                width: 5), // Khoảng cách giữa icon và văn bản
                             Text('Thêm'), // Văn bản
                           ],
                         ),
                       ),
-                      const SizedBox(width: 85,),
+                      const SizedBox(
+                        width: 85,
+                      ),
                       ElevatedButton(
                         onPressed: () {
                           _refreshForm(); // Gọi hàm để làm mới form
@@ -669,15 +761,20 @@ class _CreateUserState extends State<CreateUser> {
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Colors.white,
                           backgroundColor: Colors.blue, // Màu nền
-                          minimumSize: Size(120, 50), // Kích thước tối thiểu của button
+                          minimumSize:
+                              Size(120, 50), // Kích thước tối thiểu của button
                           padding: EdgeInsets.all(16), // Đệm bên trong button
                           textStyle: TextStyle(fontSize: 15), // Cỡ chữ
                         ),
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.refresh,color: Colors.white,), // Biểu tượng
-                            SizedBox(width: 5), // Khoảng cách giữa icon và văn bản
+                            Icon(
+                              Icons.refresh,
+                              color: Colors.white,
+                            ), // Biểu tượng
+                            SizedBox(
+                                width: 5), // Khoảng cách giữa icon và văn bản
                             Text('Làm mới'), // Văn bản
                           ],
                         ),
@@ -692,12 +789,12 @@ class _CreateUserState extends State<CreateUser> {
       ),
     );
   }
+
   void _refreshForm() {
     setState(() {
       fullNameController.clear();
       emailController.clear();
       ageController.clear();
-      imageController.clear();
       phoneController.clear();
       genderController.clear();
       addressController.clear();
