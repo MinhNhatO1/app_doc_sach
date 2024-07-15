@@ -45,6 +45,24 @@ class RemoteAuthService {
     return response;
   }
 
+  Future<dynamic> createProfileGoogle({
+    required String token,
+    required String fullName,
+    String? photoUrl, // Thêm thông tin ảnh từ Google vào đây
+  }) async {
+    var body = {
+      "fullName": fullName,
+      "image": photoUrl, // Thêm avatar từ Google vào body request
+    };
+    var response = await client.post(
+      Uri.parse('$baseUrl/api/profile/me'),
+      headers: {"Content-Type": "application/json",
+        "Authorization": "Bearer $token"
+      },
+      body: jsonEncode(body),
+    );
+    return response;
+  }
   Future<dynamic> signIn({
     required String email,
     required String password,
@@ -141,5 +159,28 @@ class RemoteAuthService {
 
       return response;
   }
+/*
+  Future<http.Response> updateProfileGoogle({
+    required String token,
+    required String fullName,
 
+  }) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/api/profile/me'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'avatar': avatar,
+        }),
+      );
+      return response;
+    } catch (e) {
+      print('Error updating profile: $e');
+      throw Exception('Failed to update profile');
+    }
+  }*/
 }
+

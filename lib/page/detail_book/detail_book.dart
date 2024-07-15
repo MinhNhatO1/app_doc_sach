@@ -17,7 +17,9 @@ import '../../model/chapter_model.dart';
 import '../../model/popular_book_model.dart';
 import '../../service/local_service/local_auth_service.dart';
 import '../../service/remote_auth_service.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 
+import '../login_register/chon_dangnhap.dart';
 class ProductDetailPage extends StatefulWidget {
   final Book book;
 
@@ -48,7 +50,16 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
   void _toggleFavorite() async {
     if (authService.user.value == null) {
-      Get.snackbar('Thông báo', 'Vui lòng đăng nhập để thêm sách vào danh sách yêu thích');
+      Get.snackbar(
+        'Thông báo',
+        'Vui lòng đăng nhập để thêm sách vào danh sách yêu thích',
+        colorText: Colors.white,
+        backgroundColor: Colors.black.withOpacity(0.7),
+        snackPosition: SnackPosition.TOP,
+        margin: EdgeInsets.all(20),
+        duration: Duration(seconds: 3),
+        borderRadius: 10,
+      );
       return;
     }
 
@@ -189,11 +200,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           future: _futureBook,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
-              return Center(child: Text('Failed to load book'));
+              return const Center(child: Text('Failed to load book'));
             } else if (!snapshot.hasData) {
-              return Center(child: Text('Book not found'));
+              return const Center(child: Text('Book not found'));
             }
 
             final book = snapshot.data!;
@@ -402,7 +413,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             children: [
 
                               Padding(
-                                padding: const EdgeInsets.all(8.0),
+                                padding: const EdgeInsets.all(10.0),
                                 child: SingleChildScrollView(
                                   child: Column(
                                     children: [
@@ -424,17 +435,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                       const SizedBox(height: 8),
                                       Row(
                                         children: [
-                                          Text('Ngôn ngữ: ',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold)),
+                                          const Text('Ngôn ngữ: ',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold)),
                                           const SizedBox(height: 5,),
-                                          Text(book.language!,style: TextStyle(fontSize: 15),)
+                                          Text(book.language!,style: const TextStyle(fontSize: 15),)
                                         ],
                                       ),
                                       const SizedBox(height: 8),
-                                      Align(
+                                      const Align(
                                           alignment: Alignment.centerLeft,
                                           child: Text('Mô tả',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),)),
                                       const SizedBox(height: 5,),
-                                      Text(book.description!,style: TextStyle(fontSize: 15,),textAlign: TextAlign.justify,),
+                                      Text(book.description!,style: const TextStyle(fontSize: 15,),textAlign: TextAlign.justify,),
                                       const SizedBox(height: 50,)
                                     ],
                                   ),
@@ -443,7 +454,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               Center(child: CommentScreen()), // Placeholder for comments
                               Container(
                                 height: 200,
-                                child: Center(
+                                child: const Center(
                                   child: Text(
                                     'Sách liên quan',
                                     style: TextStyle(fontSize: 20),
@@ -452,7 +463,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               ),
                               Container(
                                 height: 200,
-                                child: Center(
+                                child: const Center(
                                   child: Text(
                                     'Báo lỗi',
                                     style: TextStyle(fontSize: 20),
@@ -493,7 +504,40 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   onPressed: () async {
-                    _showChaptersDialog(context, widget.book);
+                    if (authService.user.value == null) {
+                      AwesomeDialog(
+                        context: context,
+                        dialogType: DialogType.warning,
+                        animType: AnimType.topSlide,
+                        title: 'Thông báo',
+                        desc: 'Bạn cần đăng nhập để đọc sách.',
+                        btnCancelOnPress: () {},
+                        btnOkOnPress: () {
+                          Navigator.of(context).push(
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation, secondaryAnimation) => const ChonDangNhapWidget(),
+                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                const begin = Offset(1.0, 0.0);
+                                const end = Offset.zero;
+                                const curve = Curves.easeInOut;
+
+                                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+                                return SlideTransition(
+                                  position: animation.drive(tween),
+                                  child: child,
+                                );
+                              },
+                              transitionDuration: Duration(milliseconds: 300), // Thời gian chuyển đổi
+                            ),
+                          );
+                        },
+                        btnOkText: 'Đồng ý',
+                        btnCancelText: 'Không',
+                      ).show();
+                    } else {
+                      _showChaptersDialog(context, widget.book);
+                    }
                   },
                   child: const Text(
                     "Đọc sách",

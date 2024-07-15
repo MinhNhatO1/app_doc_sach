@@ -58,7 +58,6 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
       _timer?.cancel();
       setState(() {
         users = null;
-        _isDataInitialized = false;
       });
     }
   }
@@ -193,9 +192,23 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                   padding: const EdgeInsets.only(bottom: 4),
                                   child: InkWell(
                                     onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder: (context) => GiaHanGoi()),
+                                      Navigator.of(context).push(
+                                        PageRouteBuilder(
+                                          pageBuilder: (context, animation, secondaryAnimation) => const GiaHanGoi(),
+                                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                            const begin = Offset(1.0, 0.0);
+                                            const end = Offset.zero;
+                                            const curve = Curves.easeInOut;
+
+                                            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+                                            return SlideTransition(
+                                              position: animation.drive(tween),
+                                              child: child,
+                                            );
+                                          },
+                                          transitionDuration: Duration(milliseconds: 300), // Thời gian chuyển đổi
+                                        ),
                                       );
                                     },
                                     child: Row(
@@ -277,12 +290,26 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                             showCloseIcon: true,
                                             title: "Bạn chưa đăng nhập",
                                             desc: "Bạn cần đăng nhập để cập nhật hồ sơ của bạn.",
+                                            btnOkText: 'Đồng ý',
+                                            btnCancelText: 'Không',
                                             btnCancelOnPress: () {},
                                             btnOkOnPress: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) => const ChonDangNhapWidget(),
+                                              Navigator.of(context).push(
+                                                PageRouteBuilder(
+                                                  pageBuilder: (context, animation, secondaryAnimation) => const ChonDangNhapWidget(),
+                                                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                    const begin = Offset(1.0, 0.0);
+                                                    const end = Offset.zero;
+                                                    const curve = Curves.easeInOut;
+
+                                                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+                                                    return SlideTransition(
+                                                      position: animation.drive(tween),
+                                                      child: child,
+                                                    );
+                                                  },
+                                                  transitionDuration: Duration(milliseconds: 300), // Thời gian chuyển đổi
                                                 ),
                                               );
                                             },/*
@@ -307,10 +334,22 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                           ),*/
                                           ).show();
                                         } else {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => const UpdateProfileScreen(),
+                                          Navigator.of(context).push(
+                                            PageRouteBuilder(
+                                              pageBuilder: (context, animation, secondaryAnimation) => const UpdateProfileScreen(),
+                                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                const begin = Offset(1.0, 0.0);
+                                                const end = Offset.zero;
+                                                const curve = Curves.easeInOut;
+
+                                                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+                                                return SlideTransition(
+                                                  position: animation.drive(tween),
+                                                  child: child,
+                                                );
+                                              },
+                                              transitionDuration: Duration(milliseconds: 300), // Thời gian chuyển đổi
                                             ),
                                           );
                                         }

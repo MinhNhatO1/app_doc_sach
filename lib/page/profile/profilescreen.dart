@@ -5,6 +5,7 @@ import 'package:app_doc_sach/const.dart';
 import 'package:app_doc_sach/controller/auth_controller.dart';
 import 'package:app_doc_sach/model/user_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -219,7 +220,30 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   String date ='';
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ));
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        title: const Text(
+          "Thông tin tài khoản",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        systemOverlayStyle: SystemUiOverlayStyle.dark, // Thêm dòng này
+      ),
       body: Padding(
         padding: EdgeInsets.all(10),
         child: FutureBuilder<Users>(
@@ -240,7 +264,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                   children: [
                     // -- IMAGE with ICON
                     Padding(
-                      padding: const EdgeInsets.only(top: 50.0),
+                      padding: const EdgeInsets.only(top: 20.0),
                       child: Stack(
                         children: [
                           SizedBox(
@@ -253,9 +277,9 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                                 _imageFile!,
                                 fit: BoxFit.cover,
                               )
-                                  :  user.avatar != null
+                                  :  user.avatar != ''
                                   ? Image.network(
-                               baseUrl + user.avatar!,
+                                baseUrl + user.avatar!,
                                 fit: BoxFit.cover,
                               )
                                   : Image.asset(
@@ -379,62 +403,62 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: Row(
-                                children: [
-                                  Radio<String>(
-                                    value: 'Nam',
-                                    groupValue: selectedGender,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        selectedGender = value;
-                                        // Cập nhật giá trị cho user.gender tại đây nếu cần
-                                      });
-                                    },
-                                  ),
-                                  const Text('Nam'),
-                                ],
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Radio<String>(
+                                      value: 'Nam',
+                                      groupValue: selectedGender,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          selectedGender = value;
+                                          // Cập nhật giá trị cho user.gender tại đây nếu cần
+                                        });
+                                      },
+                                    ),
+                                    const Text('Nam'),
+                                  ],
+                                ),
                               ),
-                            ),
-                            Expanded(
-                              child: Row(
-                                children: [
-                                  Radio<String>(
-                                    value: 'Nữ',
-                                    groupValue: selectedGender,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        selectedGender = value;
-                                        // Cập nhật giá trị cho user.gender tại đây nếu cần
-                                      });
-                                    },
-                                  ),
-                                  const Text('Nữ'),
-                                ],
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Radio<String>(
+                                      value: 'Nữ',
+                                      groupValue: selectedGender,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          selectedGender = value;
+                                          // Cập nhật giá trị cho user.gender tại đây nếu cần
+                                        });
+                                      },
+                                    ),
+                                    const Text('Nữ'),
+                                  ],
+                                ),
                               ),
-                            ),
-                            Expanded(
-                              child: Row(
-                                children: [
-                                  Radio<String>(
-                                    value: 'Khác',
-                                    groupValue: selectedGender,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        selectedGender = value;
-                                        // Cập nhật giá trị cho user.gender tại đây nếu cần
-                                      });
-                                    },
-                                  ),
-                                  const Text('Khác'),
-                                ],
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Radio<String>(
+                                      value: 'Khác',
+                                      groupValue: selectedGender,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          selectedGender = value;
+                                          // Cập nhật giá trị cho user.gender tại đây nếu cần
+                                        });
+                                      },
+                                    ),
+                                    const Text('Khác'),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
 
                           const SizedBox(height: 15),
                           const Align(
@@ -472,52 +496,52 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                        Container(
-                          height: 60,
-                          decoration: BoxDecoration(
-                            border: Border.all(width: 2, color: MyColor.primaryColor),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.only(top: 5, left: 10, bottom: 5),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _ageController,
-                                    style: TextStyle(fontSize: 12),
-                                    maxLines: 1,
-                                    readOnly: true,
-                                    decoration: const InputDecoration(
-                                      border: InputBorder.none,
+                          Container(
+                            height: 60,
+                            decoration: BoxDecoration(
+                              border: Border.all(width: 2, color: MyColor.primaryColor),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Padding(
+                                padding: EdgeInsets.only(top: 5, left: 10, bottom: 5),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextFormField(
+                                        controller: _ageController,
+                                        style: TextStyle(fontSize: 12),
+                                        maxLines: 1,
+                                        readOnly: true,
+                                        decoration: const InputDecoration(
+                                          border: InputBorder.none,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () async {
-                                    DateTime? pickedDate = await showDatePicker(
-                                      context: context,
-                                      initialDate: DateTime.now(),
-                                      firstDate: DateTime(1900),
-                                      lastDate: DateTime.now(),
-                                    );
-                                    if (pickedDate != null) {
-                                      setState(() {
-                                        _ageController.text = formatDate(pickedDate);
-                                      });
-                                    } else {
-                                      print('No date selected');
-                                    }
-                                  },
-                                  icon: const Icon(Icons.calendar_today_outlined),
-                                ),
-                              ],
-                            )
+                                    IconButton(
+                                      onPressed: () async {
+                                        DateTime? pickedDate = await showDatePicker(
+                                          context: context,
+                                          initialDate: DateTime.now(),
+                                          firstDate: DateTime(1900),
+                                          lastDate: DateTime.now(),
+                                        );
+                                        if (pickedDate != null) {
+                                          setState(() {
+                                            _ageController.text = formatDate(pickedDate);
+                                          });
+                                        } else {
+                                          print('No date selected');
+                                        }
+                                      },
+                                      icon: const Icon(Icons.calendar_today_outlined),
+                                    ),
+                                  ],
+                                )
 
+                            ),
                           ),
-                        ),
 
-                        const SizedBox(height: 20),
+                          const SizedBox(height: 20),
                           // -- Form Submit Button
                           SizedBox(
                             width: double.infinity,
@@ -559,36 +583,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 20),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                side: const BorderSide(color: Colors.black, width: 2),
-                                shape: const StadiumBorder(),
-                              ),
-                              child: const Padding(
-                                padding: EdgeInsets.only(right: 10),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.arrow_back, color: Colors.black),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Trở về',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
+
                           const SizedBox(height: 40),
                         ],
                       ),
@@ -600,6 +595,24 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
               return Center(child: Text('No data found'));
             }
           },
+        ),
+      ),
+    );
+  }
+}
+class CurvedShape extends StatelessWidget {
+  const CurvedShape({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 200,
+      decoration: const BoxDecoration(
+        color: MyColor.primaryColor,
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(60),
+          bottomRight: Radius.circular(60),
         ),
       ),
     );

@@ -21,7 +21,7 @@ class Book {
   List<Chapter>? chapters;
   DateTime? createdAt;
   DateTime? updatedAt;
-
+  String? status;
   Book({
     this.id,
     this.title,
@@ -37,6 +37,7 @@ class Book {
     this.chapters,
     this.createdAt,
     this.updatedAt,
+    this.status,
   });
 
   factory Book.fromJson(Map<String, dynamic> json) {
@@ -110,6 +111,7 @@ class Book {
         chapters: getChapters(json['chapters']),
         createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
         updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
+        status: json['status']?.toString(),
       );
     } catch (e, stackTrace) {
       print('Error in Book.fromJson: $e');

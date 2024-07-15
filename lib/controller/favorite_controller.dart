@@ -53,18 +53,8 @@ class FavoriteService extends GetxController{
               ...bookData['attributes'] ?? {},
             });
           }).toList();
-          // Sắp xếp danh sách sách theo thời gian thêm vào
-          books.sort((a, b) {
-            if (a.createdAt == null && b.createdAt == null) {
-              return 0; // Cả hai đều null thì coi như bằng nhau
-            } else if (a.createdAt == null) {
-              return 1; // `a` null thì `a` lớn hơn `b`
-            } else if (b.createdAt == null) {
-              return -1; // `b` null thì `b` lớn hơn `a`
-            } else {
-              return b.createdAt!.compareTo(a.createdAt!); // So sánh bình thường nếu cả hai không null
-            }
-          });
+          // Đảo ngược danh sách sách
+          books = books.reversed.toList();
 /*
           // Parsing profile data
           final profileData = attributes['profile']['data'];
@@ -145,9 +135,11 @@ class FavoriteService extends GetxController{
         if (isBookInFavorite) {
           // Nếu sách đã có, xóa khỏi danh sách
           await removeFromFavorite(userFavorite.id!, book.id!);
+          await decrementLikes(book);
         } else {
           // Nếu sách chưa có, thêm vào danh sách
           await addToFavorite(userFavorite.id!, book);
+          await incrementLikes(book);
         }
       }
 
@@ -160,7 +152,104 @@ class FavoriteService extends GetxController{
     }
   }
 
+  Future<void> incrementLikes(Book book) async {
+    try {
+      // Địa chỉ endpoint của Strapi cho sách (thay đổi phù hợp với cấu hình của bạn)
+      String apiUrl = '$baseUrl/api/books/${book.id}';
+      // Lấy số lượt thích hiện tại của cuốn sách
+      int currentLikes = await getLikes(book.id.toString());
 
+      // Tạo body của yêu cầu PUT để tăng số lượt thích
+      Map<String, dynamic> body = {
+        'data': {
+          'likes': currentLikes + 1, // Lấy số lượt thích hiện tại và tăng lên 1
+        }
+      };
+
+      // Chuyển đổi body thành JSON
+      String jsonBody = jsonEncode(body);
+
+      // Gửi yêu cầu PUT đến Strapi
+      var response = await http.put(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+        },
+        body: jsonBody,
+      );
+
+      if (response.statusCode == 200) {
+        print('Likes incremented successfully for book ${book.id}');
+      } else {
+        print('Failed to increment likes: ${response.statusCode}');
+        throw Exception('Failed to increment likes: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error incrementing likes: $e');
+      throw Exception('Error incrementing likes: $e');
+    }
+  }
+
+  Future<void> decrementLikes(Book book) async {
+    try {
+      // Địa chỉ endpoint của Strapi cho sách (thay đổi phù hợp với cấu hình của bạn)
+      String apiUrl = '$baseUrl/api/books/${book.id}';
+      // Lấy số lượt thích hiện tại của cuốn sách
+      int currentLikes = await getLikes(book.id.toString());
+      // Tạo body của yêu cầu PUT để giảm số lượt thích
+      Map<String, dynamic> body = {
+        'data': {
+          'likes': currentLikes - 1, // Lấy số lượt thích hiện tại và giảm đi 1
+        }
+      };
+
+      // Chuyển đổi body thành JSON
+      String jsonBody = jsonEncode(body);
+
+      // Gửi yêu cầu PUT đến Strapi
+      var response = await http.put(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+        },
+        body: jsonBody,
+      );
+
+      if (response.statusCode == 200) {
+        print('Likes decremented successfully for book ${book.id}');
+      } else {
+        print('Failed to decrement likes: ${response.statusCode}');
+        throw Exception('Failed to decrement likes: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error decrementing likes: $e');
+      throw Exception('Error decrementing likes: $e');
+    }
+  }
+
+
+// Hàm lấy số lượt thích hiện tại của cuốn sách từ Strapi
+  Future<int> getLikes(String bookId) async {
+    try {
+      // Địa chỉ endpoint của Strapi cho sách (thay đổi phù hợp với cấu hình của bạn)
+      String apiUrl = '$baseUrl/api/books/$bookId';
+
+      // Gửi yêu cầu GET để lấy thông tin cuốn sách từ Strapi
+      var response = await http.get(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        // Phân tích JSON và trả về số lượt thích của cuốn sách
+        Map<String, dynamic> bookData = jsonDecode(response.body);
+        return bookData['data']['attributes']['likes'];
+      } else {
+        print('Failed to get likes: ${response.statusCode}');
+        throw Exception('Failed to get likes: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error getting likes: $e');
+      throw Exception('Error getting likes: $e');
+    }
+  }
   Future<void> createNewFavorite(Users user, Book book) async {
     final url = Uri.parse('$_baseUrl/favorites');
     try {
@@ -181,6 +270,7 @@ class FavoriteService extends GetxController{
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         print('Favorite created successfully');
+        await incrementLikes(book);
       } else {
         print('Failed to create favorite. Status code: ${response.statusCode}');
         print('Response body: ${response.body}');

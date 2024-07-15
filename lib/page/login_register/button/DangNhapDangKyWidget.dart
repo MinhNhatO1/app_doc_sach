@@ -14,7 +14,7 @@ class DangNhapDangKyWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.amber.shade800,
+      color: Colors.transparent,
       borderRadius: BorderRadius.circular(8), // Đặt borderRadius cho Material
       child: InkWell(
         onTap: () => {
@@ -50,24 +50,29 @@ class DangNhapDangKyWidget extends StatelessWidget {
         },
         borderRadius: BorderRadius.circular(8), // Đặt borderRadius cho InkWell
         child: Container(
-          height: 35,
+          height: 38,
           width: 190,
           margin: const EdgeInsets.only(top: 5),
           decoration: BoxDecoration(
-            color: Colors.amber.shade800.withOpacity(0.5),
+            color: Colors.amber.shade800,
             borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                spreadRadius: 1,
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: const Center(
-            child: Padding(
-              padding: EdgeInsets.only(bottom: 5),
-              child: Text(
-                'Đăng nhập / Đăng ký',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontStyle: FontStyle.italic,
-                ),
+            child: Text(
+              'Đăng nhập / Đăng ký',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
               ),
             ),
           ),

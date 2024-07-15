@@ -4,6 +4,7 @@ import 'package:app_doc_sach/page/slash_screen/slash_screen.dart';
 import 'package:app_doc_sach/provider/ui_provider.dart';
 import 'package:app_doc_sach/route/app_page.dart';
 import 'package:app_doc_sach/route/app_route.dart';
+import 'package:app_doc_sach/service/local_service/local_auth_service.dart';
 import 'package:app_doc_sach/state/tab_state.dart';
 import 'package:app_doc_sach/state/tab_state_search.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -36,10 +37,13 @@ void main() async {
   } else {
     await Firebase.initializeApp(
       options: const FirebaseOptions(
-        apiKey: "AIzaSyBnFNsGdqWj__OIIbRZUSjRQvyQMO0krd0",
-        appId: "1:119520931791:android:c38a905e1d751c99c9ecba",
-        messagingSenderId: "119520931791",
-        projectId: "appdocsach-77e59",
+          apiKey: "AIzaSyDThX_0Xs6P2e3y2fS_KSbQwldFvXYVfJQ",
+          authDomain: "appreadbook-fe0b7.firebaseapp.com",
+          projectId: "appreadbook-fe0b7",
+          storageBucket: "appreadbook-fe0b7.appspot.com",
+          messagingSenderId: "44086872062",
+          appId: "1:44086872062:web:3f6cb79cb844aa5481a2af",
+          measurementId: "G-5T1W9VYZMZ"
       ),
     );
     FirebaseDatabase.instance.databaseURL =
@@ -50,7 +54,6 @@ void main() async {
   /*FirebaseDatabase.instance.databaseURL = "https://appdocsach-77e59-default-rtdb.firebaseio.com/";*/
   await Hive.initFlutter();
  Hive.registerAdapter(UsersAdapter());
-
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => TabState()),

@@ -13,6 +13,7 @@ class TextFormGlobal extends StatefulWidget {
     this.showClearButton = false,
     this.suffix, // Thêm thuộc tính cho chức năng xóa văn bản
     this.suffixIcon,
+    this.focusNode, // Thêm tham số này
   }) : super(key: key);
 
   final TextEditingController controller;
@@ -24,6 +25,7 @@ class TextFormGlobal extends StatefulWidget {
   final bool showClearButton; // Chức năng xóa văn bản
   final Widget? suffix;
   final Widget? suffixIcon;
+  final FocusNode? focusNode; // Thêm thuộc tính này
   @override
   _TextFormGlobalState createState() => _TextFormGlobalState();
 }
@@ -61,6 +63,7 @@ class _TextFormGlobalState extends State<TextFormGlobal> {
               children: [
                 TextFormField(
                   controller: widget.controller,
+                  focusNode: widget.focusNode, // Thêm dòng này
                   keyboardType: widget.textInputType,
                   obscureText: widget.obscure ? _isObscure : false,
                   decoration: InputDecoration(
@@ -69,13 +72,13 @@ class _TextFormGlobalState extends State<TextFormGlobal> {
                     hintStyle: TextStyle(
                       color: Colors.grey.shade600,
                       height: 1,
-                      fontSize: 13,
+                      fontSize: 16,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                    contentPadding: const EdgeInsets.symmetric( vertical:  20),
                     suffix: widget.suffix,
                     suffixIcon: widget.suffixIcon
                   ),
-                  style: const TextStyle(fontSize: 13,color: Colors.black),
+                  style: const TextStyle(fontSize: 16,color: Colors.black),
                 ),
               ],
             ),
