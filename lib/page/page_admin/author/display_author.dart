@@ -1,97 +1,114 @@
-import 'package:app_doc_sach/const.dart';
-import 'package:app_doc_sach/const/constant.dart';
-import 'package:app_doc_sach/model/author_model.dart';
-import 'package:app_doc_sach/page/page_admin/author/author_details.dart';
-import 'package:app_doc_sach/page/page_admin/author/create_author.dart';
-import 'package:app_doc_sach/page/page_admin/book/slideleftroutes.dart';
-import 'package:app_doc_sach/widgets/side_widget_menu.dart';
-import 'package:flutter/material.dart';
+import 'dart:async';
 import 'dart:convert';
+import 'package:app_doc_sach/const.dart';
+import 'package:app_doc_sach/page/page_admin/book/slideleftroutes.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../../../model/author_model.dart';
+import '../../../widgets/side_widget_menu.dart';
+import 'author_details.dart';
+import 'create_author.dart';
+
 
 class DisplayAuthor extends StatefulWidget {
   const DisplayAuthor({Key? key}) : super(key: key);
+
   @override
   _DisplayAuthorState createState() => _DisplayAuthorState();
 }
 
 class _DisplayAuthorState extends State<DisplayAuthor> {
-  List<Author> author = [];
+  List<Author> _authors = [];
+  Future<List<Author>>? _authorsFuture;
+  final TextEditingController _searchController = TextEditingController();
+  late Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAuthors();
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      _loadAuthors();
+    });
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadAuthors() async {
+    try {
+      final authors = await getAll();
+      if (!mounted) return;
+      setState(() {
+        _authors = authors;
+      });
+    } catch (e) {
+      print('Error loading authors: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Không thể tải tác giả. Vui lòng thử lại sau.')),
+      );
+    }
+  }
+
+  void _onSearchChanged() {
+    setState(() {});
+  }
+
+  List<Author> get filteredAuthors {
+    return _searchController.text.isEmpty
+        ? _authors
+        : _authors
+            .where((author) => author.authorName
+                .toLowerCase()
+                .contains(_searchController.text.toLowerCase()))
+            .toList();
+  }
+
   Future<List<Author>> getAll() async {
-    // Thực hiện yêu cầu HTTP GET và đợi cho đến khi hoàn thành
     var response = await http.get(Uri.parse("$baseUrl/api/authors/"));
-
-    // In ra mã trạng thái HTTP của phản hồi
-    print('Response status: ${response.statusCode}');
-
-    // In ra nội dung phản hồi
-    print('Response body: ${response.body}');
-
     if (response.statusCode == 200) {
-      author.clear();  // Xóa danh sách tác giả hiện tại
+      final decodedData = jsonDecode(response.body);
+      _authors.clear();
+      for (var u in decodedData["data"]) {
+        var id = u['id'];
+        var authorName = u['attributes']["authorName"] ?? '';
+        var birthDateStr = u['attributes']["birthDate"];
+        var birthDate = DateTime.tryParse(birthDateStr ?? '') ?? DateTime.now();
+        var born = u['attributes']["born"] ?? '';
+        var telphone = u['attributes']["telephone"] ?? '';
+        var nationality = u['attributes']["nationality"] ?? '';
+        var bio = u['attributes']["bio"] ?? '';
+
+        _authors.add(Author(
+          id: id,
+          authorName: authorName,
+          birthDate: birthDate,
+          born: born,
+          telphone: telphone,
+          nationality: nationality,
+          bio: bio,
+        ));
+      }
     } else {
       print('Failed to fetch authors: ${response.statusCode}');
       return [];
     }
-
-    // Phân tích cú pháp chuỗi JSON
-    final decodedData = jsonDecode(response.body);
-
-    // In ra dữ liệu sau khi phân tích cú pháp JSON
-    print('Decoded data: $decodedData');
-
-    for (var u in decodedData["data"]) {
-      // Kiểm tra từng thuộc tính trước khi thêm vào danh sách
-      print('Data item: $u');
-
-      var id = u['id'];
-      var authorName = u['attributes']["authorName"] ?? '';
-      var birthDateStr = u['attributes']["birthDate"];
-      var birthDate = DateTime.tryParse(birthDateStr ?? '') ?? DateTime.now();
-      var born = u['attributes']["born"] ?? '';
-      var telphone = u['attributes']["telephone"] ?? '';
-      var nationality = u['attributes']["nationality"] ?? '';
-      var bio = u['attributes']["bio"] ?? '';
-
-      // In ra từng thuộc tính để kiểm tra giá trị
-      print('id: $id');
-      print('authorName: $authorName');
-      print('birthDateStr: $birthDateStr');
-      print('birthDate: $birthDate');
-      print('born: $born');
-      print('telphone: $telphone');
-      print('nationality: $nationality');
-      print('bio: $bio');
-
-      author.add(Author(
-        id: id,
-        authorName: authorName,
-        birthDate: birthDate,
-        born: born,
-        telphone: telphone,
-        nationality: nationality,
-        bio: bio,
-      ));
-    }
-
-    // In ra danh sách tác giả sau khi thêm tất cả mục dữ liệu
-    print('Author list: $author');
-
-    return author;
+    return _authors;
   }
 
-  //nó sẽ ghi đè lên phương thức state
   @override
   Widget build(BuildContext context) {
-    //Gọi hàm getAll để tìm nạp danh sách các danh mục từ máy chủ. Tuy nhiên,
-    //nên tránh dòng này vì nó khiến dữ liệu được tìm nạp mỗi khi tiện ích được xây dựng lại,
-    // điều này có thể dẫn đến hoạt động kém hiệu quả và hành vi không mong muốn.
-    // getAll();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Quản lý tác giả'),
-        elevation: 0.0, // Controls the shadow below the app bar
+        elevation: 0.0,
         backgroundColor: Colors.blue,
         actions: [
           Padding(
@@ -106,65 +123,64 @@ class _DisplayAuthorState extends State<DisplayAuthor> {
         ],
       ),
       drawer: const SideWidgetMenu(),
-      //xây dựng bản sao dữ liệu mới dựa vào future
-      body: FutureBuilder(
-        future: getAll(),
-        builder: (context, AsyncSnapshot<List<Author>> snapshot) {
-          //kiểm tra xem trạng thái kết nối của snapshot có đang ở chế độ chờ đợi hay không.
-          //ConnectionState.waiting nghĩa là đang chờ để nhận dữ liệu từ nguồn dữ liệu.
-          //(snapshot là dự liệu sao lưu được lấy từ api)
-          // Check if the connection is in waiting state
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              //CircularProgressIndicator() là một biểu tượng vòng tròn quay,
-              //thường được sử dụng để chỉ ra rằng ứng dụng đang chờ đợi một hoạt động nào đó hoàn thành.
-              // CircularProgressIndicator is a loading spinner
-              child: CircularProgressIndicator(),
-            );
-          }
-          // Check if the snapshot has an error
-          else if (snapshot.hasError) {
-            return Center(
-              child: Text('An error occurred: ${snapshot.error}'),
-            );
-          }
-          // Check if the snapshot has data
-          else if (snapshot.hasData) {
-            // Check if the data is empty
-            if (snapshot.data!.isEmpty) {
-              return const Center(
-                child: Text('Không tìm thấy tác giả'),
-              );
-            } else {
-              // Render your data if available
-              return ListView.builder(
-                itemCount: snapshot.data!.length,
-                itemBuilder: (BuildContext context, index) => InkWell(
-                  child: ListTile(
-                    title: Text(snapshot.data![index].authorName),
-                    subtitle: Text(snapshot.data![index].bio),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => AuthorDetails(
-                            authors: snapshot.data![index],
-                          ),
-                        ),
-                      );
-                    },
+      body: Padding(
+        padding: const EdgeInsets.only(right: 13, left: 13, bottom: 20),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Tìm kiếm tác giả',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
                   ),
+                  prefixIcon: const Icon(Icons.search),
                 ),
-              );
-            }
-          }
-          // If none of the above conditions match, return an empty container
-          else {
-            return const Center(
-              child: Text('Không tìm thấy tác giả'),
-            );
-          }
-        },
+              ),
+            ),
+            Expanded(
+              child: FutureBuilder(
+                future: _authorsFuture ??= getAll(),
+                builder: (context, AsyncSnapshot<List<Author>> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('An error occurred: ${snapshot.error}'));
+                  } else if (snapshot.hasData) {
+                    if (snapshot.data!.isEmpty) {
+                      return const Center(child: Text('Không tìm thấy tác giả'));
+                    } else {
+                      return ListView.builder(
+                        itemCount: filteredAuthors.length,
+                        itemBuilder: (BuildContext context, index) {
+                          final author = filteredAuthors[index];
+                          return InkWell(
+                            child: ListTile(
+                              title: Text(author.authorName),
+                              subtitle: Text(author.bio),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => AuthorDetails(authors: author),
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      );
+                    }
+                  } else {
+                    return const Center(child: Text('Không tìm thấy tác giả'));
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

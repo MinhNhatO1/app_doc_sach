@@ -7,82 +7,83 @@ import 'package:fl_chart/fl_chart.dart';
 class BarGraphCard extends StatelessWidget {
   const BarGraphCard({super.key});
 
-@override
+  @override
   Widget build(BuildContext context) {
     final barGraphData = BarGraphData();
 
-    return GridView.builder(
-      itemCount: barGraphData.data.length,
-      shrinkWrap: true,
-      physics: const ScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,//số cột
-        crossAxisSpacing: 15,
-        mainAxisSpacing: 12.0,
-         //tỉ lệ chiều rộng và chiều cao
-        childAspectRatio: 5 / 4,
-      ),
-      itemBuilder: (context, index) {
-        return CustomCard(
-          padding: const EdgeInsets.all(5),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  barGraphData.data[index].label,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+    return SingleChildScrollView(
+      child: GridView.builder(
+        itemCount: barGraphData.data.length,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3, // số cột
+          crossAxisSpacing: 15,
+          mainAxisSpacing: 12.0,
+          childAspectRatio: 5 / 4, // tỉ lệ chiều rộng và chiều cao
+        ),
+        itemBuilder: (context, index) {
+          return CustomCard(
+            padding: const EdgeInsets.all(5),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    barGraphData.data[index].label,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: BarChart(
-                  BarChartData(
-                    barGroups: _chartGroups(
-                      points: barGraphData.data[index].graph,
-                      color: barGraphData.data[index].color,
-                    ),
-                    borderData: FlBorderData(border: const Border()),
-                    gridData: FlGridData(show: false),
-                    titlesData: FlTitlesData(
-                      bottomTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          getTitlesWidget: (value, meta) {
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 5),
-                              child: Text(
-                                barGraphData.label[value.toInt()],
-                                style: const TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w500),
-                              ),
-                            );
-                          },
+                const SizedBox(height: 12),
+                Expanded(
+                  child: BarChart(
+                    BarChartData(
+                      barGroups: _chartGroups(
+                        points: barGraphData.data[index].graph,
+                        color: barGraphData.data[index].color,
+                      ),
+                      borderData: FlBorderData(border: const Border()),
+                      gridData: FlGridData(show: false),
+                      titlesData: FlTitlesData(
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) {
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 5),
+                                child: Text(
+                                  barGraphData.label[value.toInt()],
+                                  style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.grey,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        topTitles: AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        rightTitles: AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
                         ),
                       ),
-                      leftTitles: AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      topTitles: AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      rightTitles: AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -91,7 +92,7 @@ class BarGraphCard extends StatelessWidget {
       {required List<GraphModel> points, required Color color}) {
     return points
         .map((point) => BarChartGroupData(x: point.x.toInt(), barRods: [
-          //barRods: Danh sách các đối tượng BarChartRodData, đại diện cho các cột riêng lẻ
+              // barRods: Danh sách các đối tượng BarChartRodData, đại diện cho các cột riêng lẻ
               BarChartRodData(
                 toY: point.y,
                 width: 12,

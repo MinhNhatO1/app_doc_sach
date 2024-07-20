@@ -12,35 +12,55 @@ import '../../../const.dart';
 
 class DisplayCategory extends StatefulWidget {
   const DisplayCategory({Key? key}) : super(key: key);
+
   @override
-  _DisplayCategorysState createState() => _DisplayCategorysState();
+  _DisplayCategoryState createState() => _DisplayCategoryState();
 }
 
-class _DisplayCategorysState extends State<DisplayCategory> {
+class _DisplayCategoryState extends State<DisplayCategory> {
   List<CategoryModel> category = [];
+  final TextEditingController _searchController = TextEditingController();
+  List<CategoryModel> _filteredCategories = [];
+
   Future<List<CategoryModel>> getAll() async {
-    // The await keyword pauses the execution of the function until the HTTP request completes.
-    var response =
-        await http.get(Uri.parse("$baseUrl/api/categories?pagination[pageSize]=100"));
+    var response = await http.get(Uri.parse("$baseUrl/api/categories?pagination[pageSize]=100"));
     if (response.statusCode == 200) {
       category.clear();
     }
-    //dùng để ptich chuỗi trong json
     final decodedData = jsonDecode(response.body);
     for (var u in decodedData["data"]) {
       category.add(CategoryModel(
-         id:  u['id'],nameCategory:  u['attributes']["name"],desCategory:  u['attributes']["Description"]));
+        id: u['id'],
+        nameCategory: u['attributes']["name"],
+        desCategory: u['attributes']["Description"],
+      ));
     }
     return category;
   }
 
-  //nó sẽ ghi đè lên phương thức state
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      _filteredCategories = category
+          .where((cat) => cat.nameCategory.toLowerCase().contains(_searchController.text.toLowerCase()))
+          .toList();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    //Gọi hàm getAll để tìm nạp danh sách các danh mục từ máy chủ. Tuy nhiên,
-    //nên tránh dòng này vì nó khiến dữ liệu được tìm nạp mỗi khi tiện ích được xây dựng lại,
-    // điều này có thể dẫn đến hoạt động kém hiệu quả và hành vi không mong muốn.
-    // getAll();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Quản lý thể loại'),
@@ -59,60 +79,75 @@ class _DisplayCategorysState extends State<DisplayCategory> {
         ],
       ),
       drawer: const SideWidgetMenu(),
-      //xây dựng bản sao dữ liệu mới dựa vào future
-      body: FutureBuilder(
-          future: getAll(),
-          builder: (context, AsyncSnapshot<List<CategoryModel>> snapshot) {
-            //kiểm tra xem trạng thái kết nối của snapshot có đang ở chế độ chờ đợi hay không.
-            //ConnectionState.waiting nghĩa là đang chờ để nhận dữ liệu từ nguồn dữ liệu.
-            //(snapshot là dự liệu sao lưu được lấy từ api)
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                //CircularProgressIndicator() là một biểu tượng vòng tròn quay,
-                //thường được sử dụng để chỉ ra rằng ứng dụng đang chờ đợi một hoạt động nào đó hoàn thành.
-                child: CircularProgressIndicator(),
-              );
-            }
-            // Check if the snapshot has an error
-            else if (snapshot.hasError) {
-              return Center(
-                child: Text('An error occurred: ${snapshot.error}'),
-              );
-            }// Check if the snapshot has data
-              else if (snapshot.hasData) {
-              // Check if the data is empty
-              if (snapshot.data!.isEmpty) {
-              return Center(
-              child: Text('Khong tim thay tac gia'),
-              );
-              }
-
-    //Đoạn mã else này sẽ được thực thi nếu điều kiện snapshot.connectionState == ConnectionState.waiting
-            //trong if trước đó là sai, nghĩa là dữ liệu đã sẵn sàng và đã được tải về thành công.
-            else {
-              return ListView.builder(
-                  itemCount: snapshot.data?.length,
-                  itemBuilder: (BuildContext context, index) => InkWell(
-                        child: ListTile(
-                          title: Text(snapshot.data![index].nameCategory),
-                          subtitle: Text(snapshot.data![index].desCategory),
-                          onTap: () {
-                            Navigator.push(
+      body: Padding(
+        padding: const EdgeInsets.only(right: 13, left: 13, bottom: 20),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Tìm kiếm thể loại',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  prefixIcon: const Icon(Icons.search),
+                ),
+              ),
+            ),
+            Expanded(
+              child: FutureBuilder(
+                future: getAll(),
+                builder: (context, AsyncSnapshot<List<CategoryModel>> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Text('An error occurred: ${snapshot.error}'),
+                    );
+                  } else if (snapshot.hasData) {
+                    if (snapshot.data!.isEmpty) {
+                      return const Center(
+                        child: Text('Không tìm thấy thể loại'),
+                      );
+                    } else {
+                      if (_searchController.text.isEmpty) {
+                        _filteredCategories = snapshot.data!;
+                      }
+                      return ListView.builder(
+                        itemCount: _filteredCategories.length,
+                        itemBuilder: (BuildContext context, index) => InkWell(
+                          child: ListTile(
+                            title: Text(_filteredCategories[index].nameCategory),
+                            subtitle: Text(_filteredCategories[index].desCategory),
+                            onTap: () {
+                              Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (_) => MyDetails(
-                                          categories: snapshot.data![index],
-                                        )));
-                          },
+                                  builder: (_) => MyDetails(
+                                    categories: _filteredCategories[index],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                         ),
-                      ));
-            }
-          }// If none of the above conditions match, return an empty container
-    else {
-    return const Center(
-    child: Text('Khong tim thay tac gia'),
-    );
-    }})
+                      );
+                    }
+                  } else {
+                    return const Center(
+                      child: Text('Không tìm thấy thể loại'),
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

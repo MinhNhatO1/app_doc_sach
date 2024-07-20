@@ -14,31 +14,75 @@ class DisplayUser extends StatefulWidget {
   const DisplayUser({Key? key}) : super(key: key);
 
   @override
-  _DisplayUsersState createState() => _DisplayUsersState();
+  _DisplayUserState createState() => _DisplayUserState();
 }
 
-  
-
-class _DisplayUsersState extends State<DisplayUser> {
+class _DisplayUserState extends State<DisplayUser> {
   List<Users> users = [];
+  List<Users> filteredUsers = [];
+  final TextEditingController _searchController = TextEditingController();
+  Future<List<Users>>? _usersFuture;
 
 
-  Future<List<Users>> fetchUsers() async {
-   //Từ khóa await được sử dụng để chờ đợi cho đến khi yêu cầu HTTP hoàn thành và trả về kết quả. 
-  final response = await http.get(Uri.parse("$baseUrl/api/profiles/"));
+//xây dựng widget lại
+ Future<List<Users>> fetchUsers() async {
+    final response = await http.get(Uri.parse("$baseUrl/api/profiles/"));
 
-  if (response.statusCode == 200) {
-    List<dynamic> body = json.decode(response.body);//Giải mã nội dung phản hồi (dạng JSON) thành một đối tượng Dart.
-    //body.map: Áp dụng hàm map lên mỗi phần tử của body.
-    //
-    //chuyển đổi json thành đối tượng
-    users = body.map((dynamic item) => Users.fromJson(item)).toList();
-    return users;
-  } else {
-    throw Exception('Failed to load users');
+    if (response.statusCode == 200) {
+      List<dynamic> body = json.decode(response.body);
+      users = body.map((dynamic item) => Users.fromJson(item)).toList();
+      filteredUsers = users;
+      return users;
+    } else {
+      throw Exception('Failed to load users');
+    }
   }
-}
-  //update
+
+  @override
+  void initState() {
+    super.initState();
+    //đảm bảo người dùng chỉ dc tải 1 lần khi widget dc khởi tạo
+    _usersFuture = fetchUsers();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  // Future<List<Users>> getAll() async {
+  //   final response = await http.get(Uri.parse("$baseUrl/api/profiles/"));
+  //   if (response.statusCode == 200) {
+  //     users.clear();
+  //   }
+  //   final decodedData = jsonDecode(response.body);
+  //   for (var u in decodedData["data"]) {
+  //     users.add(Users(
+  //       id: u['id'],
+  //       fullName: u['attributes']["fullName"],
+  //       email: u['attributes']["email"],
+  //       age: u['attributes']["age"],
+  //       phone: u['attributes']["phone"],
+  //       gender: u['attributes']["gender"],
+  //       address: u['attributes']["address"],
+  //       avatar: u['attributes']["avatar"],
+  //     ));
+  //   }
+  //   return users;
+  // }
+
+  void _onSearchChanged() {
+    setState(() {
+      filteredUsers = users.where((user) {
+        final lowerCaseQuery = _searchController.text.toLowerCase();
+        return user.fullName.toLowerCase().contains(lowerCaseQuery);
+      }).toList();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,46 +102,64 @@ class _DisplayUsersState extends State<DisplayUser> {
           )
         ],
       ),
-      drawer: const SideWidgetMenu(), // Assuming you have a SideWidgetMenu
-      body: FutureBuilder<List<Users>>(
-        //là hàm trả về Future<List<Users>>
-        future: fetchUsers(),
-        //snapshot (trạng thái hiện tại của Future).
-        builder: (context, snapshot) {
-          //ktra nếu đang ở trạng thái chờ đợi
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No users found.'));
-          } else {
-            return ListView.builder(
-              itemCount: snapshot.data!.length,
-              itemBuilder: (BuildContext context, int index) {
-                //Widget này cho phép các phần tử trong danh sách có thể tương tác (như bắt sự kiện chạm).
-                return InkWell(
-                  child: ListTile(
-                    title: Text(snapshot.data![index].fullName),
-                    subtitle: Text(snapshot.data![index].email),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => UserDetails(
-                            users: snapshot.data![index],
-                          ),
-                        ),
-                      );
-                    },
+      drawer: const SideWidgetMenu(),
+      body: Padding(
+        padding: const EdgeInsets.only(right: 13, left: 13, bottom: 20),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Tìm kiếm người dùng',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
                   ),
-                );
-              },
-            );
-          }
-        },
+                  prefixIcon: const Icon(Icons.search),
+                ),
+              ),
+            ),
+            Expanded(
+              child: FutureBuilder<List<Users>>(
+                future: _usersFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('Không tìm thấy người dùng.'));
+                  } else {
+                    return ListView.builder(
+                      itemCount: filteredUsers.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return InkWell(
+                          child: ListTile(
+                            title: Text(filteredUsers[index].fullName),
+                            subtitle: Text(filteredUsers[index].email),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => UserDetails(
+                                    users: filteredUsers[index],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
