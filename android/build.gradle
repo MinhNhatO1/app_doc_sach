@@ -1,11 +1,13 @@
 buildscript {
+    ext.kotlin_version = '1.8.20'
     repositories {
         google()  // Thêm Google Maven repository ở đây
-        jcenter()
+        mavenCentral() // Thay thế jcenter() bằng mavenCentral()
     }
     dependencies {
-        classpath "com.android.tools.build:gradle:4.2.2" // Hoặc bản mới nhất
+        classpath "com.android.tools.build:gradle:7.0.4"  // Hoặc bản mới nhất
         classpath "com.google.gms:google-services:4.4.1"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 

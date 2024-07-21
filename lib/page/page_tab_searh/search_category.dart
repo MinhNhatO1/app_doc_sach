@@ -1,87 +1,40 @@
+import 'package:app_doc_sach/controller/category_controller.dart';
 import 'package:app_doc_sach/model/category_model.dart';
 import 'package:app_doc_sach/provider/ui_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../listbook_category/lisistbook_category.dart';
+
 class TimKiemDanhMuc extends StatefulWidget {
-  const TimKiemDanhMuc({super.key, required this.textSearch});
-  final String textSearch;
+  const TimKiemDanhMuc({super.key, required this.textSearch,required this.onPopularSearchSelected,required this.popularSearches});
+  final String? textSearch;
+
+  final List<CategoryModel> popularSearches;
+  final Function(String) onPopularSearchSelected;
   @override
   State<TimKiemDanhMuc> createState() => _TimKiemDanhMucState();
 }
 
 class _TimKiemDanhMucState extends State<TimKiemDanhMuc> {
-  List<CategoryModel> bookCategories = [
-    CategoryModel(
-      id: 1,
-      nameCategory: 'Tiểu thuyết',
-      desCategory: 'Sách chứa các câu chuyện, sự kiện và nhân vật hư cấu.',
-    ),
-    CategoryModel(
-      id: 2,
-      nameCategory: 'Phi tiểu thuyết',
-      desCategory: 'Sách dựa trên các sự kiện, con người và sự thật có thật.',
-    ),
-    CategoryModel(
-      id: 3,
-      nameCategory: 'Khoa học viễn tưởng',
-      desCategory: 'Sách dựa trên khoa học giả tưởng hoặc tương lai.',
-    ),
-    CategoryModel(
-      id: 4,
-      nameCategory: 'Thần thoại',
-      desCategory: 'Sách chứa các yếu tố phép thuật hoặc siêu nhiên.',
-    ),
-    CategoryModel(
-      id: 5,
-      nameCategory: 'Tiểu sử',
-      desCategory: 'Sách viết về cuộc đời của một người.',
-    ),
-    CategoryModel(
-      id: 6,
-      nameCategory: 'Trinh thám',
-      desCategory:
-          'Sách liên quan đến việc giải quyết tội phạm hoặc khám phá bí mật.',
-    ),
-    CategoryModel(
-      id: 7,
-      nameCategory: 'Lãng mạn',
-      desCategory: 'Sách tập trung vào các mối quan hệ tình cảm.',
-    ),
-    CategoryModel(
-      id: 8,
-      nameCategory: 'Kinh dị',
-      desCategory: 'Sách nhằm mục đích gây sợ hãi hoặc lo lắng cho người đọc.',
-    ),
-    CategoryModel(
-      id: 9,
-      nameCategory: 'Tự lực',
-      desCategory:
-          'Sách viết với mục đích hướng dẫn người đọc giải quyết các vấn đề cá nhân.',
-    ),
-    CategoryModel(
-      id: 10,
-      nameCategory: 'Lịch sử',
-      desCategory:
-          'Sách khám phá các sự kiện trong quá khứ và bối cảnh lịch sử.',
-    ),
-  ];
 
+  final CategoryController categoryController = CategoryController();
+  bool isLoading = false;
   List<CategoryModel> featuredCategories = [
     CategoryModel(
       id: 1,
-      nameCategory: 'Sách bán chạy',
+      nameCategory: 'Tâm lý',
       desCategory:
           'Những cuốn sách được bán nhiều nhất trong thời gian gần đây.',
     ),
     CategoryModel(
       id: 2,
-      nameCategory: 'Sách mới phát hành',
+      nameCategory: 'Kinh dị',
       desCategory: 'Những cuốn sách mới được xuất bản và phát hành.',
     ),
     CategoryModel(
       id: 3,
-      nameCategory: 'Sách được đánh giá cao',
+      nameCategory: 'Lãng mạn',
       desCategory:
           'Những cuốn sách nhận được nhiều đánh giá tích cực từ người đọc.',
     ),
@@ -98,23 +51,73 @@ class _TimKiemDanhMucState extends State<TimKiemDanhMuc> {
     ),
   ];
 
+  Future<List<CategoryModel>> _getCategories(String textSearch) async {
+    await Future.delayed(const Duration(seconds: 1)); // Wait for 1 second
+    try {
+      return await categoryController.getCategoriesBySearch(textSearch);
+    } catch (e) {
+      print('Error loading categories: $e');
+      return [];
+    }
+  }
+  @override
+  void initState() {
+    super.initState();
+    if (widget.textSearch != null && widget.textSearch!.isNotEmpty) {
+      isLoading = true;
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Consumer<UiProvider>(
       builder: (BuildContext context, UiProvider value, Widget? child) {
-        return Scaffold(
-          body: Column(
-            children: <Widget>[
-              if (widget.textSearch.isNotEmpty)
-                Expanded(child: searchResults(widget.textSearch))
-              else
-                Expanded(child: searchDefault()),
-            ],
+        return SafeArea(
+          child: Scaffold(
+            body: SingleChildScrollView(
+              child: Column(
+                children: [
+                  if (widget.textSearch != null && widget.textSearch!.isNotEmpty)
+                    FutureBuilder<List<CategoryModel>>(
+                      future: _getCategories(widget.textSearch!),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return SizedBox(
+                              height: MediaQuery.of(context).size.height - 250,
+                              child: const Center(child: CircularProgressIndicator())
+                          );
+                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return SizedBox(
+                            height: MediaQuery.of(context).size.height - 250,
+                            child: const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(20.0),
+                                child: Text(
+                                  'Không tìm thấy danh mục.',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.black,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                          );
+                        } else {
+                          return gridviewDanhmuc(snapshot.data!);
+                        }
+                      },
+                    )
+                  else
+                    searchDefault(),
+                ],
+              ),
+            ),
           ),
         );
       },
     );
   }
+
 
   Widget searchResults(String text) {
     return Consumer<UiProvider>(
@@ -123,62 +126,104 @@ class _TimKiemDanhMucState extends State<TimKiemDanhMuc> {
           color: value.isDark
               ? Colors.black12
               : const Color.fromRGBO(232, 245, 233, 1.0),
-          child: gridviewDanhmuc(text),
+          child: FutureBuilder<List<CategoryModel>>(
+            future: categoryController.getCategoriesBySearch(text),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Đã xảy ra lỗi: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(child: Text('Không tìm thấy kết quả'));
+              } else {
+                return gridviewDanhmuc(snapshot.data!);
+              }
+            },
+          ),
         );
       },
     );
   }
 
-  List<CategoryModel> _filterCategories(String textSearch) {
-    return bookCategories
-        .where((category) => category.nameCategory
-            .toLowerCase()
-            .contains(textSearch.toLowerCase()))
-        .toList();
-  }
 
-  Widget gridviewDanhmuc(String textSearch) {
-    final filteredCateory = _filterCategories(textSearch);
-    if (filteredCateory.isEmpty) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(20.0),
-          child: Text(
-            'Không tìm thấy tác giả nào.',
-            style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
-            textAlign: TextAlign.center,
+  Widget gridviewDanhmuc(List<CategoryModel> categories) {
+    if (categories.isEmpty) {
+      return SizedBox(
+        height: MediaQuery.of(context).size.height - 250, // Adjust the height as needed
+        child: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(20.0),
+            child: Text(
+              'Không tìm thấy danh mục.',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ),
         ),
       );
     }
     return Padding(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(15),
       child: GridView.builder(
-        scrollDirection: Axis.vertical,
+        shrinkWrap: true,
+        physics: NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 1,
-          childAspectRatio: 5.1,
-          mainAxisSpacing: 10.0,
-          crossAxisSpacing: 8.0,
+          childAspectRatio: 6.0,
+          mainAxisSpacing: 13.0,
+          crossAxisSpacing: 10.0,
         ),
-        itemCount: filteredCateory.length,
+        itemCount: categories.length,
         itemBuilder: (BuildContext context, index) {
-          final category = filteredCateory[index];
-          return Container(
-            width: 100,
-            height: 30,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              color: Colors.white,
-            ),
-            child: Center(
-              child: Text(
-                category.nameCategory,
-                style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold),
+          final category = categories[index];
+          return GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => ListBookCategory(category: category),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(1.0, 0.0);
+                    const end = Offset.zero;
+                    const curve = Curves.easeInOut;
+
+                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+                    return SlideTransition(
+                      position: animation.drive(tween),
+                      child: child,
+                    );
+                  },
+                  transitionDuration: Duration(milliseconds: 300), // Thời gian chuyển đổi
+                ),
+              );
+            },
+            child: Container(
+              width: 100,
+              height: 30,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    spreadRadius: 1,
+                    blurRadius: 3,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+
+              child: Center(
+                child: Text(
+                  category.nameCategory,
+                  style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           );
@@ -186,7 +231,6 @@ class _TimKiemDanhMucState extends State<TimKiemDanhMuc> {
       ),
     );
   }
-
   Widget searchDefault() {
     return Padding(
       padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
@@ -196,7 +240,7 @@ class _TimKiemDanhMucState extends State<TimKiemDanhMuc> {
             _buildSectionTitle('Tìm kiếm nổi bật'),
             Align(
               alignment: Alignment.centerLeft,
-              child: _buildSearchList(featuredCategories),
+              child: _buildSearchList(widget.popularSearches),
             ),
             const SizedBox(height: 200),
           ],
@@ -214,7 +258,7 @@ class _TimKiemDanhMucState extends State<TimKiemDanhMuc> {
           title,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 14,
+            fontSize: 16,
           ),
         ),
       ),
@@ -228,15 +272,20 @@ class _TimKiemDanhMucState extends State<TimKiemDanhMuc> {
         spacing: 8.0,
         runSpacing: 2.0,
         children: items.map((item) {
-          return Chip(
-            label: Text(
-              item.nameCategory,
-              style: const TextStyle(fontSize: 10),
-            ),
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
-              side: const BorderSide(color: Colors.green),
+          return GestureDetector(
+            onTap: () {
+              widget.onPopularSearchSelected(item.nameCategory);
+            },
+            child: Chip(
+              label: Text(
+                item.nameCategory,
+                style: const TextStyle(fontSize: 13),
+              ),
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+                side: const BorderSide(color: Colors.green),
+              ),
             ),
           );
         }).toList(),

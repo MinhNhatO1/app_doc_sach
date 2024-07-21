@@ -71,7 +71,7 @@ class DangNhapDangKyWidget extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 14,
+                fontSize: 15,
                 fontStyle: FontStyle.italic,
               ),
             ),

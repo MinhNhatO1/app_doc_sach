@@ -31,4 +31,33 @@ class AuthorController extends GetxController{
       throw Exception('Error loading authors: $e'); // Ném ra một ngoại lệ nếu có lỗi khi tải dữ liệu
     }
   }
+
+  Future<List<Author>> getAuthorsBySearch(String textSearch) async {
+    // Chuẩn hóa chuỗi tìm kiếm: chuyển về chữ thường và loại bỏ khoảng trắng
+    final normalizedSearch = textSearch.toLowerCase().replaceAll(' ', '');
+
+    // Xây dựng URL API với toán tử $containsi
+    final String apiUrl = '$baseUrl/api/authors?populate=*&filters[authorName][\$containsi]=$textSearch';
+
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body)['data']; // Giải mã phản hồi JSON
+        return data.map((json) {
+          try {
+            return Author.fromJson(json);
+          } catch (e) {
+            print('Error parsing book: $e');
+            return null;
+          }
+        }).whereType<Author>().toList();
+      } else {
+        throw Exception('Failed to load books: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching books by search: $e');
+      rethrow;
+    }
+  }
 }

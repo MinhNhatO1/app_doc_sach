@@ -107,7 +107,7 @@ class _DangXuatWidgetState extends State<DangXuatWidget> {
           if (users != null) ...[
             Text(
               users!.fullName ?? '',
-              style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.bold),
+              style: const TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
           ],
@@ -136,13 +136,13 @@ class _DangXuatWidgetState extends State<DangXuatWidget> {
                     ),
                   ],
                 ),
-                child: Center(
+                child: const Center(
                   child: Text(
                     'Đăng xuất',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 13,
+                      fontSize: 15,
                       fontStyle: FontStyle.italic,
                     ),
                   ),

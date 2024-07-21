@@ -3,8 +3,10 @@ import 'package:app_doc_sach/view/dashboard/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
+import '../../controller/auth_controller.dart';
 import '../../provider/ui_provider.dart';
 import '../page_admin/dashboard_admin.dart';
 
@@ -19,6 +21,7 @@ class _SlashScreenState extends State<SlashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   bool _isShowingOverlay = true;
+  AuthController authController = Get.find();
   @override
   void initState() {
     super.initState();
@@ -38,14 +41,51 @@ class _SlashScreenState extends State<SlashScreen>
     super.dispose();
   }
 
-  void _startNextScreen() {
-    Future.delayed(const Duration(seconds: 5), () {
-      setState(() {
-        _isShowingOverlay = false; // Đặt giá trị _isShowingOverlay là false
-      });
+  void _startNextScreen() async {
+    await Future.delayed(const Duration(seconds: 5));
+
+    setState(() {
+      _isShowingOverlay = false;
+    });
+
+    if (!mounted) return;
+
+    if (authController.user.value != null) {
+      // Người dùng đã đăng nhập
+      String? userRole = await authController.getUserRoleByEmail(authController.user.value!.email!);
+
+      if (userRole == 'admin') {
+        // Chuyển đến trang Admin
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => const DashboardAdminWidget(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(
+                opacity: animation,
+                child: child,
+              );
+            },
+          ),
+        );
+      } else {
+        // Chuyển đến trang người dùng thông thường
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => const DashBoardScreen(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(
+                opacity: animation,
+                child: child,
+              );
+            },
+          ),
+        );
+      }
+    } else {
+      // Người dùng chưa đăng nhập, chuyển đến trang người dùng
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const DashBoardScreen() /*DashboardAdminWidget()*/,
+          pageBuilder: (_, __, ___) => const DashBoardScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(
               opacity: animation,
@@ -54,7 +94,7 @@ class _SlashScreenState extends State<SlashScreen>
           },
         ),
       );
-    });
+    }
   }
 
   SystemUiOverlayStyle _getStatusBarStyle(UiProvider uiProvider) {

@@ -53,6 +53,48 @@ class BookController extends GetxController{
     }
   }
 
+  Future<List<Book>> getBooksBySearch(String textSearch) async {
+    // Chuẩn hóa chuỗi tìm kiếm: chuyển về chữ thường và loại bỏ khoảng trắng
+    final normalizedSearch = textSearch.toLowerCase().replaceAll(' ', '');
+
+    // Xây dựng URL API với toán tử $containsi
+    final String apiUrl = '$baseUrl/api/books?populate[authors]=*&populate[categories]=*&populate[chapters][populate]=files&populate[cover_image]=*&filters[title][\$containsi]=$textSearch';
+
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        final List<dynamic> bookData = data['data'] ?? [];
+
+        return bookData.map((book) {
+          try {
+            return Book.fromJson({
+              'id': book['id'],
+              ...book['attributes'] ?? {},
+            });
+          } catch (e) {
+            print('Error parsing book: $e');
+            return null;
+          }
+        }).whereType<Book>().toList();
+      } else {
+        throw Exception('Failed to load books: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching books by search: $e');
+      rethrow;
+    }
+  }
+  Future<List<Book>> searchBooksLocally(String searchText, List<Book> allBooks) async {
+    final normalizedSearch = searchText.toLowerCase().trim();
+
+    return allBooks.where((book) {
+      final bookTitle = book.title?.toLowerCase().trim() ?? '';
+      return bookTitle.contains(normalizedSearch);
+    }).toList();
+  }
+
   //Get Book By Category
   Future<List<Book>> getBooksByCategory(String categoryName) async {
     try {
@@ -87,7 +129,39 @@ class BookController extends GetxController{
       rethrow;
     }
   }
+  Future<List<Book>> getBooksByAuthor(String authorName) async {
+    try {
+      // Build a query string for category name filter
+      String authorFilter = 'filters[authors][authorName]=$authorName';
 
+      final response = await http.get(Uri.parse('$baseUrl/api/books?populate[authors]=*&populate[categories]=*&populate[chapters][populate]=files&populate[cover_image]=*&$authorFilter'));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        print('Raw JSON response: $jsonResponse');
+        final List<dynamic> data = jsonResponse['data'] ?? [];
+        return data.map((json) {
+          try {
+            return Book.fromJson({
+              'id': json['id'],
+              ...json['attributes'] ?? {},
+            });
+          } catch (e, stackTrace) {
+            print('Error parsing book: $e');
+            print('Stack trace: $stackTrace');
+            print('Problematic JSON: $json');
+            return null;
+          }
+        }).whereType<Book>().toList();
+      } else {
+        throw Exception('Failed to load books: ${response.statusCode}');
+      }
+    } catch (e, stackTrace) {
+      print('Error loading books: $e');
+      print('Stack trace: $stackTrace');
+      rethrow;
+    }
+  }
   Future<List<Book>> getBooksByStatus(String status) async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/api/books?populate[authors]=*&populate[categories]=*&populate[chapters][populate]=files&populate[cover_image]=*&filters[status]=$status'));

@@ -9,6 +9,7 @@ import '../model/user_model.dart';
 import '../service/local_service/local_auth_service.dart';
 import '../service/remote_auth_service.dart';
 import 'auth_controller.dart'; // Giả sử bạn có file const.dart chứa BASE_URL
+import 'package:flutter/material.dart';
 
 class FavoriteService extends GetxController{
   final String _baseUrl = '$baseUrl/api';
@@ -125,21 +126,55 @@ class FavoriteService extends GetxController{
         print('Error getting user: $e');
         rethrow; // Ném lại lỗi để xử lý ở ngoài
       }
+
+      bool isBookInFavorite = false;
+      if (userFavorite != null) {
+        // Nếu đã có, kiểm tra xem sách đã trong danh sách chưa
+        isBookInFavorite = userFavorite.books!.any((b) => b.id == book.id);
+      }
+
       if (userFavorite == null) {
         // Nếu chưa có, tạo mới danh sách yêu thích cho người dùng
         await createNewFavorite(userResult, book);
+        Get.snackbar(
+          'Thành công',
+          'Đã thêm sách vào danh sách yêu thích',
+          colorText: Colors.white,
+          backgroundColor: Colors.green.withOpacity(0.7), // Màu xanh
+          snackPosition: SnackPosition.TOP,
+          margin: EdgeInsets.all(20),
+          duration: Duration(seconds: 3),
+          borderRadius: 10,
+        );
       } else {
-        // Nếu đã có, kiểm tra xem sách đã trong danh sách chưa
-        bool isBookInFavorite = userFavorite.books!.any((b) => b.id == book.id);
-
         if (isBookInFavorite) {
           // Nếu sách đã có, xóa khỏi danh sách
           await removeFromFavorite(userFavorite.id!, book.id!);
           await decrementLikes(book);
+          Get.snackbar(
+            'Thành công',
+            'Đã xóa sách khỏi danh sách yêu thích',
+            colorText: Colors.white,
+            backgroundColor: Colors.red.withOpacity(0.7),
+            snackPosition: SnackPosition.TOP,
+            margin: EdgeInsets.all(20),
+            duration: Duration(seconds: 3),
+            borderRadius: 10,
+          );
         } else {
           // Nếu sách chưa có, thêm vào danh sách
           await addToFavorite(userFavorite.id!, book);
           await incrementLikes(book);
+          Get.snackbar(
+            'Thành công',
+            'Đã thêm sách vào danh sách yêu thích',
+            colorText: Colors.white,
+            backgroundColor: Colors.green.withOpacity(0.7), // Màu xanh
+            snackPosition: SnackPosition.TOP,
+            margin: EdgeInsets.all(20),
+            duration: Duration(seconds: 3),
+            borderRadius: 10,
+          );
         }
       }
 
@@ -151,6 +186,7 @@ class FavoriteService extends GetxController{
       throw Exception('Error toggling favorite: $e');
     }
   }
+
 
   Future<void> incrementLikes(Book book) async {
     try {

@@ -1,110 +1,26 @@
+import 'package:app_doc_sach/controller/author_controller.dart';
 import 'package:app_doc_sach/model/author_model.dart';
+import 'package:app_doc_sach/page/listbook_author/listbook_author.dart';
 import 'package:app_doc_sach/provider/ui_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class TimKiemTacGia extends StatefulWidget {
-  const TimKiemTacGia({super.key, required this.textSearch});
+  const TimKiemTacGia({super.key, required this.textSearch,required this.onPopularSearchSelected,required this.popularSearches});
 
-  final String textSearch;
+  final String? textSearch;
+
+  final List<String> popularSearches;
+  final Function(String) onPopularSearchSelected;
   @override
   State<TimKiemTacGia> createState() => _TimKiemTacGiaState();
 }
 
 class _TimKiemTacGiaState extends State<TimKiemTacGia> {
   List<String> recentSearches = [];
-  List<Author> listAuthor = [
-    Author(
-      id: 1,
-      authorName: 'Nguyễn Nhật Ánh',
-      birthDate: DateTime(1955, 5, 7),
-      born: 'Quảng Nam, Vietnam',
-      telphone: '0912345678',
-      nationality: 'Vietnamese',
-      bio: 'Famous for his novels about Vietnamese youth.',
-    ),
-    Author(
-      id: 2,
-      authorName: 'Bảo Ninh',
-      birthDate: DateTime(1952, 10, 18),
-      born: 'Hà Nội, Vietnam',
-      telphone: '0923456789',
-      nationality: 'Vietnamese',
-      bio: 'Known for his novel "The Sorrow of War".',
-    ),
-    Author(
-      id: 3,
-      authorName: 'Nguyễn Du',
-      birthDate: DateTime(1766, 1, 3),
-      born: 'Hà Tĩnh, Vietnam',
-      telphone: '0934567890',
-      nationality: 'Vietnamese',
-      bio: 'Renowned for his epic poem "The Tale of Kiều".',
-    ),
-    Author(
-      id: 4,
-      authorName: 'Tô Hoài',
-      birthDate: DateTime(1920, 9, 27),
-      born: 'Hà Nội, Vietnam',
-      telphone: '0945678901',
-      nationality: 'Vietnamese',
-      bio: 'Famous for his children\'s literature and novels.',
-    ),
-    Author(
-      id: 5,
-      authorName: 'Xuân Diệu',
-      birthDate: DateTime(1916, 2, 2),
-      born: 'Hà Tĩnh, Vietnam',
-      telphone: '0956789012',
-      nationality: 'Vietnamese',
-      bio: 'One of the most prominent Vietnamese poets.',
-    ),
-    Author(
-      id: 6,
-      authorName: 'Nam Cao',
-      birthDate: DateTime(1915, 10, 29),
-      born: 'Hà Nam, Vietnam',
-      telphone: '0967890123',
-      nationality: 'Vietnamese',
-      bio: 'Known for his works depicting rural life and the human condition.',
-    ),
-    Author(
-      id: 7,
-      authorName: 'Nguyễn Huy Thiệp',
-      birthDate: DateTime(1950, 4, 29),
-      born: 'Thái Nguyên, Vietnam',
-      telphone: '0978901234',
-      nationality: 'Vietnamese',
-      bio: 'Famous for his short stories and novels.',
-    ),
-    Author(
-      id: 8,
-      authorName: 'Phạm Tiến Duật',
-      birthDate: DateTime(1941, 1, 14),
-      born: 'Phú Thọ, Vietnam',
-      telphone: '0989012345',
-      nationality: 'Vietnamese',
-      bio: 'Renowned for his war poetry.',
-    ),
-    Author(
-      id: 9,
-      authorName: 'Lê Minh Khuê',
-      birthDate: DateTime(1949, 12, 6),
-      born: 'Thanh Hóa, Vietnam',
-      telphone: '0990123456',
-      nationality: 'Vietnamese',
-      bio: 'Known for her short stories and novels about Vietnamese women.',
-    ),
-    Author(
-      id: 10,
-      authorName: 'Nguyễn Ngọc Tư',
-      birthDate: DateTime(1976, 11, 20),
-      born: 'Cà Mau, Vietnam',
-      telphone: '0912345123',
-      nationality: 'Vietnamese',
-      bio: 'Famous for her stories about the rural South of Vietnam.',
-    ),
-  ];
+  final AuthorController authorController = AuthorController();
+
+  bool isLoading = false;
   List<String> vietnameseAuthors = [
     "Nguyễn Nhật Ánh",
     "Nguyên Phong",
@@ -118,24 +34,74 @@ class _TimKiemTacGiaState extends State<TimKiemTacGia> {
     "Nguyễn Ngọc Tư",
   ];
 
+  Future<List<Author>> _getAuthors(String textSearch) async {
+    await Future.delayed(const Duration(seconds: 1)); // Wait for 1 second
+    try {
+      return await authorController.getAuthorsBySearch(textSearch);
+    } catch (e) {
+      print('Error loading authors: $e');
+      return [];
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.textSearch != null && widget.textSearch!.isNotEmpty) {
+      isLoading = true;
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Consumer<UiProvider>(
       builder: (BuildContext context, UiProvider value, Widget? child) {
-        return Scaffold(
-          body: Column(
-            children: <Widget>[
-              if (widget.textSearch.isNotEmpty)
-                Expanded(child: searchResults(widget.textSearch))
-              else
-                Expanded(child: searchDefault()),
-            ],
+        return SafeArea(
+          child: Scaffold(
+            body: SingleChildScrollView(
+              child: Column(
+                children: [
+                  if (widget.textSearch != null && widget.textSearch!.isNotEmpty)
+                    FutureBuilder<List<Author>>(
+                      future: _getAuthors(widget.textSearch!),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return SizedBox(
+                              height: MediaQuery.of(context).size.height - 250,
+                              child: const Center(child: CircularProgressIndicator())
+                          );
+                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return SizedBox(
+                            height: MediaQuery.of(context).size.height - 250,
+                            child: const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(20.0),
+                                child: Text(
+                                  'Không tìm thấy tác giả.',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.black,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                          );
+                        } else {
+                          return gridviewDanhmuc(snapshot.data!);
+                        }
+                      },
+                    )
+                  else
+                    searchDefault(),
+                ],
+              ),
+            ),
           ),
         );
       },
     );
   }
-
+/*
   Widget searchResults(String text) {
     return Consumer<UiProvider>(
       builder: (BuildContext context, UiProvider value, Widget? child) {
@@ -147,61 +113,91 @@ class _TimKiemTacGiaState extends State<TimKiemTacGia> {
         );
       },
     );
-  }
+  }*/
 
-  List<Author> _filterAuthors(String textSearch) {
-    return listAuthor
-        .where((author) =>
-            author.authorName.toLowerCase().contains(textSearch.toLowerCase()))
-        .toList();
-  }
-
-  Widget gridviewDanhmuc(String textSearch) {
-    final filteredAuthors = _filterAuthors(textSearch);
-    if (filteredAuthors.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Text(
-            'Không tìm thấy tác giả nào.',
-            style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
-            textAlign: TextAlign.center,
+  Widget gridviewDanhmuc(List<Author> authors) {
+    if (authors.isEmpty) {
+      return SizedBox(
+        height: MediaQuery.of(context).size.height - 250, // Adjust the height as needed
+        child: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(20.0),
+            child: Text(
+              'Không tìm thấy tác giả.',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ),
         ),
       );
     }
     return Padding(
       padding: const EdgeInsets.all(10),
-      child: GridView.builder(
-        scrollDirection: Axis.vertical,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 3.2,
-          mainAxisSpacing: 12.0,
-          crossAxisSpacing: 10.0,
-        ),
-        itemCount: filteredAuthors.length,
-        itemBuilder: (BuildContext context, index) {
-          final author = filteredAuthors[index];
-          return Container(
-            width: 100,
-            height: 30,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              color: Colors.white,
-            ),
-            child: Center(
-              child: Text(
-                author.authorName,
-                style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold),
+      child: SizedBox(
+        height: 300, // Điều chỉnh giá trị này nếu cần
+        child: GridView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 3.2,
+            mainAxisSpacing: 12.0,
+            crossAxisSpacing: 10.0,
+          ),
+          itemCount: authors.length,
+          itemBuilder: (BuildContext context, index) {
+            final author = authors[index];
+            return GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) => ListBookAuthor(author: author),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(1.0, 0.0);
+                      const end = Offset.zero;
+                      const curve = Curves.easeInOut;
+
+                      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+                      return SlideTransition(
+                        position: animation.drive(tween),
+                        child: child,
+                      );
+                    },
+                    transitionDuration: Duration(milliseconds: 300), // Thời gian chuyển đổi
+                  ),
+                );
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 1,
+                      blurRadius: 3,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    author.authorName,
+                    style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -212,17 +208,10 @@ class _TimKiemTacGiaState extends State<TimKiemTacGia> {
       child: SingleChildScrollView(
         child: Column(
           children: <Widget>[
-            if (recentSearches.isNotEmpty) ...[
-              _buildSectionTitle('Tìm kiếm gần đây'),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: _buildSearchList(recentSearches),
-              ),
-            ],
             _buildSectionTitle('Tìm kiếm nổi bật'),
             Align(
               alignment: Alignment.centerLeft,
-              child: _buildSearchList(vietnameseAuthors),
+              child: _buildSearchList(widget.popularSearches),
             ),
             const SizedBox(height: 200),
           ],
@@ -240,7 +229,7 @@ class _TimKiemTacGiaState extends State<TimKiemTacGia> {
           title,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 14,
+            fontSize: 16,
           ),
         ),
       ),
@@ -254,15 +243,20 @@ class _TimKiemTacGiaState extends State<TimKiemTacGia> {
         spacing: 8.0,
         runSpacing: 2.0,
         children: items.map((item) {
-          return Chip(
-            label: Text(
-              item,
-              style: const TextStyle(fontSize: 9),
-            ),
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
-              side: const BorderSide(color: Colors.green),
+          return GestureDetector(
+            onTap: () {
+              widget.onPopularSearchSelected(item);
+            },
+            child: Chip(
+              label: Text(
+                item,
+                style: const TextStyle(fontSize: 13),
+              ),
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+                side: const BorderSide(color: Colors.green),
+              ),
             ),
           );
         }).toList(),

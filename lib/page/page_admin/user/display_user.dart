@@ -103,8 +103,8 @@ class _DisplayUsersState extends State<DisplayUser> {
               itemBuilder: (BuildContext context, int index) {
                 return InkWell(
                   child: ListTile(
-                    title: Text(snapshot.data![index].fullName),
-                    subtitle: Text(snapshot.data![index].email),
+                    title: Text(snapshot.data![index].fullName!),
+                    subtitle: Text(snapshot.data![index].email!),
                     onTap: () {
                       Navigator.push(
                         context,

@@ -7,15 +7,15 @@ class Users {
   @HiveField(0)
    int? id;
   @HiveField(1)
-  String email;
+  String? email;
   @HiveField(2)
-   String fullName;
+   String? fullName;
   @HiveField(3)
-  String phone;
+  String? phone;
   @HiveField(4)
-  String gender;
+  String? gender;
   @HiveField(5)
-  String address;
+  String? address;
   @HiveField(6)
   DateTime? age;
   @HiveField(7)
@@ -23,7 +23,7 @@ class Users {
 
   Users({
     this.id,
-    required this.email,
+    this.email,
     required this.fullName,
     required this.phone,
     required this.gender,

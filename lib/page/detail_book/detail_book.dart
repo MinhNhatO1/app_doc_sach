@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:ui'; // Import for ImageFilter
 import 'package:app_doc_sach/controller/favorite_controller.dart';
 import 'package:app_doc_sach/model/book_model.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:app_doc_sach/model/product_phobien.dart';
@@ -9,6 +11,7 @@ import 'package:app_doc_sach/color/mycolor.dart';
 import 'package:app_doc_sach/page/tab_detail_book/binhluan.dart';
 import 'package:app_doc_sach/view/pdf_view/pdf_view.dart';
 import 'package:get/get.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import '../../const.dart';
@@ -35,6 +38,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   late Future<Book> _futureBook;
   final LocalAuthService _localAuthService = LocalAuthService();
   late bool isFavorite = false;
+  late ValueNotifier<Book> _bookNotifier;
   Future<Book> fetchBookById(String id) async {
     final response = await http.get(Uri.parse('$baseUrl/api/books/$id?populate[authors]=*&populate[categories]=*&populate[chapters][populate]=files&populate[cover_image]=*'));
 
@@ -70,15 +74,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       return;
     }
 
-    String userEmail = authService.user.value!.email;
+    String userEmail = authService.user.value!.email!;
     var userId = await RemoteAuthService().getUserIdByEmail(userEmail, token);
     if (userId == null) {
       print('User not found for email: $userEmail');
       return;
     }
     await favoriteService.toggleFavorite(userId,userEmail,token, widget.book);
+    Book updatedBook = await fetchBookById(widget.book.id!);
     setState(() {
       isFavorite = !isFavorite;
+      /*_futureBook = Future.value(updatedBook);*/
     });
   }
   @override
@@ -86,6 +92,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     super.initState();
     _futureBook = fetchBookById(widget.book.id!);
     _initFavoriteStatus();
+    _bookNotifier = ValueNotifier(widget.book);
   }
   void _initFavoriteStatus() async {
     if (authService.user.value != null) {
@@ -96,7 +103,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         return;
       }
 
-      String userEmail = authService.user.value!.email;
+      String userEmail = authService.user.value!.email!;
       var userId = await RemoteAuthService().getUserIdByEmail(userEmail, token);
       if (userId != null) {
         bool favoriteStatus = await favoriteService.checkFavorite(userId, widget.book.id!);
@@ -187,6 +194,240 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       },
     );
   }
+
+  //Download file
+  Future<void> downloadPdfFromStrapi(String pdfUrl, String chapterName) async {
+    try {
+      var response = await http.get(Uri.parse(pdfUrl));
+      if (response.statusCode == 200) {
+        Directory appDocDir = await getApplicationDocumentsDirectory();
+        String appDocPath = appDocDir.path;
+        String filePath = '$appDocPath/$chapterName.pdf';
+
+        File pdfFile = File(filePath);
+        await pdfFile.writeAsBytes(response.bodyBytes);
+        print('Downloaded PDF file to: $filePath');
+      } else {
+        print('Failed to download PDF. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error downloading PDF: $e');
+    }
+  }
+  Future<void> downloadAllChapters() async {
+    for (var chapter in widget.book.chapters!) {
+      if (chapter.mediaFile != null) {
+        String pdfUrl = baseUrl + chapter.mediaFile!.url;
+        await downloadPdfFromStrapi(pdfUrl, chapter.nameChapter);
+      }
+    }
+    print('All chapters downloaded!');
+  }
+
+  Future<List<Book>> getBooksByCategory(String categoryName) async {
+    try {
+      String categoryFilter = 'filters[categories][name]=$categoryName';
+      final response = await http.get(Uri.parse('$baseUrl/api/books?populate[authors]=*&populate[categories]=*&populate[chapters][populate]=files&populate[cover_image]=*&$categoryFilter'));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        final List<dynamic> data = jsonResponse['data'] ?? [];
+        return data.map((json) => Book.fromJson({
+          'id': json['id'],
+          ...json['attributes'] ?? {},
+        })).toList();
+      } else {
+        throw Exception('Failed to load books: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error loading books: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Book>> _fetchRelatedBooks() async {
+    Set<Book> relatedBooks = {};
+    Set<String> uniqueBookIds = {}; // Tạo một Set để lưu trữ các ID duy nhất
+
+    for (var category in widget.book.categories ?? []) {
+      List<Book> books = await getBooksByCategory(category.nameCategory);
+      for (var book in books) {
+        if (book.id != widget.book.id && !uniqueBookIds.contains(book.id)) {
+          relatedBooks.add(book);
+          uniqueBookIds.add(book.id!);
+        }
+      }
+    }
+
+    return relatedBooks.toList();
+  }
+
+  Future<void> incrementView(Book book) async {
+    try {
+      final updatedBook = await fetchBookById(book.id!);
+      final updatedView = (updatedBook.view ?? 0) + 1;
+
+      final url = Uri.parse('$baseUrl/api/books/${book.id}');
+      final response = await http.put(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'data': {
+            'view': updatedView,
+          }
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // Optional: Update local state or notify listeners
+        print('View count updated successfully');
+      } else {
+        throw Exception('Failed to update view count');
+      }
+    } catch (e) {
+      print('Error incrementing view count: $e');
+      throw Exception('Failed to update view count');
+    }
+  }
+  Widget _buildProductList(List<Book> products) {
+    return ListView.builder(
+      padding: EdgeInsets.only(bottom: 50), // Thêm padding 50 pixel ở dưới
+      itemCount: products.length,
+      itemBuilder: (context, index) {
+        final product = products[index];
+        return GestureDetector(
+          onTap: () {
+            incrementView(product);
+            Navigator.of(context).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => ProductDetailPage(book: product),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  const begin = Offset(1.0, 0.0);
+                  const end = Offset.zero;
+                  const curve = Curves.easeInOut;
+
+                  var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+                  return SlideTransition(
+                    position: animation.drive(tween),
+                    child: child,
+                  );
+                },
+                transitionDuration: const Duration(milliseconds: 300),
+              ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.only(left:10, right: 10, top: 10),
+            child: Container(
+              width: double.infinity,
+              height: 220,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.3),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Card(
+                color: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.network(
+                          baseUrl + (product.coverImage?.url ?? ''),
+                          width: 120,
+                          height: 180,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              width: 120,
+                              height: 180,
+                              color: Colors.grey,
+                              child: const Icon(Icons.error),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              product.title!,
+                              maxLines: 2,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              product.authors?.map((author) => author.authorName).join(', ') ?? 'Không có tác giả',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.black54,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: product.categories?.map((category) => Padding(
+                                  padding: const EdgeInsets.only(right: 4),
+                                  child: Chip(
+                                    label: Text(
+                                      category.nameCategory,
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                    backgroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8.0),
+                                      side: const BorderSide(color: Colors.green, width: 2),
+                                    ),
+                                  ),
+                                )).toList() ?? [const Chip(label: Text('Không có danh mục'))],
+                              ),
+                            ),
+                            const Spacer(),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text(
+                                  product.likes.toString(),
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                const Icon(
+                                  Icons.favorite,
+                                  color: Colors.red,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -252,9 +493,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               children: [
                                 IconButton(
                                   icon: const Icon(Icons.file_download_outlined, color: Colors.black),
-                                  onPressed: () {
-                                    // Handle download action
-                                  },
+                                  onPressed: downloadAllChapters,
                                 ),
                                 IconButton(
                                   icon: const Icon(Icons.question_mark, color: Colors.black),
@@ -452,15 +691,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                 ),
                               ),
                               Center(child: CommentScreen()), // Placeholder for comments
-                              Container(
-                                height: 200,
-                                child: const Center(
-                                  child: Text(
-                                    'Sách liên quan',
-                                    style: TextStyle(fontSize: 20),
-                                  ),
-                                ),
+                              FutureBuilder<List<Book>>(
+                                future: _fetchRelatedBooks(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    return const Center(child: CircularProgressIndicator());
+                                  } else if (snapshot.hasError) {
+                                    return Center(child: Text('Error: ${snapshot.error}'));
+                                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                                    return const Center(child: Text('Không có sách liên quan',style: TextStyle(fontSize: 16),));
+                                  } else {
+                                    // Debugging print statement to ensure data is fetched
+                                    print('Related Books: ${snapshot.data}');
+
+                                    return _buildProductList(snapshot.data!);
+                                  }
+                                },
                               ),
+
                               Container(
                                 height: 200,
                                 child: const Center(

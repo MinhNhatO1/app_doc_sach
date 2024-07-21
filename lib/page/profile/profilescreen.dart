@@ -244,357 +244,360 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
         elevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.dark, // Thêm dòng này
       ),
-      body: Padding(
-        padding: EdgeInsets.all(10),
-        child: FutureBuilder<Users>(
-          future: futureUser,
-          builder: (BuildContext context, AsyncSnapshot<Users> snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (snapshot.hasData) {
-              var user = snapshot.data!;
-              _nameController.text = user.fullName;
-              _phoneController.text = user.phone;
-              _addressController.text = user.address;
-              _emailController.text = user.email;
-              return SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // -- IMAGE with ICON
-                    Padding(
-                      padding: const EdgeInsets.only(top: 20.0),
-                      child: Stack(
-                        children: [
-                          SizedBox(
-                            width: 90,
-                            height: 90,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(100),
-                              child: _imageFile != null
-                                  ? Image.file(
-                                _imageFile!,
-                                fit: BoxFit.cover,
-                              )
-                                  :  user.avatar != ''
-                                  ? Image.network(
-                                baseUrl + user.avatar!,
-                                fit: BoxFit.cover,
-                              )
-                                  : Image.asset(
-                                'assets/icon/noimage.png',  // Nếu không có avatar, sử dụng ảnh mặc định
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: GestureDetector(
-                              onTap:  _pickImage,
-                              child: Container(
-                                width: 35,
-                                height: 35,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(100),
-                                  color: MyColor.primaryColor,
+      body: Container(
+        color: Colors.white,
+        child: Padding(
+          padding: EdgeInsets.all(10),
+          child: FutureBuilder<Users>(
+            future: futureUser,
+            builder: (BuildContext context, AsyncSnapshot<Users> snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (snapshot.hasData) {
+                var user = snapshot.data!;
+                _nameController.text = user.fullName!;
+                _phoneController.text = user.phone!;
+                _addressController.text = user.address!;
+                _emailController.text = user.email!;
+                return SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      // -- IMAGE with ICON
+                      Padding(
+                        padding: const EdgeInsets.only(top: 20.0),
+                        child: Stack(
+                          children: [
+                            SizedBox(
+                              width: 90,
+                              height: 90,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(100),
+                                child: _imageFile != null
+                                    ? Image.file(
+                                  _imageFile!,
+                                  fit: BoxFit.cover,
+                                )
+                                    :  user.avatar != ''
+                                    ? Image.network(
+                                  baseUrl + user.avatar!,
+                                  fit: BoxFit.cover,
+                                )
+                                    : Image.asset(
+                                  'assets/icon/noimage.png',  // Nếu không có avatar, sử dụng ảnh mặc định
+                                  fit: BoxFit.cover,
                                 ),
-                                child: const Icon(Icons.camera, color: Colors.white, size: 20),
                               ),
                             ),
-                          ),
-                        ],
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: GestureDetector(
+                                onTap:  _pickImage,
+                                child: Container(
+                                  width: 35,
+                                  height: 35,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(100),
+                                    color: MyColor.primaryColor,
+                                  ),
+                                  child: const Icon(Icons.camera, color: Colors.white, size: 20),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 50),
+                      const SizedBox(height: 50),
 
-                    // -- Form Fields
-                    Form(
-                      child: Column(
-                        children: [
-                          const Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Tên tài khoản',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            height: 60,
-                            decoration: BoxDecoration(
-                              border: Border.all(width: 2, color: MyColor.primaryColor),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.only(top: 5, left: 10, bottom: 5),
-                              child: TextFormField(
-                                controller: _nameController,
-                                style: TextStyle(fontSize: 12),
-                                maxLines: 1,
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                ),
+                      // -- Form Fields
+                      Form(
+                        child: Column(
+                          children: [
+                            const Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Tên tài khoản',
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 15),
-                          const Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Email',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            height: 60,
-                            decoration: BoxDecoration(
-                              border: Border.all(width: 2, color: MyColor.primaryColor),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.only(top: 5, left: 10, bottom: 5),
-                              child: TextFormField(
-                                controller: _emailController,
-                                enabled: false,
-                                style: TextStyle(fontSize: 12,color:  Colors.black),
-                                maxLines: 1,
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                ),
+                            const SizedBox(height: 8),
+                            Container(
+                              height: 60,
+                              decoration: BoxDecoration(
+                                border: Border.all(width: 2, color: MyColor.primaryColor),
+                                borderRadius: BorderRadius.circular(20),
                               ),
-                            ),
-                          ),
-                          const SizedBox(height: 15),
-                          const Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Số điện thoại',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            height: 60,
-                            decoration: BoxDecoration(
-                              border: Border.all(width: 2, color: MyColor.primaryColor),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.only(top: 5, left: 10, bottom: 5),
-                              child: TextFormField(
-                                controller: _phoneController,
-                                style: TextStyle(fontSize: 12),
-                                maxLines: 1,
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 15),
-                          const Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Giới tính',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: Row(
-                                  children: [
-                                    Radio<String>(
-                                      value: 'Nam',
-                                      groupValue: selectedGender,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          selectedGender = value;
-                                          // Cập nhật giá trị cho user.gender tại đây nếu cần
-                                        });
-                                      },
-                                    ),
-                                    const Text('Nam'),
-                                  ],
-                                ),
-                              ),
-                              Expanded(
-                                child: Row(
-                                  children: [
-                                    Radio<String>(
-                                      value: 'Nữ',
-                                      groupValue: selectedGender,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          selectedGender = value;
-                                          // Cập nhật giá trị cho user.gender tại đây nếu cần
-                                        });
-                                      },
-                                    ),
-                                    const Text('Nữ'),
-                                  ],
-                                ),
-                              ),
-                              Expanded(
-                                child: Row(
-                                  children: [
-                                    Radio<String>(
-                                      value: 'Khác',
-                                      groupValue: selectedGender,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          selectedGender = value;
-                                          // Cập nhật giá trị cho user.gender tại đây nếu cần
-                                        });
-                                      },
-                                    ),
-                                    const Text('Khác'),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 15),
-                          const Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Địa chỉ',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            height: 60,
-                            decoration: BoxDecoration(
-                              border: Border.all(width: 2, color: MyColor.primaryColor),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.only(top: 5, left: 10, bottom: 5),
-                              child: TextFormField(
-                                controller: _addressController,
-                                style: TextStyle(fontSize: 12),
-                                maxLines: 1,
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 15),
-                          const Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Ngày sinh',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            height: 60,
-                            decoration: BoxDecoration(
-                              border: Border.all(width: 2, color: MyColor.primaryColor),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Padding(
+                              child: Padding(
                                 padding: EdgeInsets.only(top: 5, left: 10, bottom: 5),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: TextFormField(
-                                        controller: _ageController,
-                                        style: TextStyle(fontSize: 12),
-                                        maxLines: 1,
-                                        readOnly: true,
-                                        decoration: const InputDecoration(
-                                          border: InputBorder.none,
+                                child: TextFormField(
+                                  controller: _nameController,
+                                  style: TextStyle(fontSize: 15),
+                                  maxLines: 1,
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 15),
+                            const Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Email',
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              height: 60,
+                              decoration: BoxDecoration(
+                                border: Border.all(width: 2, color: MyColor.primaryColor),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.only(top: 5, left: 10, bottom: 5),
+                                child: TextFormField(
+                                  controller: _emailController,
+                                  enabled: false,
+                                  style: TextStyle(fontSize: 15,color:  Colors.black),
+                                  maxLines: 1,
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 15),
+                            const Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Số điện thoại',
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              height: 60,
+                              decoration: BoxDecoration(
+                                border: Border.all(width: 2, color: MyColor.primaryColor),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.only(top: 5, left: 10, bottom: 5),
+                                child: TextFormField(
+                                  controller: _phoneController,
+                                  style: TextStyle(fontSize: 15),
+                                  maxLines: 1,
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 15),
+                            const Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Giới tính',
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      Radio<String>(
+                                        value: 'Nam',
+                                        groupValue: selectedGender,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            selectedGender = value;
+                                            // Cập nhật giá trị cho user.gender tại đây nếu cần
+                                          });
+                                        },
+                                      ),
+                                      const Text('Nam',style: TextStyle(fontSize: 18),),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      Radio<String>(
+                                        value: 'Nữ',
+                                        groupValue: selectedGender,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            selectedGender = value;
+                                            // Cập nhật giá trị cho user.gender tại đây nếu cần
+                                          });
+                                        },
+                                      ),
+                                      const Text('Nữ',style: TextStyle(fontSize: 18),),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      Radio<String>(
+                                        value: 'Khác',
+                                        groupValue: selectedGender,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            selectedGender = value;
+                                            // Cập nhật giá trị cho user.gender tại đây nếu cần
+                                          });
+                                        },
+                                      ),
+                                      const Text('Khác',style: TextStyle(fontSize: 18),),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 15),
+                            const Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Địa chỉ',
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              height: 60,
+                              decoration: BoxDecoration(
+                                border: Border.all(width: 2, color: MyColor.primaryColor),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.only(top: 5, left: 10, bottom: 5),
+                                child: TextFormField(
+                                  controller: _addressController,
+                                  style: TextStyle(fontSize: 15),
+                                  maxLines: 1,
+                                  decoration: const InputDecoration(
+                                    border: InputBorder.none,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 15),
+                            const Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Ngày sinh',
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              height: 60,
+                              decoration: BoxDecoration(
+                                border: Border.all(width: 2, color: MyColor.primaryColor),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Padding(
+                                  padding: EdgeInsets.only(top: 5, left: 10, bottom: 5),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: TextFormField(
+                                          controller: _ageController,
+                                          style: TextStyle(fontSize: 15),
+                                          maxLines: 1,
+                                          readOnly: true,
+                                          decoration: const InputDecoration(
+                                            border: InputBorder.none,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    IconButton(
-                                      onPressed: () async {
-                                        DateTime? pickedDate = await showDatePicker(
-                                          context: context,
-                                          initialDate: DateTime.now(),
-                                          firstDate: DateTime(1900),
-                                          lastDate: DateTime.now(),
-                                        );
-                                        if (pickedDate != null) {
-                                          setState(() {
-                                            _ageController.text = formatDate(pickedDate);
-                                          });
-                                        } else {
-                                          print('No date selected');
-                                        }
-                                      },
-                                      icon: const Icon(Icons.calendar_today_outlined),
-                                    ),
-                                  ],
-                                )
+                                      IconButton(
+                                        onPressed: () async {
+                                          DateTime? pickedDate = await showDatePicker(
+                                            context: context,
+                                            initialDate: DateTime.now(),
+                                            firstDate: DateTime(1900),
+                                            lastDate: DateTime.now(),
+                                          );
+                                          if (pickedDate != null) {
+                                            setState(() {
+                                              _ageController.text = formatDate(pickedDate);
+                                            });
+                                          } else {
+                                            print('No date selected');
+                                          }
+                                        },
+                                        icon: const Icon(Icons.calendar_today_outlined),
+                                      ),
+                                    ],
+                                  )
 
-                            ),
-                          ),
-
-                          const SizedBox(height: 20),
-                          // -- Form Submit Button
-                          SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                AwesomeDialog(
-                                  context: context,
-                                  dialogType: DialogType.warning,
-                                  animType: AnimType.topSlide,
-                                  showCloseIcon: true,
-                                  title: "Xác nhận",
-                                  desc: "Bạn có chắc muốn lưu thay đổi?",
-                                  btnCancelOnPress: () {},
-                                  btnOkOnPress: () {
-                                    // Proceed with updating the profile if the user confirms
-                                    String ageString = _ageController.text.trim();
-                                    DateTime? parsedAge = DateFormat('dd-MM-yyyy').parse(ageString);
-                                    AuthController.instance.UpdateProfile(
-                                      context: context,
-                                      fullName: _nameController.text,
-                                      phone: _phoneController.text,
-                                      address: _addressController.text,
-                                      gender: selectedGender ?? '',
-                                      email: _emailController.text,
-                                      age: parsedAge ?? DateTime.now(),
-                                    );
-                                  },
-                                ).show();
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: MyColor.primaryColor,
-                                side: BorderSide.none,
-                                shape: const StadiumBorder(),
-                              ),
-                              child: const Text(
-                                'Cập nhật thông tin',
-                                style: TextStyle(color: Colors.white),
                               ),
                             ),
-                          ),
 
-                          const SizedBox(height: 40),
-                        ],
+                            const SizedBox(height: 20),
+                            // -- Form Submit Button
+                            SizedBox(
+                              width: double.infinity,
+                              height: 50,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  AwesomeDialog(
+                                    context: context,
+                                    dialogType: DialogType.warning,
+                                    animType: AnimType.topSlide,
+                                    showCloseIcon: true,
+                                    title: "Xác nhận",
+                                    desc: "Bạn có chắc muốn lưu thay đổi?",
+                                    btnCancelOnPress: () {},
+                                    btnOkOnPress: () {
+                                      // Proceed with updating the profile if the user confirms
+                                      String ageString = _ageController.text.trim();
+                                      DateTime? parsedAge = DateFormat('dd-MM-yyyy').parse(ageString);
+                                      AuthController.instance.UpdateProfile(
+                                        context: context,
+                                        fullName: _nameController.text,
+                                        phone: _phoneController.text,
+                                        address: _addressController.text,
+                                        gender: selectedGender ?? '',
+                                        email: _emailController.text,
+                                        age: parsedAge ?? DateTime.now(),
+                                      );
+                                    },
+                                  ).show();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: MyColor.primaryColor,
+                                  side: BorderSide.none,
+                                  shape: const StadiumBorder(),
+                                ),
+                                child: const Text(
+                                  'Cập nhật thông tin',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 40),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            } else {
-              return Center(child: Text('No data found'));
-            }
-          },
+                    ],
+                  ),
+                );
+              } else {
+                return Center(child: Text('No data found'));
+              }
+            },
+          ),
         ),
       ),
     );
