@@ -244,8 +244,7 @@ class _LichSuDocWidgetState extends State<YeuthichWidget> {
             child: Padding(
               padding: const EdgeInsets.only(left: 25),
               child: Text(
-                '${ controller.user.value != null ?
-                    _favorite?.books!.length : 0} sách',
+                '${controller.user.value != null ? _favorite?.books!.length ?? 0 : 0} sách',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

@@ -12,6 +12,8 @@ import 'package:app_doc_sach/model/product_phobien.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../model/category_model.dart';
+
 class TimKiemWidget extends StatefulWidget {
   const TimKiemWidget({super.key});
 
@@ -30,12 +32,69 @@ class _TimKiemWidgetState extends State<TimKiemWidget>
   final _tabState = TabStateSearch();
   final _selectedColor = const Color(0xFF38A938);
   final _unselectedColor = const Color(0xff5f6368);
+  List<String> popularBookSearches = [
+    "Ngày hoa lưu ngược gió",
+    "Đắc Nhân Tâm",
+    "Muôn kiếp nhân sinh",
+    "Ghi chép pháp y",
+    "Tâm lý",
+    "Thôi miên bằng ngôn từ",
+    "hóa",
+    "Đắc Nhân Tâm",
+    "Nguyên tắc",
+    "toán",
+    "thao túng tâm lý",
+    "Tâm lý học tội phạm",
+  ];
+
+  List<String> vietnameseAuthors = [
+    "Nguyễn Nhật Ánh",
+    "Nguyên Phong",
+    "Tần Minh",
+    "Tô Hoài",
+    "Xuân Diệu",
+    "Nam Cao",
+    "Nguyễn Huy Thiệp",
+    "Phạm Tiến Duật",
+    "Lê Minh Khuê",
+    "Nguyễn Ngọc Tư",
+  ];
+
+  List<CategoryModel> featuredCategories = [
+    CategoryModel(
+      id: 1,
+      nameCategory: 'Tâm lý',
+      desCategory:
+      'Những cuốn sách được bán nhiều nhất trong thời gian gần đây.',
+    ),
+    CategoryModel(
+      id: 2,
+      nameCategory: 'Kinh dị',
+      desCategory: 'Những cuốn sách mới được xuất bản và phát hành.',
+    ),
+    CategoryModel(
+      id: 3,
+      nameCategory: 'Lãng mạn',
+      desCategory:
+      'Những cuốn sách nhận được nhiều đánh giá tích cực từ người đọc.',
+    ),
+    CategoryModel(
+      id: 4,
+      nameCategory: 'Sách đoạt giải',
+      desCategory:
+      'Những cuốn sách đã giành được các giải thưởng văn học uy tín.',
+    ),
+    CategoryModel(
+      id: 5,
+      nameCategory: 'Sách kinh điển',
+      desCategory: 'Những cuốn sách được coi là kinh điển trong nền văn học.',
+    ),
+  ];
   final _tabs = const [
     Tab(text: 'Sách'),
     Tab(child: Text('Tác giả')),
     Tab(child: Text('Danh mục')),
     Tab(child: Text('Danh ngôn')),
-    Tab(child: Text('Bộ sưu tập')),
   ];
 
   // Function to generate tabs with dynamic text color
@@ -44,28 +103,24 @@ class _TimKiemWidgetState extends State<TimKiemWidget>
       Tab(
         child: Text(
           'Sách',
+          style: TextStyle(fontSize: 18),
         ),
       ),
       Tab(
         child: Text(
-          'Tác giả',
+          'Tác giả',style: TextStyle(fontSize: 18),
         ),
       ),
       Tab(
         child: Text(
-          'Danh mục',
+          'Danh mục',style: TextStyle(fontSize: 18),
         ),
       ),
       Tab(
         child: Text(
-          'Danh ngôn',
+          'Danh ngôn',style: TextStyle(fontSize: 18),
         ),
       ),
-      Tab(
-        child: Text(
-          'Bộ sưu tập',
-        ),
-      )
     ];
   }
 
@@ -139,7 +194,7 @@ class _TimKiemWidgetState extends State<TimKiemWidget>
     setState(() {
       searchResults = listProduct
           .where((product) =>
-              product.tenSach.toLowerCase().contains(query.toLowerCase()))
+          product.tenSach.toLowerCase().contains(query.toLowerCase()))
           .toList();
       isSearching = query.isNotEmpty;
     });
@@ -168,7 +223,12 @@ class _TimKiemWidgetState extends State<TimKiemWidget>
       });
     }
   }
-
+  void _onPopularSearchSelected(String selectedSearch) {
+    setState(() {
+      _searchController.text = selectedSearch;
+      _searchText = selectedSearch;
+    });
+  }
   @override
   void dispose() {
     _searchController.dispose();
@@ -194,35 +254,41 @@ class _TimKiemWidgetState extends State<TimKiemWidget>
                       physics: NeverScrollableScrollPhysics(),
                       child: Column(
                         children: <Widget>[
+                          const SizedBox(height: 10,),
                           Padding(
                             padding:
                                 const EdgeInsets.only(right: 16.0, left: 16),
                             child: TextField(
-                              maxLines: 1,
                               controller: _searchController,
                               decoration: InputDecoration(
-                                contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 7.0,
-                                    horizontal: 12.0), // Giảm padding
+                                contentPadding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 12.0),
                                 hintText: 'Nhập tên sách, tác giả,...',
-                                hintStyle: const TextStyle(fontSize: 12),
+                                filled: true,
+                                fillColor: Colors.white,
+                                hintStyle: const TextStyle(fontSize: 15),
                                 border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(15.0)),
+                                  borderSide: BorderSide(width: 2),
+                                  borderRadius: BorderRadius.circular(15.0),
+                                ),
                                 suffixIcon: IconButton(
                                   icon: const Icon(Icons.search),
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    // Xử lý sự kiện nhấn nút tìm kiếm, có thể để trống hoặc thực hiện một số hành động
+                                  },
                                 ),
                               ),
                               onChanged: (String query) {
-                                _filterProducts(query);
+                                _filterProducts(query); // Lọc dữ liệu khi người dùng nhập văn bản
                               },
                               onSubmitted: (String query) {
                                 setState(() {
-                                  _searchText = query;
+                                  _searchText = query; // Cập nhật _searchText khi người dùng hoàn tất nhập văn bản
                                 });
+                                // Có thể thêm hành động nào đó khi người dùng nhấn nút gửi, như chuyển hướng hoặc gọi API
                               },
-                              style: const TextStyle(fontSize: 12),
-                            ),
+                              style: const TextStyle(fontSize: 15),
+                            )
+
                           ),
                           const SizedBox(height: 20),
                           SizedBox(
@@ -328,17 +394,22 @@ class _TimKiemWidgetState extends State<TimKiemWidget>
             // Nội dung cho mỗi Tab
             _buildTabContent(TimKiemSach(
               textSearch: text,
+              popularSearches: popularBookSearches,
+              onPopularSearchSelected: _onPopularSearchSelected,
             )),
             _buildTabContent(TimKiemTacGia(
               textSearch: text,
+              popularSearches: vietnameseAuthors,
+              onPopularSearchSelected: _onPopularSearchSelected,
             )),
             _buildTabContent(TimKiemDanhMuc(
               textSearch: text,
+              popularSearches: featuredCategories,
+              onPopularSearchSelected: _onPopularSearchSelected,
             )),
             _buildTabContent(TimKiemDanhNgon(
               textSearch: text,
             )),
-            _buildTabContent(TimKiemBoSuuTap()),
           ],
         );
       },

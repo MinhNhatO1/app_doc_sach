@@ -1,10 +1,13 @@
 import 'package:app_doc_sach/color/mycolor.dart';
 import 'package:app_doc_sach/model/user_model.dart';
+import 'package:app_doc_sach/page/login_register/service/auth_service.dart';
+import 'package:app_doc_sach/page/page_tab_taikhoanwidget/checkvipstatus.dart';
 import 'package:app_doc_sach/page/slash_screen/slash_screen.dart';
 import 'package:app_doc_sach/provider/ui_provider.dart';
 import 'package:app_doc_sach/route/app_page.dart';
 import 'package:app_doc_sach/route/app_route.dart';
 import 'package:app_doc_sach/service/local_service/local_auth_service.dart';
+import 'package:app_doc_sach/service/payment/stripepayment.dart';
 import 'package:app_doc_sach/state/tab_state.dart';
 import 'package:app_doc_sach/state/tab_state_search.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -17,6 +20,7 @@ import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
+import 'controller/vip_controller.dart';
 import 'view/dashboard/dashboard_binding.dart';
 
 void main() async {
@@ -54,6 +58,16 @@ void main() async {
   /*FirebaseDatabase.instance.databaseURL = "https://appdocsach-77e59-default-rtdb.firebaseio.com/";*/
   await Hive.initFlutter();
  Hive.registerAdapter(UsersAdapter());
+
+  // Khởi tạo các service khác
+  // Khởi tạo các service
+  Get.put(AuthService());
+  Get.put(VipService());
+
+  // Khởi tạo và chạy VipCheckService
+  final vipCheckService = Get.put(VipCheckService());
+  await vipCheckService.init();
+
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context) => TabState()),

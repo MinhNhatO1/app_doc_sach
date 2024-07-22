@@ -15,6 +15,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hive/hive.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../page/page_admin/dashboard_admin.dart';
 import '../page/page_tab_kesach/lichsu.dart';
 import '../view/dashboard/dashboard_screen.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
@@ -93,8 +94,7 @@ class AuthController extends GetxController {
         // Handle successful profile retrieval
         if (userResult.statusCode == 200) {
           var userProfile = usersFromJson(userResult.body);
-          var userId = await getUserIdByUsername(userProfile.email);
-
+          var userId = await getUserIdByUsername(userProfile.email!);
           // Update user profile on backend if needed
           await updateUserProfile(
             token: jwt,
@@ -117,17 +117,16 @@ class AuthController extends GetxController {
               print('Failed to load user photo from Google');
             }
           }
-
-          // Handle successful login UI and local storage
-          _successMessageLogin(context);
           user.value = usersFromJson(userResult.body);
+          // Handle successful login UI and local storage
 
           await _localAuthService.addToken(token: jwt);
-          await _localAuthService.addUser(user: user.value!);
+          await _localAuthService.addUser(user: userProfile);
 
           final savedUser = _localAuthService.getUser();
           final savedToken = _localAuthService.getToken();
 
+          _successMessageLogin(context);
           if (savedUser != null && savedToken != null) {
             await Future.delayed(const Duration(seconds: 2));
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -189,6 +188,29 @@ class AuthController extends GetxController {
       for (var user in data) {
         if (user['email'] == email) {
           return user['id'].toString(); // Return the ID as a string
+        }
+      }
+      return null; // Return null if username is not found
+    } else {
+      return null; // Handle connection error or other HTTP errors here
+    }
+  }
+
+  Future<String?> getUserRoleByEmail(String email) async {
+    final url = Uri.parse('$baseUrl/api/users');
+    final response = await http.get(url, headers: {
+      'Content-Type': 'application/json',
+    });
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      if (data.isEmpty) {
+        return null; // Return null if no users are found
+      }
+
+      for (var user in data) {
+        if (user['email'] == email) {
+          return user['role_user'].toString(); // Return the ID as a string
         }
       }
       return null; // Return null if username is not found
@@ -375,33 +397,67 @@ class AuthController extends GetxController {
           // Hiển thị thông báo đăng nhập thành công
           _successMessageLogin(context);
 
+          // Kiểm tra vai trò người dùng
+          String? userRole = await getUserRoleByEmail(email);
+
           // Chờ một khoảng thời gian ngắn (2 giây) trước khi chuyển trang
           Future.delayed(const Duration(seconds: 2), () {
-            Navigator.of(context).pushReplacement(
-              PageRouteBuilder(
-                transitionDuration: const Duration(milliseconds: 800),
-                pageBuilder: (context, animation, secondaryAnimation) => const DashBoardScreen(),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                  const begin = Offset(-1.0, 0.0); // Bắt đầu từ trái
-                  const end = Offset.zero;
-                  const curve = Curves.easeInOutCubic;
+            if (userRole == 'admin') {
+              // Chuyển đến trang admin và xóa tất cả các trang trước đó
+              Navigator.of(context).pushAndRemoveUntil(
+                PageRouteBuilder(
+                  transitionDuration: const Duration(milliseconds: 800),
+                  pageBuilder: (context, animation, secondaryAnimation) => const DashboardAdminWidget(), // Thay thế bằng trang admin của bạn
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(-1.0, 0.0);
+                    const end = Offset.zero;
+                    const curve = Curves.easeInOutCubic;
 
-                  var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                  var offsetAnimation = animation.drive(tween);
-                  var fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-                    CurvedAnimation(parent: animation, curve: Curves.easeInOut),
-                  );
+                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                    var offsetAnimation = animation.drive(tween);
+                    var fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+                      CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+                    );
 
-                  return FadeTransition(
-                    opacity: fadeAnimation,
-                    child: SlideTransition(
-                      position: offsetAnimation,
-                      child: child,
-                    ),
-                  );
-                },
-              ),
-            );
+                    return FadeTransition(
+                      opacity: fadeAnimation,
+                      child: SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      ),
+                    );
+                  },
+                ),
+                    (route) => false, // Điều này sẽ xóa tất cả các trang trước đó
+              );
+            }
+            else{
+              Navigator.of(context).pushReplacement(
+                PageRouteBuilder(
+                  transitionDuration: const Duration(milliseconds: 800),
+                  pageBuilder: (context, animation, secondaryAnimation) => const DashBoardScreen(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(-1.0, 0.0); // Bắt đầu từ trái
+                    const end = Offset.zero;
+                    const curve = Curves.easeInOutCubic;
+
+                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                    var offsetAnimation = animation.drive(tween);
+                    var fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+                      CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+                    );
+
+                    return FadeTransition(
+                      opacity: fadeAnimation,
+                      child: SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      ),
+                    );
+                  },
+                ),
+              );
+            }
           });
 
           isLoggedIn.value = true;

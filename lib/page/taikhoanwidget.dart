@@ -73,7 +73,7 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
       return;
     }
 
-    String userEmail = authController.user.value!.email;
+    String userEmail = authController.user.value!.email!;
     String? token = authController.getToken();
 
     try {
@@ -216,7 +216,7 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                         const SizedBox(width: 10,),
                                         Text('Gia hạn gói',
                                           style: TextStyle(
-                                            fontSize: 14,
+                                            fontSize: 15,
                                             fontWeight: FontWeight.bold,
                                             color: notifier.isDark ? Colors.white : Colors.grey.shade800,
                                           ),
@@ -377,7 +377,7 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                             const SizedBox(width: 10,),
                                             Text('Thông tin tài khoản',
                                               style: TextStyle(
-                                                fontSize: 14,
+                                                fontSize: 15,
                                                 fontWeight: FontWeight.bold,
                                                 color: notifier.isDark ? Colors.white : Colors.grey.shade800,
                                               ),
@@ -420,7 +420,7 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                         const SizedBox(width: 10,),
                                         Text('Giao diện tối',
                                           style: TextStyle(
-                                            fontSize: 14,
+                                            fontSize: 15,
                                             fontWeight: FontWeight.bold,
                                             color: notifier.isDark ? Colors.white : Colors.grey.shade800,
                                           ),
@@ -482,7 +482,7 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                         const SizedBox(width: 10,),
                                         Text('Tùy chỉnh màn hình chủ',
                                           style: TextStyle(
-                                            fontSize: 14,
+                                            fontSize: 15,
                                             fontWeight: FontWeight.bold,
                                             color: notifier.isDark ? Colors.white : Colors.grey.shade800,
                                           ),
@@ -528,7 +528,7 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                           const SizedBox(width: 10,),
                                           Text('Ngôn ngữ',
                                             style: TextStyle(
-                                              fontSize: 14,
+                                              fontSize: 15,
                                               fontWeight: FontWeight.bold,
                                               color: notifier.isDark ? Colors.white : Colors.grey.shade800,
                                             ),
@@ -591,14 +591,14 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                                 children: [
                                                   Text('Yêu cầu sách, báo lỗi, ',
                                                     style: TextStyle(
-                                                      fontSize: 14,
+                                                      fontSize: 15,
                                                       fontWeight: FontWeight.bold,
                                                       color: notifier.isDark ? Colors.white : Colors.grey.shade800,
                                                     ),
                                                   ),
                                                   Text('góp ý',textAlign: TextAlign.start,
                                                     style: TextStyle(
-                                                      fontSize: 14,
+                                                      fontSize: 15,
                                                       fontWeight: FontWeight.bold,
                                                       color: notifier.isDark ? Colors.white : Colors.grey.shade800,
                                                     ),
@@ -647,7 +647,7 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                           const SizedBox(width: 10,),
                                           Text('Hướng dẫn sử dụng',
                                             style: TextStyle(
-                                              fontSize: 14,
+                                              fontSize: 15,
                                               fontWeight: FontWeight.bold,
                                               color: notifier.isDark ? Colors.white : Colors.grey.shade800,
                                             ),
@@ -691,7 +691,7 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                           const SizedBox(width: 10,),
                                           Text('Về chúng tôi',
                                             style: TextStyle(
-                                              fontSize: 14,
+                                              fontSize: 15,
                                               fontWeight: FontWeight.bold,
                                               color: notifier.isDark ? Colors.white : Colors.grey.shade800,
                                             ),
@@ -803,17 +803,44 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                   padding: const EdgeInsets.only(bottom: 4),
                                   child: InkWell(
                                     onTap: () {
-                                      Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => GiaHanGoi()),
-                                      );
+                                      AwesomeDialog(
+                                        context: context,
+                                        dialogType: DialogType.warning, // No predefined icon
+                                        animType: AnimType.topSlide,
+                                        showCloseIcon: true,
+                                        title: "Bạn chưa đăng nhập",
+                                        desc: "Bạn cần đăng nhập để cập nhật hồ sơ của bạn.",
+                                        btnOkText: 'Đồng ý',
+                                        btnCancelText: 'Không',
+                                        btnCancelOnPress: () {},
+                                        btnOkOnPress: () {
+                                          Navigator.of(context).push(
+                                            PageRouteBuilder(
+                                              pageBuilder: (context, animation, secondaryAnimation) => const ChonDangNhapWidget(),
+                                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                const begin = Offset(1.0, 0.0);
+                                                const end = Offset.zero;
+                                                const curve = Curves.easeInOut;
+
+                                                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+                                                return SlideTransition(
+                                                  position: animation.drive(tween),
+                                                  child: child,
+                                                );
+                                              },
+                                              transitionDuration: Duration(milliseconds: 300), // Thời gian chuyển đổi
+                                            ),
+                                          );
+                                        },
+                                      ).show();
                                       },
                                     child: Row(
                                       children: [
                                         const SizedBox(width: 10,),
                                         Text('Gia hạn gói',
                                           style: TextStyle(
-                                            fontSize: 14,
+                                            fontSize: 15,
                                             fontWeight: FontWeight.bold,
                                             color: notifier.isDark ? Colors.white : Colors.grey.shade800,
                                           ),
@@ -948,7 +975,7 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                             const SizedBox(width: 10,),
                                             Text('Thông tin tài khoản',
                                               style: TextStyle(
-                                                fontSize: 14,
+                                                fontSize: 15,
                                                 fontWeight: FontWeight.bold,
                                                 color: notifier.isDark ? Colors.white : Colors.grey.shade800,
                                               ),
@@ -991,7 +1018,7 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                         const SizedBox(width: 10,),
                                         Text('Giao diện tối',
                                           style: TextStyle(
-                                            fontSize: 14,
+                                            fontSize: 15,
                                             fontWeight: FontWeight.bold,
                                             color: notifier.isDark ? Colors.white : Colors.grey.shade800,
                                           ),
@@ -1053,7 +1080,7 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                         const SizedBox(width: 10,),
                                         Text('Tùy chỉnh màn hình chủ',
                                           style: TextStyle(
-                                            fontSize: 14,
+                                            fontSize: 15,
                                             fontWeight: FontWeight.bold,
                                             color: notifier.isDark ? Colors.white : Colors.grey.shade800,
                                           ),
@@ -1099,7 +1126,7 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                           const SizedBox(width: 10,),
                                           Text('Ngôn ngữ',
                                             style: TextStyle(
-                                              fontSize: 14,
+                                              fontSize: 15,
                                               fontWeight: FontWeight.bold,
                                               color: notifier.isDark ? Colors.white : Colors.grey.shade800,
                                             ),
@@ -1162,7 +1189,7 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                                 children: [
                                                   Text('Yêu cầu sách, báo lỗi, ',
                                                     style: TextStyle(
-                                                      fontSize: 14,
+                                                      fontSize: 15,
                                                       fontWeight: FontWeight.bold,
                                                       color: notifier.isDark ? Colors.white : Colors.grey.shade800,
                                                     ),
@@ -1218,7 +1245,7 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                           const SizedBox(width: 10,),
                                           Text('Hướng dẫn sử dụng',
                                             style: TextStyle(
-                                              fontSize: 14,
+                                              fontSize: 15,
                                               fontWeight: FontWeight.bold,
                                               color: notifier.isDark ? Colors.white : Colors.grey.shade800,
                                             ),
@@ -1262,7 +1289,7 @@ class _TaiKhoanWidgetState extends State<TaiKhoanWidget> {
                                           const SizedBox(width: 10,),
                                           Text('Về chúng tôi',
                                             style: TextStyle(
-                                              fontSize: 14,
+                                              fontSize: 15,
                                               fontWeight: FontWeight.bold,
                                               color: notifier.isDark ? Colors.white : Colors.grey.shade800,
                                             ),

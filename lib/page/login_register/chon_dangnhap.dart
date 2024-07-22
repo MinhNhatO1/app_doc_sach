@@ -286,7 +286,7 @@ class _ChonDangNhapWidgetState extends State<ChonDangNhapWidget> {
                           return ElevatedButton(
                             onPressed: () {
                               // Cập nhật lại SystemUiOverlayStyle cho màn hình gọi
-                              updateSystemUiOverlayStyle(context);
+                              /*updateSystemUiOverlayStyle(context);*/
                               Navigator.of(context).pop();
                             },
                             style: ElevatedButton.styleFrom(

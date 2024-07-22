@@ -63,7 +63,7 @@ class _TimKiemDanhNgonState extends State<TimKiemDanhNgon> {
         body: widget.textSearch.isEmpty
             ? searchDefault()
             : filteredQuotes.isEmpty
-                ? const Center(child: Text('Không tìm thấy danh ngôn'))
+                ? const Center(child: Text('Không tìm thấy danh ngôn',style: TextStyle(fontSize: 16),))
                 : ListView.builder(
                     itemCount: filteredQuotes.length,
                     itemBuilder: (context, index) {
@@ -101,7 +101,7 @@ class _TimKiemDanhNgonState extends State<TimKiemDanhNgon> {
           title,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 14,
+            fontSize: 16,
           ),
         ),
       ),
@@ -118,7 +118,7 @@ class _TimKiemDanhNgonState extends State<TimKiemDanhNgon> {
           return Chip(
             label: Text(
               item.text,
-              style: const TextStyle(fontSize: 10),
+              style: const TextStyle(fontSize: 13),
             ),
             backgroundColor: Colors.white,
             shape: RoundedRectangleBorder(
