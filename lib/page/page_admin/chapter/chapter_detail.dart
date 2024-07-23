@@ -281,28 +281,31 @@ class _ChapterDetailState extends State<ChapterDetail> {
             ),
             const SizedBox(height: 16),
             // Tiêu đề sách
-            Row(
-              children: [
-                const Text(
-                  'Tên sách: ',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold
-                    ,
-                  ),
+            RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 19,
                 ),
-                const SizedBox(width: 8,),
-                Text(
-                  widget.book.title ?? 'Không có tiêu đề',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
+                children: [
+                  const TextSpan(
+                    text: 'Tên sách: ',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
                   ),
-                ),
-              ],
+                  TextSpan(
+                    text: widget.book.title ?? 'Không có tiêu đề',
+                    style: const TextStyle(
+                      fontSize: 19,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             // ISBN
             RichText(
               text: TextSpan(

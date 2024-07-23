@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:app_doc_sach/const.dart';
 import 'package:app_doc_sach/controller/controller.dart';
+import 'package:app_doc_sach/controller/vip_controller.dart';
 import 'package:app_doc_sach/model/user_model.dart';
 import 'package:app_doc_sach/service/local_service/local_auth_service.dart';
 import 'package:app_doc_sach/service/remote_auth_service.dart';
@@ -24,6 +25,7 @@ import 'package:http/http.dart' as http;
 class AuthController extends GetxController {
   static AuthController instance = Get.find();
   final RxBool isLoggedIn = false.obs;
+  final VipService _vipService = VipService();
   Rxn<Users> user = Rxn<Users>();
   final LocalAuthService _localAuthService = LocalAuthService();
   RxBool hasHiveData = false.obs;
@@ -854,5 +856,12 @@ class AuthController extends GetxController {
     } finally {
       EasyLoading.dismiss();
     }
+  }
+
+  Future<bool> checkUserVIPStatus() async {
+    if (user.value == null || user.value!.id == null) return false;
+
+    final vip = await _vipService.checkVipStatus(user.value!.id.toString());
+    return _vipService.isVipActive(vip);
   }
 }

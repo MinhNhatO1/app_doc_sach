@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:ui'; // Import for ImageFilter
 import 'package:app_doc_sach/controller/favorite_controller.dart';
 import 'package:app_doc_sach/model/book_model.dart';
+import 'package:app_doc_sach/page/page_tab_taikhoanwidget/gia_han_goi.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,6 +17,7 @@ import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import '../../const.dart';
 import '../../controller/auth_controller.dart';
+import '../../model/author_model.dart';
 import '../../model/chapter_model.dart';
 import '../../model/popular_book_model.dart';
 import '../../service/local_service/local_auth_service.dart';
@@ -123,73 +125,117 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return isFavorite ? Colors.red : null;
   }
 
-  void _showChaptersDialog(BuildContext context,Book book) {
+  void _showChaptersDialog(BuildContext context, Book book) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.5, // Điều chỉnh chiều cao tối đa
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
-        return Container(
-          padding: const EdgeInsets.only(top:  16,right: 16,left: 16 ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return DraggableScrollableSheet(
+          initialChildSize: 0.5,
+          minChildSize: 0.5,
+          maxChildSize: 0.5,
+          builder: (_, controller) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Column(
                 children: [
-                  const Text(
-                    'Danh sách chương',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: const BoxDecoration(
+                      color: MyColor.primaryColor,
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Danh sách chương',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
+                  Expanded(
+                    child: ListView.builder(
+                      controller: controller,
+                      itemCount: book.chapters?.length ?? 0,
+                      itemBuilder: (context, index) {
+                        Chapter chapter = book.chapters![index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: Card(
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () {
+                                Navigator.pop(context);
+                                if (chapter.mediaFile != null) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PDFViewerPage(
+                                        assetPath: chapter.mediaFile!.url,
+                                        bookId: book.id!,
+                                        chapterId: chapter.id!.toString(),
+                                        chapterName: chapter.nameChapter,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: const BoxDecoration(
+                                        color: MyColor.primaryColor,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          '${index + 1}',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Text(
+                                        chapter.nameChapter,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                    Icon(Icons.arrow_forward_ios, size: 18, color: Colors.grey),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: widget.book.chapters?.length ?? 0,
-                  itemBuilder: (context, index) {
-                    Chapter chapter = widget.book.chapters![index];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: ListTile(
-                          title: Text(chapter.nameChapter),
-                          onTap: () {
-                            Navigator.pop(context); // Close the bottom sheet
-                            if (chapter.mediaFile != null) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => PDFViewerPage(
-                                    assetPath: chapter.mediaFile!.url,
-                                    bookId: widget.book.id!,
-                                    chapterId: chapter.id!.toString(),
-                                    chapterName: chapter.nameChapter,
-                                  ),
-                                ),
-                              );
-                            }
-                          },
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
@@ -561,12 +607,28 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                         ),
                                       ),
                                     ),
-                                    Text(
-                                      book.authors?.map((author) => author.authorName).join(', ') ?? 'Không có tác giả',
-                                      style: const TextStyle(
-                                          fontSize: 17,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.w400
+                                    Container(
+                                      height: 30, // Chiều cao của container
+                                      child: SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: Row(
+                                          children: book.authors?.asMap().entries.map((entry) {
+                                            int index = entry.key;
+                                            Author author = entry.value;
+                                            return Padding(
+                                              padding: const EdgeInsets.only(right: 8.0),
+                                              child: Text(
+                                                '${author.authorName}${index < book.authors!.length - 1 ? ', ' : ''}',
+                                                style: TextStyle(fontSize: 16),
+                                              ),
+                                            );
+                                          }).toList() ?? [
+                                            Text(
+                                              'Không có tác giả',
+                                              style: TextStyle(fontSize: 16),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(height: 8),
@@ -783,8 +845,58 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         btnOkText: 'Đồng ý',
                         btnCancelText: 'Không',
                       ).show();
-                    } else {
-                      _showChaptersDialog(context, widget.book);
+                    }
+                    else {
+                      if (widget.book.status == 'Mới nhất') {
+                        bool isUserVIP = await authService.checkUserVIPStatus();
+                        if (!isUserVIP) {
+                          AwesomeDialog(
+                            context: context,
+                            dialogType: DialogType.info,
+                            animType: AnimType.topSlide,
+                            title: 'Thông báo',
+                            titleTextStyle: const TextStyle(
+                              fontSize: 22, // Custom font size
+                              fontWeight: FontWeight.bold, // Custom font weight
+                              color: Colors.black, // Custom color
+                            ),
+                            desc: 'Vui lòng đăng ký VIP để được đọc những cuốn sách mới nhất.',
+                            descTextStyle: const TextStyle(
+                              fontSize: 16, // Custom font size
+                              color: Colors.black54, // Custom color
+                            ),
+                            btnOkOnPress: () {
+                              Navigator.of(context).push(
+                                PageRouteBuilder(
+                                  pageBuilder: (context, animation, secondaryAnimation) => GiaHanGoi(),
+                                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                    const begin = Offset(1.0, 0.0);
+                                    const end = Offset.zero;
+                                    const curve = Curves.ease;
+
+                                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                    var offsetAnimation = animation.drive(tween);
+
+                                    return SlideTransition(
+                                      position: offsetAnimation,
+                                      child: child,
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                            btnOkText: 'Đăng ký VIP',
+                            btnOkColor: Colors.green, // Custom button color
+                            btnCancelOnPress: () {},
+                            btnCancelText: 'Đóng',
+                            btnCancelColor: Colors.red, // Custom button color
+                          ).show();
+                        } else {
+                          _showChaptersDialog(context, widget.book);
+                        }
+                      } else {
+                        _showChaptersDialog(context, widget.book);
+                      }
                     }
                   },
                   child: const Text(

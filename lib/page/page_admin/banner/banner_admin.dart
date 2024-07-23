@@ -1,32 +1,37 @@
-import 'package:app_doc_sach/const/constant.dart';
-import 'package:app_doc_sach/page/page_admin/author/author_admin.dart';
-import 'package:app_doc_sach/page/page_admin/book_admin.dart';
-import 'package:app_doc_sach/page/page_admin/category/display_category.dart';
-import 'package:app_doc_sach/page/page_admin/main_screen.dart';
-import 'package:app_doc_sach/page/page_admin/user/user_admin.dart';
-import 'package:app_doc_sach/widgets/side_widget_menu.dart';
+import 'package:app_doc_sach/page/page_admin/banner/display_banner.dart';
+import 'package:app_doc_sach/page/page_admin/book/display_book.dart';
+import 'package:app_doc_sach/page/page_admin/book_popular/display_bookpopular.dart';
 import 'package:flutter/material.dart';
 
-import '../banner/banner_admin.dart';
+import '../../../const/constant.dart';
+import '../author/author_admin.dart';
+import '../author/display_author.dart';
 import '../book/book_admin.dart';
 import '../book_popular/bookpopular_admin.dart';
+import '../category/category_admin.dart';
 import '../chapter/chapter_admin.dart';
+import '../main_screen.dart';
+import '../user/user_admin.dart';
 import '../user_vip/uservip_admin.dart';
 
-class CategoryAdminWidget extends StatelessWidget{
-    const CategoryAdminWidget({super.key});
+class BannerAdminWidget extends StatefulWidget {
+  const BannerAdminWidget({super.key});
 
+  @override
+  State<BannerAdminWidget> createState() => _BannerAdminWidgetState();
+}
 
+class _BannerAdminWidgetState extends State<BannerAdminWidget> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Category',
+      title: 'Banner',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         scaffoldBackgroundColor: backgroundColor,
         brightness: Brightness.dark,
       ),
-      home:  const DisplayCategory(),
+      home:  const DisplayBanner(),
       routes: {
         '/homepage': (context) => const MainScreen(),
         '/bookpage': (context) => const BookAdminWidget(),
@@ -38,7 +43,6 @@ class CategoryAdminWidget extends StatelessWidget{
         '/user': (context) => const UserAdminWidget(),
         '/uservip': (context) => const UserVipAdminWidget(),
       },
-    );
+    );;
   }
-
 }

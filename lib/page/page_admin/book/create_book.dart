@@ -220,6 +220,7 @@ class _BookCreateState extends State<BookCreate> {
           chapters: _chapters,
           likes: 0,
           view: 0,
+          status: 'Mới nhất'
         );
 // In dữ liệu của newBook ra console hoặc debug console
         print('Thông tin sách mới:');
@@ -580,6 +581,8 @@ class _BookCreateState extends State<BookCreate> {
                 ),
                 const SizedBox(height: 20,),
                 // Hiển thị danh sách các tác giả đã chọn
+                const Text('Tác giả',style: TextStyle(fontSize: 18,color: Colors.white),),
+                const SizedBox(height: 10,),
                 Container(
                   height: 80, // Điều chỉnh chiều cao phù hợp
                   width: double.infinity,
@@ -596,7 +599,7 @@ class _BookCreateState extends State<BookCreate> {
                         runSpacing: 4.0,
                         children: _selectedAuthors.map((author) {
                           return Chip(
-                            label: Text(author.authorName),
+                            label: Text(author.authorName,style: const TextStyle(fontSize: 15),),
                             onDeleted: () {
                               setState(() {
                                 _selectedAuthors.remove(author);
@@ -616,6 +619,7 @@ class _BookCreateState extends State<BookCreate> {
                 ),
 
                 const SizedBox(height: 20,),
+                const Text('Thể loại',style: TextStyle(fontSize: 18,color: Colors.white),),
                 Container(
                   height: 80, // Điều chỉnh chiều cao phù hợp
                   width: double.infinity,
@@ -632,7 +636,7 @@ class _BookCreateState extends State<BookCreate> {
                         runSpacing: 4.0,
                         children: _selectedCategories.map((category) {
                           return Chip(
-                            label: Text(category.nameCategory),
+                            label: Text(category.nameCategory,style: const TextStyle(fontSize: 15),),
                             onDeleted: () {
                               setState(() {
                                 _selectedCategories.remove(category);
@@ -648,11 +652,44 @@ class _BookCreateState extends State<BookCreate> {
                 // Nút để mở dialog chọn thể loại
                 ElevatedButton(
                   onPressed: _showCategoryDialog,
-                  child: Text('Chọn thể loại'),
+                  child: const Text('Chọn thể loại'),
                 ),
-
-
                 const SizedBox(height: 20,),
+                Row(
+                  children: [
+                    const Text(
+                      'Trạng thái sách:',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    SizedBox(
+                      width: 120, // Đặt chiều rộng cụ thể
+                      child: TextFormField(
+                        readOnly: true,
+                        initialValue: 'Mới nhất',
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            borderSide: BorderSide(color: Colors.grey, width: 1.0),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            borderSide: BorderSide(color: Colors.blue, width: 2.0),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            borderSide: BorderSide(color: Colors.grey, width: 1.0),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 30,),
 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -761,11 +798,10 @@ class _BookCreateState extends State<BookCreate> {
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        const SizedBox(height: 20,),
-                                        Image.asset('assets/icon/error.png',width: 50,),
-                                        const SizedBox(height: 20,),
+                                        Image.asset('assets/icon/error.png',width: 70,),
+                                        const SizedBox(height: 24,),
                                         Text('Thông tin bạn nhập chưa đầy đủ',
-                                            style: GoogleFonts.montserrat(fontSize: 11, color: const Color(0xffEC5B5B), fontWeight: FontWeight.bold)),
+                                            style: GoogleFonts.montserrat(fontSize: 15, color: const Color(0xffEC5B5B), fontWeight: FontWeight.bold)),
                                         const SizedBox(height: 5,),
                                         Column(
                                           mainAxisSize: MainAxisSize.min,
@@ -773,28 +809,28 @@ class _BookCreateState extends State<BookCreate> {
                                           children: [
                                             if (_selectedAuthors.isEmpty)
                                               Text('• Vui lòng chọn ít nhất một tác giả',
-                                                  style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
+                                                  style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w300)),
                                             if (_selectedCategories.isEmpty)
                                               Text('• Vui lòng chọn ít nhất một thể loại',
-                                                  style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
+                                                  style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w300)),
                                             if (_imagePath == null)
                                               Text('• Vui lòng chọn ảnh bìa sách',
-                                                  style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
+                                                  style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w300)),
                                             if (_titleController.text.isEmpty)
                                               Text('• Vui lòng nhập tiêu đề sách',
-                                                  style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
+                                                  style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w300)),
                                             if (_isbnController.text.isEmpty)
                                               Text('• Vui lòng nhập ISBN',
-                                                  style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
+                                                  style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w300)),
                                             if (_descriptionController.text.isEmpty)
                                               Text('• Vui lòng nhập mô tả sách',
-                                                  style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
+                                                  style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w300)),
                                             if (_pagesController.text.isEmpty)
                                               Text('• Vui lòng nhập số trang',
-                                                  style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
+                                                  style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w300)),
                                             if (_languageController.text.isEmpty)
                                               Text('• Vui lòng nhập ngôn ngữ',
-                                                  style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
+                                                  style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w300)),
                                             const SizedBox(height: 20,),
                                             Center(
                                               child: OutlinedButton(

@@ -73,17 +73,17 @@ class _DangXuatWidgetState extends State<DangXuatWidget> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Đăng xuất"),
-          content: const Text("Bạn có chắc muốn đăng xuất?"),
+          title: const Text("Đăng xuất",style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold),),
+          content: const Text("Bạn có chắc muốn đăng xuất?",style: TextStyle(fontSize: 16,)),
           actions: <Widget>[
             TextButton(
-              child: const Text("Hủy"),
+              child: const Text("Hủy",style: TextStyle(fontSize: 18,)),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: const Text("Đồng ý"),
+              child: const Text("Đồng ý",style: TextStyle(fontSize: 18,)),
               onPressed: () async {
                 Navigator.of(context).pop(); // Close the dialog
                 AuthController authController = Get.find();

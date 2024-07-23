@@ -251,7 +251,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.chapterName,style: const TextStyle(
-          fontSize: 16,
+          fontSize: 18,
           color: Colors.black
         ),),
       ),

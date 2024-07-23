@@ -1,85 +1,230 @@
 import 'dart:async';
+import 'dart:convert';
 
-import 'package:app_doc_sach/page/page_admin/chapter/chapter_detail.dart';
-import 'package:app_doc_sach/page/page_admin/chapter/create_chapter.dart';
+import 'package:app_doc_sach/model/popular_book_model.dart';
+import 'package:app_doc_sach/page/page_admin/book_popular/create_bookpopular.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../const.dart';
 import '../../../const/constant.dart';
 import '../../../controller/book_controller.dart';
 import '../../../model/book_model.dart';
 import '../../../widgets/side_widget_menu.dart';
-
-class DisplayChapter extends StatefulWidget {
-  const DisplayChapter({super.key});
+import '../book/book_detail.dart';
+import '../book/slideleftroutes.dart';
+import 'package:http/http.dart' as http;
+import 'package:quickalert/quickalert.dart';
+class DisplayBookpopular extends StatefulWidget {
+  const DisplayBookpopular({super.key});
 
   @override
-  State<DisplayChapter> createState() => _DisplayChapterState();
+  State<DisplayBookpopular> createState() => _DisplayBookpopularState();
 }
 
-class _DisplayChapterState extends State<DisplayChapter> {
+
+class _DisplayBookpopularState extends State<DisplayBookpopular> {
+
   final BookController _bookService = BookController();
-  List<Book> _books = [];
-  Timer? _timer;
   final TextEditingController _searchController = TextEditingController();
-  late Future<List<Book>> _booksFuture;
+  List<Book> _books = [];
+  Future<List<Book>>? _booksFuture;
+  List<PopularBook> _popularBooks = [];
+  late Timer? _timer; // Biến timer
+
+  ScaffoldMessengerState? scaffoldMessenger;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Lưu trữ tham chiếu đến ScaffoldMessenger
+    scaffoldMessenger = ScaffoldMessenger.of(context);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Load sách lần đầu tiên khi initState được gọi
+    _fetchPopularBooks();
+    Timer.periodic(const Duration(seconds: 5), (timer) {
+      _fetchPopularBooks();
+    });
+    _searchController.addListener(_onSearchChanged);
+  }
+  void showAlertSuccess(QuickAlertType quickalert){
+    QuickAlert.show(context: context, type: quickalert).then((_) {
+      // Đóng trang khi người dùng bấm nút "OK"
+      Navigator.pop(context, true); // Truyền lại true để xác nhận cập nhật thành công
+    });
+  }
+
+  Future<void> _fetchPopularBooks() async {
+    final url = '$baseUrl/api/book-populars?populate=book.cover_image,book.authors,book.categories,book.chapters.files';
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        List<PopularBook> popularBooks = [];
+        var jsonData = jsonDecode(response.body);
+
+        for (var item in jsonData['data']) {
+          popularBooks.add(PopularBook.fromJson(item));
+        }
+
+        if (mounted) {
+          setState(() {
+            _popularBooks = popularBooks.reversed.toList();;
+          });
+        }
+        print(_popularBooks);
+      } else {
+        throw Exception('Failed to load popular books');
+      }
+    } catch (e) {
+      print('Error fetching popular books: $e');
+    }
+  }
+  @override
+  void dispose() {
+    // Hủy timer khi widget bị huỷ
+    _timer?.cancel();
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    scaffoldMessenger = null;
+    super.dispose();
+  }
+
   void _onSearchChanged() {
     setState(() {});
   }
+  Future<void> _deletePopularBook(int id) async {
+    final url = '$baseUrl/api/book-populars/$id';
+    try {
+      final response = await http.delete(Uri.parse(url));
+      if (response.statusCode == 200) {
+        setState(() {
+          _popularBooks.removeWhere((book) => book.id == id);
+        });
+        Get.snackbar(
+          'Thành công',
+          'Sách đã được xóa khỏi danh sách phổ biến',
+          colorText: Colors.white,
+          backgroundColor: Colors.green.withOpacity(0.7), // Màu xanh
+          snackPosition: SnackPosition.TOP,
+          margin: EdgeInsets.all(20),
+          duration: Duration(seconds: 3),
+          borderRadius: 10,
+          animationDuration: Duration(milliseconds: 500),
+        );
 
-  List<Book> get filteredBooks {
+      } else {
+        throw Exception('Không thể xóa sách');
+      }
+    } catch (e) {
+      print('Error deleting popular book: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Có lỗi xảy ra khi xóa sách')),
+      );
+    }
+  }
+
+  Future<void> _showDeleteConfirmationDialog(PopularBook popularBook) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Xác nhận xóa',style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold),),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Bạn có chắc muốn xóa sách "${popularBook.book!.title}" khỏi danh sách sách phổ biến?',style: TextStyle(fontSize: 15),),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Hủy',style: TextStyle(fontSize: 16),),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Đồng ý',style: TextStyle(fontSize: 16),),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deletePopularBook(popularBook.id!);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+  List<PopularBook> get filteredPopularBooks {
     return _searchController.text.isEmpty
-        ? _books
-        : _books
-        .where((book) => book.title!
+        ? _popularBooks
+        : _popularBooks
+        .where((popularBook) => popularBook.book!.title!
         .toLowerCase()
         .contains(_searchController.text.toLowerCase()))
         .toList();
   }
-  @override
-  void initState() {
-    super.initState();
-    _booksFuture = _loadBooks();
-    // Thiết lập timer để tải lại sách mỗi 5 giây
-    _timer = Timer.periodic(const Duration(seconds: 6), (timer) {
-      _loadBooks();
-    });
-    _searchController.addListener(_onSearchChanged);
-
-  }
-  @override
-  void dispose() {
-    _searchController.removeListener(_onSearchChanged);
-    _searchController.dispose();
-    super.dispose();
-  }
-  Future<List<Book>> _loadBooks() async {
-    try {
-      final books = await _bookService.getBooks();
-      if (!mounted) return []; // Check if the widget is still in the widget tree
-      setState(() {
-        _books = books.reversed.toList();
-      });
-      return books;
-    } catch (e) {
-      print('Error loading books: $e');
-      if (!mounted) return []; // Check if the widget is still in the widget tree
-      // Show error message to the user
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Không thể tải sách. Vui lòng thử lại sau.')),
-      );
-      return [];
-    }
+  Widget _buildListCategory(List<String> categories) {
+    return Container(
+      width: double.infinity,
+      height: 200,
+      padding: const EdgeInsets.all(8.0), // Để tăng khoảng cách giữa các phần tử và viền container
+      child: SingleChildScrollView(
+        child: Wrap(
+          spacing: 8.0, // Khoảng cách giữa các Chip
+          runSpacing: 8.0, // Khoảng cách giữa các hàng
+          children: categories.map((category) {
+            return Chip(
+              label: Text(
+                category,
+                style: const TextStyle(fontSize: 12),
+              ),
+              backgroundColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+                side: const BorderSide(color: Colors.green),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
   }
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Quản lý chương sách',style: TextStyle(fontSize: 20),),
+        title: const Text('Quản lý sách phổ biến') ,
         elevation: 0.0, // Controls the shadow below the app bar
         backgroundColor: backgroundColor,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                foregroundColor: secondaryColor,
+                backgroundColor:
+                primaryColor, // Using the custom secondaryColor
+              ),
+              onPressed: () async {
+                final result = await Navigator.of(context).push(SlideLeftRoute(page: const BookPopularCreate()));
+                if (result == true) {
+                  // Nếu có sách mới được thêm, refresh danh sách
+                  _fetchPopularBooks();
+                }
+              },
+              child: const Text('Thêm'),
+            ),
+          )
+        ],
       ),
+
       drawer: const SideWidgetMenu(),
       body: Padding(
         padding: const EdgeInsets.only( right: 13, left: 13, bottom: 20),
@@ -99,42 +244,49 @@ class _DisplayChapterState extends State<DisplayChapter> {
               ),
             ),
             Expanded(
-              child:
-              filteredBooks.isEmpty
+              child: filteredPopularBooks.isEmpty
                   ? Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const CircularProgressIndicator(), // Thêm biểu tượng xoay tròn
+                    Icon(
+                      Icons.search_off,
+                      size: 80,
+                      color: Colors.grey[400],
+                    ),
                     SizedBox(height: 16),
                     Text(
-                      'Đang tải...',
+                      'Không tìm thấy kết quả',
                       style: TextStyle(
                         fontSize: 18,
                         color: Colors.grey[600],
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Thử tìm kiếm với từ khóa khác',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[500],
+                      ),
+                    ),
                   ],
                 ),
               )
                   :  ListView.builder(
-                itemCount: filteredBooks.length,
+                itemCount: filteredPopularBooks.length,
                 itemBuilder: (context, index) {
-                  final book = filteredBooks[index];
+                  final popularBook = filteredPopularBooks[index];
+                  final book = popularBook.book!;
                   return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ChapterDetail(book: book),
-                        ),
-                      );
+                    onLongPress: () {
+                      _showDeleteConfirmationDialog(popularBook);
                     },
                     child: Container(
                       width: double.infinity,
                       height: 280,
-                      margin: const EdgeInsets.symmetric(vertical: 3),
+                      margin: const EdgeInsets.symmetric(vertical: 6),
                       decoration: BoxDecoration(
                         border: Border.all(width: 1, color: Colors.white),
                         borderRadius: BorderRadius.circular(20),
@@ -233,7 +385,7 @@ class _DisplayChapterState extends State<DisplayChapter> {
                                       ],),
                                       const SizedBox(height: 15),
                                       const Text(
-                                        'Danh sách chương:',
+                                        'Thể loại:',
                                         style: TextStyle(
                                           fontSize: 16,
                                           color: Colors.white,
@@ -241,16 +393,16 @@ class _DisplayChapterState extends State<DisplayChapter> {
                                         ),
                                       ),
                                       const SizedBox(height: 5),
-                                      book.chapters!.isNotEmpty
+                                      book.categories!.isNotEmpty
                                           ? SingleChildScrollView(
                                         scrollDirection: Axis.horizontal,
                                         child: Row(
-                                          children: book.chapters!.map((category) {
+                                          children: book.categories!.map((category) {
                                             return Padding(
                                               padding: const EdgeInsets.only(right: 10.0),
                                               child: Chip(
                                                 label: Text(
-                                                  category.nameChapter,
+                                                  category.nameCategory,
                                                   style: const TextStyle(fontSize: 13, color: Colors.white),
                                                 ),
                                                 backgroundColor: Colors.transparent,
@@ -264,12 +416,48 @@ class _DisplayChapterState extends State<DisplayChapter> {
                                         ),
                                       )
                                           : const Text(
-                                        'Không có chương',
+                                        'Không có thể loại',
                                         style: TextStyle(
                                           fontStyle: FontStyle.italic,
                                           color: Colors.grey,
-                                          fontSize: 16
                                         ),
+                                      ),
+                                      const Spacer(),
+                                      const SizedBox(height: 5),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              const Icon(Icons.visibility_rounded, color: Colors.white),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                '${book.view}',
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 30),
+                                              Row(
+                                                children: [
+                                                  const Icon(
+                                                    Icons.favorite,
+                                                    color: Colors.red,
+                                                  ),
+                                                  const SizedBox(width: 5),
+                                                  Text(
+                                                    '${book.likes}',
+                                                    style: const TextStyle(
+                                                      fontSize: 14,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),

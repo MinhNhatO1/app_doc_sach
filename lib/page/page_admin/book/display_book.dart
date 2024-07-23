@@ -51,18 +51,22 @@ class _DisplayBookState extends State<DisplayBook> {
     try {
       final books = await _bookService.getBooks();
       if (!mounted) return; // Kiểm tra nếu widget vẫn còn trong cây widget
+
       setState(() {
-        _books = books;
+        // Sắp xếp sách từ dưới lên (theo thứ tự ngược lại)
+        _books = books.reversed.toList();
       });
     } catch (e) {
       print('Error loading books: $e');
       if (!mounted) return; // Kiểm tra nếu widget vẫn còn trong cây widget
+
       // Hiển thị thông báo lỗi cho người dùng
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Không thể tải sách. Vui lòng thử lại sau.')),
+        const SnackBar(content: Text('Không thể tải sách. Vui lòng thử lại sau.')),
       );
     }
   }
+
   void _onSearchChanged() {
     setState(() {});
   }
@@ -177,17 +181,29 @@ class _DisplayBookState extends State<DisplayBook> {
                   final book = filteredBooks[index];
                   return GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BookDetailAdmin(book: book),
+                      Navigator.of(context).push(
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) => BookDetailAdmin(book: book),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            const begin = Offset(1.0, 0.0);
+                            const end = Offset.zero;
+                            const curve = Curves.easeInOut;
+
+                            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+                            return SlideTransition(
+                              position: animation.drive(tween),
+                              child: child,
+                            );
+                          },
+                          transitionDuration: Duration(milliseconds: 300), // Thời gian chuyển đổi
                         ),
                       );
                     },
                     child: Container(
                       width: double.infinity,
-                      height: 255,
-                      margin: const EdgeInsets.symmetric(vertical: 3),
+                      height: 280,
+                      margin: const EdgeInsets.symmetric(vertical: 6),
                       decoration: BoxDecoration(
                         border: Border.all(width: 1, color: Colors.white),
                         borderRadius: BorderRadius.circular(20),
@@ -212,7 +228,7 @@ class _DisplayBookState extends State<DisplayBook> {
                               const SizedBox(width: 20),
                               Expanded(
                                 child: Padding(
-                                  padding: const EdgeInsets.only(top: 15),
+                                  padding: const EdgeInsets.only(top: 30),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
@@ -221,7 +237,7 @@ class _DisplayBookState extends State<DisplayBook> {
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: const TextStyle(
-                                          fontSize: 16,
+                                          fontSize: 17,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white,
                                         ),
@@ -230,7 +246,7 @@ class _DisplayBookState extends State<DisplayBook> {
                                       RichText(
                                         text: TextSpan(
                                           style: const TextStyle(
-                                            fontSize: 14,
+                                            fontSize: 16,
                                             color: Colors.white,
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -249,34 +265,46 @@ class _DisplayBookState extends State<DisplayBook> {
                                         ),
                                       ),
                                       const SizedBox(height: 15),
-                                      RichText(
-                                        text: TextSpan(
-                                          style: const TextStyle(
-                                            fontSize: 15,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          children: [
-                                            const TextSpan(
-                                              text: 'Tác giả:  ',
+                                      Row(children: [
+                                        RichText(
+                                          text: const TextSpan(
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
                                             ),
-                                            TextSpan(
-                                              text: book.authors!.isNotEmpty
+                                            children: [
+                                              TextSpan(
+                                                text: 'Tác giả:  ',
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: SingleChildScrollView(
+                                            scrollDirection: Axis.horizontal,
+                                            child: Text(
+                                              book.authors!.isNotEmpty
                                                   ? book.authors!.map((author) => author.authorName).join(', ')
                                                   : 'Không có tác giả',
                                               style: TextStyle(
                                                 color: Colors.grey.shade300,
                                                 fontWeight: FontWeight.normal,
+                                                fontSize: 16,
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                                              overflow: TextOverflow.ellipsis, // Nếu bạn muốn hiển thị dấu ba chấm khi nội dung quá dài
+                                              softWrap: false, // Ngăn việc ngắt dòng
+                                            )
+                                          
+                                          ),
+                                        )
+
+                                      ],),
                                       const SizedBox(height: 15),
                                       const Text(
                                         'Thể loại:',
                                         style: TextStyle(
-                                          fontSize: 15,
+                                          fontSize: 16,
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -292,7 +320,7 @@ class _DisplayBookState extends State<DisplayBook> {
                                               child: Chip(
                                                 label: Text(
                                                   category.nameCategory,
-                                                  style: const TextStyle(fontSize: 10, color: Colors.white),
+                                                  style: const TextStyle(fontSize: 13, color: Colors.white),
                                                 ),
                                                 backgroundColor: Colors.transparent,
                                                 shape: RoundedRectangleBorder(
@@ -323,7 +351,7 @@ class _DisplayBookState extends State<DisplayBook> {
                                               Text(
                                                 '${book.view}',
                                                 style: const TextStyle(
-                                                  fontSize: 12,
+                                                  fontSize: 14,
                                                   color: Colors.white,
                                                 ),
                                               ),
@@ -338,7 +366,7 @@ class _DisplayBookState extends State<DisplayBook> {
                                                   Text(
                                                     '${book.likes}',
                                                     style: const TextStyle(
-                                                      fontSize: 12,
+                                                      fontSize: 14,
                                                       color: Colors.white,
                                                     ),
                                                   ),

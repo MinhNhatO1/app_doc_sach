@@ -1,4 +1,7 @@
+import 'package:app_doc_sach/page/page_admin/banner/banner_admin.dart';
+import 'package:app_doc_sach/page/page_admin/book_popular/bookpopular_admin.dart';
 import 'package:app_doc_sach/page/page_admin/chapter/display_chapter.dart';
+import 'package:app_doc_sach/page/page_admin/user_vip/uservip_admin.dart';
 import 'package:flutter/material.dart';
 
 import '../../../const/constant.dart';
@@ -31,9 +34,12 @@ class _ChapterAdminWidgetState extends State<ChapterAdminWidget> {
         '/homepage': (context) => const MainScreen(),
         '/bookpage': (context) => const BookAdminWidget(),
         '/chapterpage': (context) => const ChapterAdminWidget(),
+        '/bookpopular': (context) => const BookpopularAdminWidget(),
         '/category': (context) => const CategoryAdminWidget(),
         '/author': (context) => const AuthorAdminWidget(),
+        '/banner': (context) => const BannerAdminWidget(),
         '/user': (context) => const UserAdminWidget(),
+        '/uservip': (context) => const UserVipAdminWidget(),
       },
     );
   }
