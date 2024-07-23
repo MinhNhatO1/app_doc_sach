@@ -23,9 +23,8 @@ class _DisplayUserState extends State<DisplayUser> {
   final TextEditingController _searchController = TextEditingController();
   Future<List<Users>>? _usersFuture;
 
-
-//xây dựng widget lại
- Future<List<Users>> fetchUsers() async {
+  // Fetch users from the API
+  Future<List<Users>> fetchUsers() async {
     final response = await http.get(Uri.parse("$baseUrl/api/profiles/"));
 
     if (response.statusCode == 200) {
@@ -41,7 +40,7 @@ class _DisplayUserState extends State<DisplayUser> {
   @override
   void initState() {
     super.initState();
-    //đảm bảo người dùng chỉ dc tải 1 lần khi widget dc khởi tạo
+    // Ensure users are loaded once when the widget is created
     _usersFuture = fetchUsers();
     _searchController.addListener(_onSearchChanged);
   }
@@ -53,32 +52,13 @@ class _DisplayUserState extends State<DisplayUser> {
     super.dispose();
   }
 
-  // Future<List<Users>> getAll() async {
-  //   final response = await http.get(Uri.parse("$baseUrl/api/profiles/"));
-  //   if (response.statusCode == 200) {
-  //     users.clear();
-  //   }
-  //   final decodedData = jsonDecode(response.body);
-  //   for (var u in decodedData["data"]) {
-  //     users.add(Users(
-  //       id: u['id'],
-  //       fullName: u['attributes']["fullName"],
-  //       email: u['attributes']["email"],
-  //       age: u['attributes']["age"],
-  //       phone: u['attributes']["phone"],
-  //       gender: u['attributes']["gender"],
-  //       address: u['attributes']["address"],
-  //       avatar: u['attributes']["avatar"],
-  //     ));
-  //   }
-  //   return users;
-  // }
-
+  // Filter users based on the search query
   void _onSearchChanged() {
     setState(() {
+      final lowerCaseQuery = _searchController.text.toLowerCase();
       filteredUsers = users.where((user) {
-        final lowerCaseQuery = _searchController.text.toLowerCase();
-        return user.fullName.toLowerCase().contains(lowerCaseQuery);
+        final fullNameLower = user.fullName?.toLowerCase() ?? '';
+        return fullNameLower.contains(lowerCaseQuery);
       }).toList();
     });
   }
@@ -138,8 +118,8 @@ class _DisplayUserState extends State<DisplayUser> {
                       itemBuilder: (BuildContext context, int index) {
                         return InkWell(
                           child: ListTile(
-                            title: Text(filteredUsers[index].fullName),
-                            subtitle: Text(filteredUsers[index].email),
+                            title: Text(filteredUsers[index].fullName ?? 'Unknown'),
+                            subtitle: Text(filteredUsers[index].email ?? 'Unknown'),
                             onTap: () {
                               Navigator.push(
                                 context,
