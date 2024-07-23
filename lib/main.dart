@@ -1,6 +1,7 @@
 import 'package:app_doc_sach/color/mycolor.dart';
 import 'package:app_doc_sach/model/user_model.dart';
 import 'package:app_doc_sach/page/login_register/service/auth_service.dart';
+import 'package:app_doc_sach/page/page_admin/dashboard_admin.dart';
 import 'package:app_doc_sach/page/page_tab_taikhoanwidget/checkvipstatus.dart';
 import 'package:app_doc_sach/page/slash_screen/slash_screen.dart';
 import 'package:app_doc_sach/provider/ui_provider.dart';
@@ -10,6 +11,7 @@ import 'package:app_doc_sach/service/local_service/local_auth_service.dart';
 import 'package:app_doc_sach/service/payment/stripepayment.dart';
 import 'package:app_doc_sach/state/tab_state.dart';
 import 'package:app_doc_sach/state/tab_state_search.dart';
+import 'package:app_doc_sach/view/dashboard/dashboard_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
@@ -123,7 +125,7 @@ class MyApp extends StatelessWidget {
 
         return GetMaterialApp(
           debugShowCheckedModeBanner: false,
-          home: const SlashScreen(),
+          home: const DashboardAdminWidget(),
           initialRoute: AppRoute.dashboard,
           initialBinding: DashboardBinding(),
           getPages: /*[

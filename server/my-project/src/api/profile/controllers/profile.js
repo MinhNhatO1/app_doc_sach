@@ -18,7 +18,8 @@ module.exports = createCoreController('api::profile.profile', ({ strapi }) => ({
         data: {
           fullName: ctx.request.body.fullName,
           email: user.email,
-          user: user.id
+          user: user.id,
+          published: true  // Đảm bảo rằng bản ghi được tạo mới là bản published
         },
       });
       return result;

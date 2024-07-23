@@ -108,8 +108,8 @@ class _DisplayAuthorState extends State<DisplayAuthor> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Quản lý tác giả'),
-        elevation: 0.0, // Controls the shadow below the app bar
-        backgroundColor: backgroundColor,
+        elevation: 0.0,
+        backgroundColor: Colors.blue,
         actions: [
           Padding(
             padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),

@@ -1,13 +1,12 @@
 import 'dart:async';
-
 import 'package:app_doc_sach/color/mycolor.dart';
 import 'package:app_doc_sach/const.dart';
 import 'package:app_doc_sach/controller/book_controller.dart';
+import 'package:app_doc_sach/data/book_details.dart';
 import 'package:app_doc_sach/page/page_admin/book/book_detail.dart';
 import 'package:app_doc_sach/page/page_admin/book/create_book.dart';
 import 'package:app_doc_sach/page/page_admin/book/slideleftroutes.dart';
 import 'package:flutter/material.dart';
-
 import '../../../const/constant.dart';
 import '../../../model/book_model.dart';
 import '../../../widgets/side_widget_menu.dart';
@@ -26,6 +25,9 @@ class _DisplayBookState extends State<DisplayBook> {
   List<Book> _books = [];
   Future<List<Book>>? _booksFuture;
   late Timer? _timer; // Biến timer
+
+  final BookDetails bookDetails = BookDetails();
+
   @override
   void initState() {
     super.initState();
@@ -43,10 +45,11 @@ class _DisplayBookState extends State<DisplayBook> {
   void dispose() {
     // Hủy timer khi widget bị huỷ
     _timer?.cancel();
-      _searchController.removeListener(_onSearchChanged);
-      _searchController.dispose();
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
     super.dispose();
   }
+
   Future<void> _loadBooks() async {
     try {
       final books = await _bookService.getBooks();

@@ -1,0 +1,37 @@
+{
+  "kind": "collectionType",
+  "collectionName": "reading_histories",
+  "info": {
+    "singularName": "reading-history",
+    "pluralName": "reading-histories",
+    "displayName": "ReadingHistory",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "profile": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::profile.profile",
+      "inversedBy": "reading_histories"
+    },
+    "book": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::book.book",
+      "inversedBy": "reading_histories"
+    },
+    "lastReadAt": {
+      "type": "datetime"
+    },
+    "chapter_processes": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::chapter-process.chapter-process",
+      "mappedBy": "reading_history"
+    }
+  }
+}

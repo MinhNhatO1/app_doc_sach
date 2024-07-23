@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "vips",
+  "info": {
+    "singularName": "vip",
+    "pluralName": "vips",
+    "displayName": "Vip"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "profile": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::profile.profile",
+      "inversedBy": "vip"
+    },
+    "dayStart": {
+      "type": "datetime"
+    },
+    "dayEnd": {
+      "type": "datetime"
+    },
+    "status": {
+      "type": "boolean"
+    }
+  }
+}

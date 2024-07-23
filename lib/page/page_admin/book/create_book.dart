@@ -396,6 +396,10 @@ class _BookCreateState extends State<BookCreate> {
       },
     );
   }*/
+
+   
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -546,6 +550,7 @@ class _BookCreateState extends State<BookCreate> {
                       ),
                     ),
                     keyboardType: TextInputType.number,
+
                   ),
                 ),
                 Container(
@@ -745,7 +750,7 @@ class _BookCreateState extends State<BookCreate> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 90,),
+                    const SizedBox(width: 30,),
                     ElevatedButton(
                       onPressed: () {
                         _pickImage(); // Call function to pick an image
@@ -827,7 +832,10 @@ class _BookCreateState extends State<BookCreate> {
                                                   style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w300)),
                                             if (_pagesController.text.isEmpty)
                                               Text('• Vui lòng nhập số trang',
-                                                  style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w300)),
+                                                  style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
+                                            if (!RegExp(r'^[0-9]+$').hasMatch(_pagesController.text))
+                                             Text('• Vui lòng nhập số',
+                                                  style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
                                             if (_languageController.text.isEmpty)
                                               Text('• Vui lòng nhập ngôn ngữ',
                                                   style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w300)),

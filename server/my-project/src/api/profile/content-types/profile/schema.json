@@ -1,0 +1,66 @@
+{
+  "kind": "collectionType",
+  "collectionName": "profiles",
+  "info": {
+    "singularName": "profile",
+    "pluralName": "profiles",
+    "displayName": "Profile",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "fullName": {
+      "type": "string",
+      "required": true
+    },
+    "email": {
+      "type": "email",
+      "required": true
+    },
+    "age": {
+      "type": "date"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "profile"
+    },
+    "phone": {
+      "type": "string",
+      "required": false
+    },
+    "gender": {
+      "type": "string",
+      "required": false
+    },
+    "address": {
+      "type": "text",
+      "required": false
+    },
+    "image": {
+      "type": "string"
+    },
+    "reading_histories": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::reading-history.reading-history",
+      "mappedBy": "profile"
+    },
+    "favorite": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::favorite.favorite",
+      "mappedBy": "profile"
+    },
+    "vip": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::vip.vip",
+      "mappedBy": "profile"
+    }
+  }
+}

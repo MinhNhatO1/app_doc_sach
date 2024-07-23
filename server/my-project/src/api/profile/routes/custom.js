@@ -12,7 +12,6 @@ module.exports = {
             handler: 'profile.createMe',
             config: {}
         },
-
         {
             method: 'GET',
             path: '/profile/id-by-email',

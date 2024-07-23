@@ -1,0 +1,34 @@
+{
+  "kind": "collectionType",
+  "collectionName": "chapter_processes",
+  "info": {
+    "singularName": "chapter-process",
+    "pluralName": "chapter-processes",
+    "displayName": "ChapterProcess",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "chapter": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::chapter.chapter",
+      "inversedBy": "chapter_processes"
+    },
+    "pageNumber": {
+      "type": "integer"
+    },
+    "lastReadAt": {
+      "type": "datetime"
+    },
+    "reading_history": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::reading-history.reading-history",
+      "inversedBy": "chapter_processes"
+    }
+  }
+}
