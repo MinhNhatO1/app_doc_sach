@@ -6,17 +6,18 @@ import '../route/app_route.dart';
 import '../view/dashboard/dashboard_screen.dart';
 
 Future<void> showLogoutConfirmationDialog(BuildContext context) async {
-
   AuthController authController = Get.find();
+
   void restartApp() {
     authController.signOut();
     Get.offAll(
           () => const DashBoardScreen(),
       routeName: AppRoute.dashboard,
       transition: Transition.rightToLeft, // Hiệu ứng chuyển đổi từ phải qua trái
-      duration: const Duration(milliseconds: 3000), // Thời gian của hiệu ứng chuyển đổi
+      duration: const Duration(milliseconds: 300), // Thời gian của hiệu ứng chuyển đổi
     );
   }
+
   return showDialog<void>(
     context: context,
     barrierDismissible: false, // User must tap button to dismiss
@@ -53,7 +54,7 @@ Future<void> showLogoutConfirmationDialog(BuildContext context) async {
               ),
             ),
             onPressed: () {
-              Navigator.of(context).pop();
+              Get.back();
             },
           ),
           TextButton(
@@ -65,8 +66,8 @@ Future<void> showLogoutConfirmationDialog(BuildContext context) async {
               ),
             ),
             onPressed: () {
-              Navigator.of(context).pop();
-              restartApp();
+              Get.back(); // Đóng hộp thoại trước
+              restartApp(); // Sau đó điều hướng đến màn hình khác
             },
           ),
         ],

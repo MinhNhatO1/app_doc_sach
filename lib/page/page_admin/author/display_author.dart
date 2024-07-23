@@ -89,7 +89,7 @@ class _DisplayAuthorState extends State<DisplayAuthor> {
     // getAll();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Author'),
+        title: const Text('Quản lý tác giả'),
         elevation: 0.0, // Controls the shadow below the app bar
         backgroundColor: backgroundColor,
         actions: [

@@ -19,12 +19,12 @@ class CategoryController extends GetxController{
   }
   Future<List<CategoryModel>> fetchCategories() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/api/categories')); // Thay thế bằng đường dẫn API thực của bạn
+      final response = await http.get(Uri.parse('$baseUrl/api/categories?pagination[pageSize]=100')); // Thay thế bằng đường dẫn API thực của bạn
 
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body)['data']; // Giải mã phản hồi JSON
-        List<CategoryModel> categoriesList = data.map((json) => CategoryModel.fromJson(json)).toList(); // Ánh xạ các đối tượng JSON thành đối tượng Author
-        return categoriesList; // Trả về danh sách các tác giả
+        List<CategoryModel> categoriesList = data.map((json) => CategoryModel.fromJson(json)).toList(); // Ánh xạ các đối tượng JSON thành đối tượng CategoryModel
+        return categoriesList; // Trả về danh sách các danh mục
       } else {
         throw Exception('Failed to load categories');
       }
@@ -32,6 +32,7 @@ class CategoryController extends GetxController{
       throw Exception('Error loading categories: $e'); // Ném ra một ngoại lệ nếu có lỗi khi tải dữ liệu
     }
   }
+
 
   Future<List<CategoryModel>> getCategoriesBySearch(String textSearch) async {
     // Chuẩn hóa chuỗi tìm kiếm: chuyển về chữ thường và loại bỏ khoảng trắng

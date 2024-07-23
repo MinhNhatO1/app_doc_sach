@@ -38,7 +38,7 @@ class SideWidgetMenu extends StatelessWidget {
               title: Text(menuItem.title),
               onTap: () async  {
                 Navigator.pop(context); // Close the drawer
-                if (menuItem.title == 'SignOut') {
+                if (menuItem.title == 'Đăng xuất Admin') {
                   await showLogoutConfirmationDialog(context);
                 }
                 else{
@@ -46,20 +46,29 @@ class SideWidgetMenu extends StatelessWidget {
                     case 'Dashboard':
                       Navigator.pushNamed(context, '/homepage');
                       break;
-                    case 'Book':
+                    case 'Sách':
                       Navigator.pushNamed(context, '/bookpage');
                       break;
                     case 'Chương sách':
                       Navigator.pushNamed(context, '/chapterpage');
                       break;
-                    case 'Category':
+                    case 'Sách phổ biến':
+                      Navigator.pushNamed(context, '/bookpopular');
+                      break;
+                    case 'Thể loại':
                       Navigator.pushNamed(context, '/category');
                       break;
-                    case 'Author':
+                    case 'Tác giả':
                       Navigator.pushNamed(context, '/author');
                       break;
-                    case 'User':
+                    case 'Banner':
+                      Navigator.pushNamed(context, '/banner');
+                      break;
+                    case 'Người dùng':
                       Navigator.pushNamed(context, '/user');
+                      break;
+                    case 'Tài khoản VIP':
+                      Navigator.pushNamed(context, '/uservip');
                       break;
                   // Add other cases for different menu items here
                   }

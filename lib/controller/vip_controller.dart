@@ -22,6 +22,36 @@ class VipService extends GetxController {
 
   }
 
+  Future<Vip?> checkVipStatus(String userId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/vips?filters[profile][id]=$userId&populate=*'),
+        headers: {
+          'Content-Type': 'application/json',
+          // Thêm header xác thực nếu cần
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body)['data'];
+        if (data.isNotEmpty) {
+          final vipData = data[0]['attributes'];
+          vipData['id'] = data[0]['id']; // Thêm id vào attributes
+          return Vip.fromJson(vipData);
+        }
+      }
+      return null; // Trả về null nếu không tìm thấy VIP hoặc có lỗi
+    } catch (e) {
+      print('Error checking VIP status: $e');
+      return null;
+    }
+  }
+
+  bool isVipActive(Vip? vip) {
+    if (vip == null) return false;
+    final now = DateTime.now();
+    return vip.status && vip.dayEnd.isAfter(now);
+  }
   static Future<void> extendVip(String userid, String duration) async {
     final DateTime now = DateTime.now();
     final Duration extensionDuration = _getDurationFromString(duration);

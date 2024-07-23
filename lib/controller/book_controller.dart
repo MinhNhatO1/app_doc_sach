@@ -53,6 +53,23 @@ class BookController extends GetxController{
     }
   }
 
+  Future<Book> getBookById(String id) async {
+    final response = await http.get(Uri.parse('$baseUrl/api/books/$id?populate[authors]=*&populate[categories]=*&populate[chapters][populate]=files&populate[cover_image]=*'));
+
+    if (response.statusCode == 200) {
+      // Decode the response body and convert it to a Book object
+      var jsonResponse = json.decode(response.body);
+      var bookData = jsonResponse['data'];
+      Book book = Book.fromJson({
+        'id': bookData['id'],
+        ...bookData['attributes'] ?? {},
+      });
+      return book;
+    } else {
+      throw Exception('Failed to load book');
+    }
+  }
+
   Future<List<Book>> getBooksBySearch(String textSearch) async {
     // Chuẩn hóa chuỗi tìm kiếm: chuyển về chữ thường và loại bỏ khoảng trắng
     final normalizedSearch = textSearch.toLowerCase().replaceAll(' ', '');

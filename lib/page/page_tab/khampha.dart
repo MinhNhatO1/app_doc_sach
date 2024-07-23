@@ -2,9 +2,12 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:app_doc_sach/controller/banner_controller.dart';
+import 'package:app_doc_sach/model/banner_model.dart';
 import 'package:app_doc_sach/model/category_model.dart';
 import 'package:app_doc_sach/page/detail_book/detail_book.dart';
 import 'package:app_doc_sach/provider/ui_provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -27,14 +30,10 @@ class KhamPhaWidget extends StatefulWidget {
 }
 
 class _KhamPhaWidgetState extends State<KhamPhaWidget> {
-  final List<String> imgList = [
-    'https://bizweb.dktcdn.net/thumb/grande/100/468/779/themes/883715/assets/slider_3.jpg?1674889023980',
-    'https://bizweb.dktcdn.net/thumb/large/100/222/758/articles/fb-tap-noi-tap-doc-1-01-01.jpg?v=1610358102210',
-    'https://bizweb.dktcdn.net/100/222/758/themes/549028/assets/slider-img3.jpg?1708567836625'
-  ];
+  late Future<List<Banner_Model>> futureBanners;
   int _current = 0;
   final CarouselController _controller = CarouselController();
-
+  final BannerController _bannerController = BannerController();
   final BookController _bookService = BookController();
   List<Book> _books = [];
   List<PopularBook> _popularBooks = [];
@@ -87,6 +86,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
   void initState() {
     super.initState();
     // Load sách lần đầu tiên khi initState được gọi
+    futureBanners = _bannerController.fetchBanners();
     _loadBooks();
    _fetchPopularBooks();
     _loadBooksKinhDi_TrinhTham();
@@ -290,55 +290,83 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    Column(
-                      children: [
-                        Container(
-                          width: double.infinity,
-                          height: 250, // Giảm chiều cao xuống một chút
-                          child: CarouselSlider(
-                            items: imgList
-                                .map((item) => Container(
-                              margin: EdgeInsets.symmetric(horizontal: 5), // Thêm margin ngang
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10.0),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Colors.black26,
-                                    blurRadius: 10,
-                                    spreadRadius: 1,
-                                    offset: Offset(0, 5),
-                                  ),
-                                ],
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(10.0),
-                                child: Image.network(
-                                  item,
-                                  fit: BoxFit.cover,
-                                  width: 1000,
+                FutureBuilder<List<Banner_Model>>(
+                future: futureBanners,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return const Center(child: Text('Failed to load banners'));
+                    } else if (!snapshot.hasData || snapshot.data == null) {
+                      return const Center(child: Text('No banners available'));
+                    } else {
+                      final banners = snapshot.data!;
+                      final imgList = banners.map((banner) => banner.imageBanner?.url ?? '').toList();
+
+                      // In dữ liệu imgList ra console để kiểm tra
+                      print('Image list: $imgList');
+
+                      if (imgList.isEmpty) {
+                        return const Center(child: Text('No banners available'));
+                      }
+
+                      return Column(
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            height: 250,
+                            child: CarouselSlider(
+                              items: imgList
+                                  .where((item) => item.isNotEmpty) // Lọc các URL trống
+                                  .map((item) => Container(
+                                margin: EdgeInsets.symmetric(horizontal: 5),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Colors.black26,
+                                      blurRadius: 10,
+                                      spreadRadius: 1,
+                                      offset: Offset(0, 5),
+                                    ),
+                                  ],
                                 ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  child: CachedNetworkImage(
+                                    imageUrl: baseUrl + item,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: 500,
+                                    placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+                                    errorWidget: (context, url, error) => Center(child: Text('Error loading image')),
+                                  ),
+                                ),
+                              ))
+                                  .toList(),
+                              options: CarouselOptions(
+                                autoPlay: true,
+                                autoPlayInterval: const Duration(seconds: 3),
+                                enlargeCenterPage: true,
+                                aspectRatio: 2.0,
+                                viewportFraction: 0.85,
+                                onPageChanged: (index, reason) {
+                                  setState(() {
+                                    _current = index;
+                                  });
+                                },
                               ),
-                            ))
-                                .toList(),
-                            options: CarouselOptions(
-                              autoPlay: true,
-                              autoPlayInterval: const Duration(seconds: 3),
-                              enlargeCenterPage: true,
-                              aspectRatio: 2.0,
-                              viewportFraction: 0.85, // Điều chỉnh để hình ảnh lớn hơn một chút
-                              onPageChanged: (index, reason) {
-                                setState(() {
-                                  _current = index;
-                                });
-                              },
+                              carouselController: _controller,
                             ),
-                            carouselController: _controller,
                           ),
-                        ), // Khoảng cách giữa slider và indicator
-                        buildCarouseIndicator(),
-                      ],
-                    ),
-                    const SizedBox(
+                          buildCarouseIndicator(imgList),
+                        ],
+                      );
+                    }
+                  },
+                ),
+
+                const SizedBox(
                       height:10,
                     ),
                     const Padding(
@@ -551,7 +579,7 @@ class _KhamPhaWidgetState extends State<KhamPhaWidget> {
     );
   }
 
-  buildCarouseIndicator() {
+  buildCarouseIndicator(List<String> imgList) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: imgList.asMap().entries.map((entry) {

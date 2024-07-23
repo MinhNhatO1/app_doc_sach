@@ -42,7 +42,7 @@ class _DisplayCategorysState extends State<DisplayCategory> {
     // getAll();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Category'),
+        title: const Text('Quản lý thể loại'),
         elevation: 0.0, // Controls the shadow below the app bar
         backgroundColor: backgroundColor,
         actions: [

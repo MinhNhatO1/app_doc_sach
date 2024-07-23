@@ -7,13 +7,22 @@ import '../../../model/book_model.dart';
 import 'edit_book.dart';
 
 class BookDetailAdmin extends StatefulWidget {
-  const BookDetailAdmin ({super.key,required this.book});
+  const BookDetailAdmin({super.key, required this.book});
   final Book book;
   @override
   State<BookDetailAdmin> createState() => _StateBookDetail();
 }
 
 class _StateBookDetail extends State<BookDetailAdmin> {
+  late Book _book;
+
+  @override
+  void initState() {
+    super.initState();
+    _book = widget.book; // Khởi tạo thông tin sách
+    _refreshBookDetails();
+  }
+
   Future<void> _deleteBook(BuildContext context) async {
     bool? confirmed = await showDialog(
       context: context,
@@ -41,10 +50,11 @@ class _StateBookDetail extends State<BookDetailAdmin> {
 
     if (confirmed == true) {
       // Gọi phương thức xóa sách nếu người dùng đã xác nhận
-      bool success = await BookController.instance.deleteBook(widget.book.id.toString());
+      bool success = await BookController.instance.deleteBook(_book.id.toString());
       if (success) {
         // Xử lý thành công (ví dụ: quay lại màn hình danh sách sách, cập nhật UI, ...)
         print('Đã xóa sách thành công');
+        Navigator.of(context).pop(); // Quay lại màn hình trước đó sau khi xóa sách
       } else {
         // Xử lý thất bại (ví dụ: thông báo lỗi, ...)
         print('Xóa sách thất bại');
@@ -55,80 +65,107 @@ class _StateBookDetail extends State<BookDetailAdmin> {
     }
   }
 
-  void _editBook() {
+  Future<void> _editBook() async {
     // Chuyển đến trang chỉnh sửa sách
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EditBookPage(book: widget.book), // Cần có trang EditBookPage
+    final bool? result = await Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => EditBookPage(book: _book),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          const curve = Curves.easeInOut;
+
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
+        transitionDuration: Duration(milliseconds: 300), // Thời gian chuyển đổi
       ),
     );
+
+    if (result == true) {
+      // Làm mới thông tin sách sau khi chỉnh sửa thành công
+      _refreshBookDetails();
+    }
   }
 
+  Future<void> _refreshBookDetails() async {
+    // Lấy thông tin sách mới từ server hoặc bất kỳ nguồn nào
+    Book updatedBook = await BookController.instance.getBookById(_book.id.toString());
+    setState(() {
+      _book = updatedBook; // Cập nhật trạng thái của sách
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.book.title ?? 'Chi tiết sách'),
+        title: Text(_book.title ?? 'Chi tiết sách'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-              Align(
-                alignment: Alignment.center,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.network(
-                    baseUrl + widget.book.coverImage!.url,
-                    width: 120,
-                    height: 180,
-                    fit: BoxFit.cover,
-                    filterQuality: FilterQuality.high,
-                  ),
+            Align(
+              alignment: Alignment.center,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.network(
+                  baseUrl + _book.coverImage!.url,
+                  width: 120,
+                  height: 180,
+                  fit: BoxFit.cover,
+                  filterQuality: FilterQuality.high,
                 ),
               ),
+            ),
             const SizedBox(height: 16),
             // Tiêu đề sách
-            Row(
-              children: [
-                const Text(
-                   'Tên sách: ',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold
-                    ,
-                  ),
+            RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 19,
                 ),
-                const SizedBox(width: 8,),
-                Text(
-                  widget.book.title ?? 'Không có tiêu đề',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 19,
+                children: [
+                  const TextSpan(
+                    text: 'Tên sách: ',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
                   ),
-                ),
-              ],
+                  TextSpan(
+                    text: _book.title ?? 'Không có tiêu đề',
+                    style: const TextStyle(
+                      fontSize: 19,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             // ISBN
             RichText(
               text: TextSpan(
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 19,
                   color: Colors.black,
                 ),
                 children: [
                   const TextSpan(
                     text: 'ISBN: ',
-                    style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                   TextSpan(
-                    text: widget.book.isbn ?? 'Không có ISBN',
-                    style: TextStyle(
+                    text: _book.isbn ?? 'Không có ISBN',
+                    style: const TextStyle(
                       color: Colors.white70,
                     ),
                   ),
@@ -149,8 +186,8 @@ class _StateBookDetail extends State<BookDetailAdmin> {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   TextSpan(
-                    text: widget.book.authors!.isNotEmpty
-                        ? widget.book.authors!.map((author) => author.authorName).join(', ')
+                    text: _book.authors!.isNotEmpty
+                        ? _book.authors!.map((author) => author.authorName).join(', ')
                         : 'Không có tác giả',
                     style: const TextStyle(
                       color: Colors.white70,
@@ -173,7 +210,7 @@ class _StateBookDetail extends State<BookDetailAdmin> {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   TextSpan(
-                    text: widget.book.language ?? 'Không có Ngôn ngữ',
+                    text: _book.language ?? 'Không có Ngôn ngữ',
                     style: const TextStyle(
                       color: Colors.white70,
                     ),
@@ -182,7 +219,7 @@ class _StateBookDetail extends State<BookDetailAdmin> {
               ),
             ),
             const SizedBox(height: 16),
-            // Ngôn ngữ
+            // Số trang
             RichText(
               text: TextSpan(
                 style: const TextStyle(
@@ -195,7 +232,29 @@ class _StateBookDetail extends State<BookDetailAdmin> {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   TextSpan(
-                    text: widget.book.pages.toString() ?? 'Không có so luong trang',
+                    text: _book.pages.toString() ?? 'Không có số lượng trang',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Trạng thái sách
+            RichText(
+              text: TextSpan(
+                style: const TextStyle(
+                  fontSize: 19,
+                  color: Colors.white,
+                ),
+                children: [
+                  const TextSpan(
+                    text: 'Trạng thái sách: ',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(
+                    text: _book.status.toString() ?? 'Không có số lượng trang',
                     style: const TextStyle(
                       color: Colors.white70,
                     ),
@@ -206,21 +265,23 @@ class _StateBookDetail extends State<BookDetailAdmin> {
             const SizedBox(height: 16),
             Row(
               children: [
-                const Icon(Icons.favorite,color: Colors.red,),
-                const SizedBox(width: 10,),
+                const Icon(Icons.favorite, color: Colors.red),
+                const SizedBox(width: 10),
                 Text(
-                  widget.book.likes.toString()
-                )
+                  _book.likes.toString(),
+                  style: TextStyle(fontSize: 16),
+                ),
               ],
             ),
             const SizedBox(height: 16),
             Row(
               children: [
-                const Icon(Icons.visibility_rounded,color: Colors.white,),
-                const SizedBox(width: 10,),
+                const Icon(Icons.visibility_rounded, color: Colors.white),
+                const SizedBox(width: 10),
                 Text(
-                    widget.book.view.toString()
-                )
+                  _book.view.toString(),
+                  style: TextStyle(fontSize: 16),
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -228,23 +289,23 @@ class _StateBookDetail extends State<BookDetailAdmin> {
             const Text(
               'Thể loại:',
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 19,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             // Danh sách thể loại
-            if (widget.book.categories!.isNotEmpty)
+            if (_book.categories!.isNotEmpty)
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
-                  children: widget.book.categories!.map((category) {
+                  children: _book.categories!.map((category) {
                     return Padding(
                       padding: const EdgeInsets.only(right: 10.0), // Add some spacing between the chips
                       child: Chip(
                         label: Text(
                           category.nameCategory,
-                          style: const TextStyle(fontSize: 11, color: Colors.white),
+                          style: const TextStyle(fontSize: 13, color: Colors.white),
                         ),
                         backgroundColor: Colors.transparent,
                         shape: RoundedRectangleBorder(
@@ -260,36 +321,26 @@ class _StateBookDetail extends State<BookDetailAdmin> {
               const Text(
                 'Không có thể loại',
                 style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  color: Colors.grey,
+                  color: Colors.white70,
                 ),
               ),
             const SizedBox(height: 16),
+            // Mô tả
             const Text(
               'Mô tả:',
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 19,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
-            // Mô tả sách (nếu có)
-            if (widget.book.description != null && widget.book.description!.isNotEmpty)
-              Text(
-                widget.book.description!,
-                style: const TextStyle(
-                  fontSize: 14,
-                    color: Colors.white,
-                ),
-              )
-            else
-              const Text(
-                'Không có mô tả',
-                style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  color: Colors.grey,
-                ),
+            Text(
+              _book.description ?? 'Không có mô tả',
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.white70,
               ),
+            ),
           ],
         ),
       ),
@@ -323,24 +374,24 @@ class _StateBookDetail extends State<BookDetailAdmin> {
 
               ),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, backgroundColor: Colors.red,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    side: const BorderSide(color: Colors.white),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white, backgroundColor: Colors.red,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: const BorderSide(color: Colors.white),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 24),
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 24),
-                ),
-                onPressed: () => _deleteBook(context),
-                child:
-                     const Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Icon(Icons.delete, color: Colors.white),
-                        SizedBox(width: 10), // Khoảng cách giữa icon và văn bản
-                        Text('Xóa'), // Văn bản
-                      ],
-                    )
+                  onPressed: () => _deleteBook(context),
+                  child:
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Icon(Icons.delete, color: Colors.white),
+                      SizedBox(width: 10), // Khoảng cách giữa icon và văn bản
+                      Text('Xóa'), // Văn bản
+                    ],
+                  )
 
               ),
 

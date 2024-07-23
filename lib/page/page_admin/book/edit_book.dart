@@ -32,7 +32,8 @@ class _EditBookPageState extends State<EditBookPage> {
   late TextEditingController _pagesController;
   late TextEditingController _isbnController;
   late TextEditingController _languageController;
-
+  late TextEditingController _statusController;
+  String? _selectedStatus;
   List<Author> _authors = [];
   List<CategoryModel> _categories = [];
   List<Author> _selectedAuthors = [];
@@ -50,6 +51,8 @@ class _EditBookPageState extends State<EditBookPage> {
     _selectedAuthors = List.from(widget.book.authors ?? []);
     _selectedCategories = List.from(widget.book.categories ?? []);
     _imagePath = widget.book.coverImage?.url;
+    _statusController = TextEditingController(text: widget.book.status ?? '');
+    _selectedStatus = widget.book.status;
     _loadAuthors();
     _loadCategories();
   }
@@ -79,7 +82,7 @@ class _EditBookPageState extends State<EditBookPage> {
   void showAlertSuccess(QuickAlertType quickalert){
     QuickAlert.show(context: context, type: quickalert).then((_) {
       // Đóng trang khi người dùng bấm nút "OK"
-      Navigator.of(context).pop();
+      Navigator.pop(context, true); // Truyền lại true để xác nhận cập nhật thành công
     });
   }
 
@@ -112,6 +115,7 @@ class _EditBookPageState extends State<EditBookPage> {
       'language': _languageController.text.trim(),
       'authors': _selectedAuthors.map((author) => {'id': author.id}).toList(),
       'categories': _selectedCategories.map((category) => {'id': category.id}).toList(),
+      'status': _statusController.text.trim(), // Sử dụng giá trị từ TextField
     };
 
     // Kiểm tra nếu có chọn ảnh mới
@@ -240,7 +244,7 @@ class _EditBookPageState extends State<EditBookPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Chỉnh sửa sách'),
+        title: const Text('Chỉnh sửa sách'),
         elevation: 0.0,
       ),
       body: Padding(
@@ -253,32 +257,32 @@ class _EditBookPageState extends State<EditBookPage> {
                 const SizedBox(height: 10,),
                 TextFormField(
                   controller: _titleController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Tiêu đề sách',
                     border: OutlineInputBorder(),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 TextFormField(
                   controller: _isbnController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'ISBN',
                     border: OutlineInputBorder(),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 TextFormField(
                   controller: _descriptionController,
                   maxLines: 5,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Mô tả',
                     border: OutlineInputBorder(),
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 TextFormField(
                   controller: _pagesController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Số trang',
                     border: OutlineInputBorder(),
                   ),
@@ -287,12 +291,14 @@ class _EditBookPageState extends State<EditBookPage> {
                 SizedBox(height: 20),
                 TextFormField(
                   controller: _languageController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Ngôn ngữ',
                     border: OutlineInputBorder(),
                   ),
                 ),
                 SizedBox(height: 20),
+                const Text('Tác giả',style: TextStyle(fontSize: 18,color: Colors.white),),
+                const SizedBox(height: 10,),
                 Container(
                   height: 80,
                   width: double.infinity,
@@ -327,6 +333,8 @@ class _EditBookPageState extends State<EditBookPage> {
                   child: Text('Chọn tác giả'),
                 ),
                 SizedBox(height: 20),
+                const Text('Thể loại',style: TextStyle(fontSize: 18,color: Colors.white),),
+                SizedBox(height: 10),
                 Container(
                   height: 80,
                   width: double.infinity,
@@ -359,6 +367,41 @@ class _EditBookPageState extends State<EditBookPage> {
                 ElevatedButton(
                   onPressed: _showCategoryDialog,
                   child: Text('Chọn thể loại'),
+                ),
+                SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _statusController,
+                        decoration: InputDecoration(
+                          labelText: 'Trạng thái',
+                          border: OutlineInputBorder(),
+                        ),
+                        readOnly: true, // Không cho phép chỉnh sửa trực tiếp
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _selectedStatus,
+                        hint: Text('Chọn trạng thái'),
+                        items: <String>['Mới nhất', 'Thường', 'Nổi bật']
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedStatus = newValue;
+                            _statusController.text = newValue ?? ''; // Cập nhật giá trị trong TextField
+                          });
+                        },
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(height: 20),
                 Row(

@@ -18,4 +18,9 @@ class PopularBook {
       }) : null,
     );
   }
+
+  @override
+  String toString() {
+    return 'PopularBook{id: $id, book: $book}';
+  }
 }
