@@ -109,10 +109,24 @@ class _DangKyWidgetState extends State<DangKyWidget> {
                   Container(
                     alignment: Alignment.center,
                     child: Container(
-                      height: 90,
-                      width: 90,
-                      child: const Image(
-                          image: AssetImage('assets/icon/logoapp.png')),
+                      height: 100,
+                      width: 100,
+                      margin: const EdgeInsets.only(top: 15),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2), // Màu sắc của bóng
+                            spreadRadius: 2, // Độ lan của bóng
+                            blurRadius: 5, // Độ mờ của bóng
+                            offset: Offset(0, 3), // Vị trí của bóng (x, y)
+                          ),
+                        ],
+                      ),
+                      child: const CircleAvatar(
+                        backgroundImage: AssetImage('assets/icon/logoapp.png'),
+                        radius: 45, // Đảm bảo bán kính phù hợp với kích thước của CircleAvatar
+                      ),
                     ),
                   ),
 

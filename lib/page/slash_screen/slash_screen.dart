@@ -127,18 +127,33 @@ class _SlashScreenState extends State<SlashScreen>
             width: double.infinity,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [MyColor.primaryColor, MyColor.secondaryColor],
+                colors: [Colors.green.shade400 ,Colors.green.shade400],
                 begin: Alignment.topRight,
                 end: Alignment.bottomLeft,
               ),
             ),
-            child: const Column(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image(
-                  image: AssetImage('assets/icon/logoapp.png'),
-                  width: 100,
+                Container(
                   height: 100,
+                  width: 100,
+                  margin: const EdgeInsets.only(top: 15),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2), // Màu sắc của bóng
+                        spreadRadius: 2, // Độ lan của bóng
+                        blurRadius: 5, // Độ mờ của bóng
+                        offset: Offset(0, 3), // Vị trí của bóng (x, y)
+                      ),
+                    ],
+                  ),
+                  child: const CircleAvatar(
+                    backgroundImage: AssetImage('assets/icon/logoapp.png'),
+                    radius: 45, // Đảm bảo bán kính phù hợp với kích thước của CircleAvatar
+                  ),
                 ),
                 /*SizedBox(
                     height: 20,
