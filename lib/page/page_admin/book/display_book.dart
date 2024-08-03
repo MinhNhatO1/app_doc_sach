@@ -115,7 +115,7 @@ class _DisplayBookState extends State<DisplayBook> {
       appBar: AppBar(
         title: const Text('Quản lý sách') ,
         elevation: 0.0, // Controls the shadow below the app bar
-        backgroundColor: Colors.blue,
+        backgroundColor: backgroundColor,
         actions: [
           Padding(
             padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
@@ -123,7 +123,7 @@ class _DisplayBookState extends State<DisplayBook> {
               onPressed: () {
                 Navigator.of(context).push(SlideLeftRoute(page: const BookCreate()));
               },
-              child: const Text('Tạo mới'),
+              child: const Text('Tạo mới',style: TextStyle(fontSize: 16),),
             ),
           )
         ],

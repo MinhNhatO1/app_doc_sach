@@ -7,9 +7,8 @@ import 'package:app_doc_sach/widgets/side_widget_menu.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
 import '../../../const.dart';
-
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 class DisplayCategory extends StatefulWidget {
   const DisplayCategory({Key? key}) : super(key: key);
 
@@ -65,15 +64,15 @@ class _DisplayCategoryState extends State<DisplayCategory> {
       appBar: AppBar(
         title: const Text('Quản lý thể loại'),
         elevation: 0.0, // Controls the shadow below the app bar
-        backgroundColor: Colors.blue,
+        backgroundColor: backgroundColor,
         actions: [
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
             child: ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(SlideLeftRoute(page: const CreateCategory()));
               },
-              child: const Text('Tạo mới'),
+              child: const Text('Tạo mới',style: TextStyle(fontSize: 16 ),),
             ),
           )
         ],
@@ -111,7 +110,10 @@ class _DisplayCategoryState extends State<DisplayCategory> {
                   } else if (snapshot.hasData) {
                     if (snapshot.data!.isEmpty) {
                       return const Center(
-                        child: Text('Không tìm thấy thể loại'),
+                        child: Text(
+                          'Không tìm thấy thể loại',
+                          style: TextStyle(fontSize: 18.0, color: Colors.grey),
+                        ),
                       );
                     } else {
                       if (_searchController.text.isEmpty) {
@@ -119,25 +121,88 @@ class _DisplayCategoryState extends State<DisplayCategory> {
                       }
                       return ListView.builder(
                         itemCount: _filteredCategories.length,
-                        itemBuilder: (BuildContext context, index) => InkWell(
-                          child: ListTile(
-                            title: Text(_filteredCategories[index].nameCategory),
-                            subtitle: Text(_filteredCategories[index].desCategory),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => MyDetails(
-                                    categories: _filteredCategories[index],
-                                  ),
+                        itemBuilder: (BuildContext context, index) => AnimationConfiguration.staggeredList(
+                          position: index,
+                          duration: const Duration(milliseconds: 375),
+                          child: SlideAnimation(
+                            verticalOffset: 50.0,
+                            child: FadeInAnimation(
+                              child: Card(
+                                margin: EdgeInsets.symmetric(vertical: 8.0),
+                                elevation: 4,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
                                 ),
-                              );
-                            },
+                                child: ListTile(
+                                  contentPadding: EdgeInsets.all(16.0),
+                                  leading: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        width: 40.0,
+                                        height: 40.0,
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue.shade50,
+                                          borderRadius: BorderRadius.circular(8.0),
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            _filteredCategories[index].id.toString(),
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.blue,
+                                              fontSize: 18.0,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  title: Text(
+                                    _filteredCategories[index].nameCategory,
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0),
+                                  ),
+                                  subtitle: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Mô tả:',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16.0,
+                                          color: Colors.grey.shade300,
+                                        ),
+                                      ),
+                                      SizedBox(height: 4.0),
+                                      Text(
+                                        _filteredCategories[index].desCategory,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(color: Colors.grey.shade400),
+                                      ),
+                                    ],
+                                  ),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => MyDetails(
+                                          categories: _filteredCategories[index],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       );
+
+
                     }
-                  } else {
+                  }
+                  else {
                     return const Center(
                       child: Text('Không tìm thấy thể loại'),
                     );

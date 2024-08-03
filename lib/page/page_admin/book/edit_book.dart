@@ -461,11 +461,10 @@ class _EditBookPageState extends State<EditBookPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton(
-
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all<Color>(MyColor.primaryColor), // Màu nền
                         foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Màu chữ
-                        minimumSize: MaterialStateProperty.all(Size(120, 50)), // Kích thước tối thiểu của button
+                        minimumSize: MaterialStateProperty.all(Size(200, 50)), // Kích thước tối thiểu của button
                         padding: MaterialStateProperty.all<EdgeInsetsGeometry>(EdgeInsets.all(16)), // Đệm bên trong button
                         textStyle: MaterialStateProperty.all<TextStyle>(
                           TextStyle(fontSize: 15), // Cỡ chữ
@@ -549,57 +548,47 @@ class _EditBookPageState extends State<EditBookPage> {
                               },
                             );
                           } else {
-                            _updateBook();
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Xác nhận cập nhật'),
+                                  content: const Text('Bạn có chắc chắn muốn cập nhật sách?'),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      child: const Text('Hủy'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop(); // Đóng dialog
+                                      },
+                                    ),
+                                    TextButton(
+                                      child: const Text('Cập nhật'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop(); // Đóng dialog
+                                        _updateBook(); // Gọi hàm cập nhật sách
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
                           }
                         }
                       },
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.add_circle_outline_sharp,color: Colors.white,), // Biểu tượng
-                          SizedBox(width: 5), // Khoảng cách giữa icon và văn bản
-                          Text('Lưu thông tin'), // Văn bản
+                          Icon(Icons.update,color: Colors.white,), // Biểu tượng
+                          SizedBox(width: 10), // Khoảng cách giữa icon và văn bản
+                          Text('Cập nhật sách'), // Văn bản
                         ],
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: MyColor.primaryColor,
-                minimumSize: const Size(double.infinity, 50),
-              ),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: const Text('Xác nhận cập nhật'),
-                      content: const Text('Bạn có chắc chắn muốn cập nhật sách?'),
-                      actions: <Widget>[
-                        TextButton(
-                          child: const Text('Hủy'),
-                          onPressed: () {
-                            Navigator.of(context).pop(); // Đóng dialog
-                          },
-                        ),
-                        TextButton(
-                          child: const Text('Cập nhật'),
-                          onPressed: () {
-                            Navigator.of(context).pop(); // Đóng dialog
-                            _updateBook(); // Gọi hàm cập nhật sách
-                          },
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-              child: const Text('Cập nhật sách', style: TextStyle(color: Colors.white)),
-            ),
-                const SizedBox(height: 20,),
                 _buildLoadingIndicator(), // Hiển thị tiêu đề loading ở đây
+
               ],
             ),
           ),

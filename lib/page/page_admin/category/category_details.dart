@@ -4,7 +4,9 @@ import 'package:app_doc_sach/model/category_model.dart';
 import 'package:app_doc_sach/page/page_admin/category/display_category.dart';
 import 'package:app_doc_sach/page/page_admin/category/edit_category.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
 
 import '../../../const.dart';
 
@@ -17,13 +19,18 @@ class MyDetails extends StatefulWidget {
 }
 //update
 class _MyDetailsState extends State<MyDetails> {
-  void deleteCategory() async {
-    await http.delete(
-      Uri.parse("$baseUrl/api/categories/${widget.categories.id}"),
-    );
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (BuildContext context) => const DisplayCategory()),
-      (Route<dynamic> route) => false,
+  void deleteCategory() {
+    showDeleteConfirmationDialog(
+      context,
+          () async {
+        await http.delete(
+          Uri.parse("$baseUrl/api/categories/${widget.categories.id}"),
+        );
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (BuildContext context) => const DisplayCategory()),
+              (Route<dynamic> route) => false,
+        );
+      },
     );
   }
 
@@ -35,7 +42,91 @@ class _MyDetailsState extends State<MyDetails> {
       ),
     );
   }
-
+  void showDeleteConfirmationDialog(BuildContext context, Function onConfirm) {
+    showGeneralDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.5),
+      transitionBuilder: (context, a1, a2, widget) {
+        return Transform.scale(
+          scale: Curves.easeInOut.transform(a1.value),
+          child: Opacity(
+            opacity: a1.value,
+            child: AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              backgroundColor: Color(0xFF2A2D3E),
+              content: Container(
+                width: 300,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Lottie.asset(
+                      'assets/delete_animation.json',
+                      width: 150,
+                      height: 150,
+                      fit: BoxFit.contain,
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'Xác nhận xóa',
+                      style: GoogleFonts.roboto(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Bạn có chắc chắn muốn xóa thể loại này?',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.roboto(
+                        fontSize: 16,
+                        color: Colors.white70,
+                      ),
+                    ),
+                    SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton(
+                          child: Text('Hủy'),
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white, backgroundColor: Colors.grey[700],
+                            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                        ElevatedButton(
+                          child: Text('Xóa'),
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white, backgroundColor: Colors.red,
+                            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            onConfirm();
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+      transitionDuration: Duration(milliseconds: 300),
+      barrierDismissible: false,
+      barrierLabel: '',
+      pageBuilder: (context, animation1, animation2) => Container(),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -105,7 +196,7 @@ class _MyDetailsState extends State<MyDetails> {
             const Text(
               'Mô tả:',
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 19,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -113,10 +204,11 @@ class _MyDetailsState extends State<MyDetails> {
             // Mô tả thể loại (nếu có)
             if (widget.categories.desCategory != null && widget.categories.desCategory!.isNotEmpty)
               Text(
+                textAlign: TextAlign.justify,
                 widget.categories.desCategory!,
                 style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.white,
+                  fontSize: 16,
+                  color: Colors.white70,
                 ),
               )
             else

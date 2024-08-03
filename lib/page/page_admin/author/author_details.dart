@@ -16,15 +16,6 @@ class AuthorDetails extends StatefulWidget {
 }
 //update
 class _AuthorDetailState extends State<AuthorDetails> {
-  void _deleteAuthor() async {
-    await http.delete(
-      Uri.parse("$baseUrl/api/authors/${widget.authors.id}"),
-    );
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (BuildContext context) => const DisplayAuthor()),
-      (Route<dynamic> route) => false,
-    );
-  }
 
   void _editAuthor() {
     Navigator.push(
@@ -34,6 +25,152 @@ class _AuthorDetailState extends State<AuthorDetails> {
       ),
     );
   }
+
+  void _deleteAuthor() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              shape: BoxShape.rectangle,
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 10.0,
+                  offset: Offset(0.0, 10.0),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.delete_forever,
+                    color: Colors.red,
+                    size: 40,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  "Xác nhận xóa",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "Bạn có chắc chắn muốn xóa tác giả '${widget.authors.authorName}'?",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, color: Colors.black),
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    TextButton(
+                      child: Text(
+                        "Hủy",
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      ),
+                      child: Text(
+                        "Xóa",
+                        style: TextStyle(fontSize: 18, color: Colors.white),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Close the dialog
+                        _deleteAuthorConfirmed(); // Call the delete function
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _deleteAuthorConfirmed() async {
+    try {
+      final response = await http.delete(
+        Uri.parse("$baseUrl/api/authors/${widget.authors.id}"),
+      );
+
+      if (response.statusCode == 200) {
+        // Hiển thị thông báo xóa thành công
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Xóa tác giả thành công!', style: TextStyle(color: Colors.white)),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2), // Đặt thời gian hiển thị thông báo là 2 giây
+          ),
+        );
+
+        // Chờ 2 giây trước khi chuyển trang
+        await Future.delayed(Duration(seconds: 2));
+
+        // Chuyển hướng về trang DisplayAuthor
+        if (!context.mounted) return; // Kiểm tra context còn hợp lệ không
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (BuildContext context) => const DisplayAuthor(),
+          ),
+              (Route<dynamic> route) => false,
+        );
+      } else {
+        // Hiển thị thông báo lỗi khi xóa không thành công
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Xóa tác giả không thành công. Vui lòng thử lại.', style: TextStyle(color: Colors.white)),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      // Hiển thị thông báo lỗi khi có lỗi trong quá trình request
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi xảy ra: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -65,16 +202,16 @@ class _AuthorDetailState extends State<AuthorDetails> {
                   'Tên tác giả: ',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 15,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Text(
                   widget.authors.authorName ?? 'Không có tên',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
+                  style: const TextStyle(
+                    color:  Colors.white,
+                    fontSize: 20,
                   ),
                 ),
               ],
@@ -83,7 +220,7 @@ class _AuthorDetailState extends State<AuthorDetails> {
             // Birth Date
             RichText(
               text: TextSpan(
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 19,
                   color: Colors.black,
                 ),
@@ -172,17 +309,18 @@ class _AuthorDetailState extends State<AuthorDetails> {
             const Text(
               'Tiểu sử:',
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             if (widget.authors.bio != null && widget.authors.bio!.isNotEmpty)
               Text(
+                textAlign: TextAlign.justify,
                 widget.authors.bio!,
                 style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.white,
+                  fontSize: 18,
+                  color: Colors.white70,
                 ),
               )
             else

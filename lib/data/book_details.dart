@@ -19,10 +19,10 @@ class BookDetails {
     // Initialize the statistics with current counts
     
     bookData = [
-      BookStatisticalModel(icon: 'assets/icon/books.png', value: allBooks.length, title: "Books"),
-      BookStatisticalModel(icon: 'assets/icon/author.png', value: allAuthors.length, title: "Authors"),
-      BookStatisticalModel(icon: 'assets/icon/User_icon_2.svg.png', value: allUsers.length, title: "Users"),
-      BookStatisticalModel(icon: 'assets/icon/category.png', value: allCategories.length, title: "Categories"),
+      BookStatisticalModel(icon: 'assets/icon/books.png', value: allBooks.length, title: "Sách"),
+      BookStatisticalModel(icon: 'assets/icon/author.png', value: allAuthors.length, title: "Tác giả"),
+      BookStatisticalModel(icon: 'assets/icon/User_icon_2.svg.png', value: allUsers.length, title: "Người dùng"),
+      BookStatisticalModel(icon: 'assets/icon/category.png', value: allCategories.length, title: "Thể loại"),
     ];
 
     // Example of adding authors (you should replace this with your actual data fetching logic)
@@ -35,7 +35,7 @@ class BookDetails {
 
   Future<void> fetchBooksFromStrapi() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/api/books/'));
+      final response = await http.get(Uri.parse('$baseUrl/api/books?pagination[pageSize]=100'));
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         List<dynamic> booksJson = jsonResponse['data']; // Adjust 'data' to your actual field name
@@ -54,7 +54,7 @@ class BookDetails {
 
   Future<void> fetchAuthorsFromStrapi() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/api/authors/'));
+      final response = await http.get(Uri.parse('$baseUrl/api/authors?pagination[pageSize]=100'));
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         List<dynamic> authorsJson = jsonResponse['data']; // Adjust 'data' to your actual field name
@@ -73,7 +73,7 @@ class BookDetails {
 
    Future<void> fetchUsersFromStrapi() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/api/profiles/'));
+      final response = await http.get(Uri.parse('$baseUrl/api/profiles?pagination[pageSize]=100'));
       if (response.statusCode == 200) {
         //Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         List<dynamic> usersJson = jsonDecode(response.body); // Adjust 'data' to your actual field name
@@ -92,7 +92,7 @@ class BookDetails {
 
   Future<void> fetchCategoriesFromStrapi() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/api/categories/'));
+      final response = await http.get(Uri.parse('$baseUrl/api/categories?pagination[pageSize]=100'));
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         List<dynamic> categoriesJson = jsonResponse['data']; // Adjust 'data' to your actual field name
@@ -111,7 +111,7 @@ class BookDetails {
 
   
   void updateAuthorStatistics() {
-    int authorIndex = bookData.indexWhere((model) => model.title == "Authors");
+    int authorIndex = bookData.indexWhere((model) => model.title == "Tác giả");
     if (authorIndex != -1) {
       bookData[authorIndex].value = allAuthors.length;
       // print('Updated authors statistics: ${bookData[authorIndex].value}'); // Debug statement
@@ -119,21 +119,21 @@ class BookDetails {
   }
 
   void updateBookStatistics() {
-    int bookIndex = bookData.indexWhere((model) => model.title == "Books");
+    int bookIndex = bookData.indexWhere((model) => model.title == "Sách");
     if (bookIndex != -1) {
       bookData[bookIndex].value = allBooks.length;
     }
   }
 
    void updateUsersStatistics() {
-    int userIndex = bookData.indexWhere((model) => model.title == "Users");
+    int userIndex = bookData.indexWhere((model) => model.title == "Người dùng");
     if (userIndex != -1) {
       bookData[userIndex].value = allUsers.length;
     }
   }
 
   void updateCategoriesStatistics() {
-    int categoryIndex = bookData.indexWhere((model) => model.title == "Categories");
+    int categoryIndex = bookData.indexWhere((model) => model.title == "Thể loại");
     if (categoryIndex != -1) {
       bookData[categoryIndex].value = allCategories.length;
     }

@@ -4,16 +4,12 @@ import 'package:app_doc_sach/page/taikhoanwidget.dart';
 import 'package:app_doc_sach/page/thongbaowidget.dart';
 import 'package:app_doc_sach/page/timkiemwidget.dart';
 import 'package:app_doc_sach/page/trangchuwidget.dart';
-import 'package:app_doc_sach/provider/tab_provider.dart';
 import 'package:app_doc_sach/state/tab_state.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_statusbarcolor_ns/flutter_statusbarcolor_ns.dart';
-import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../provider/ui_provider.dart';
 import '../../service/local_service/local_auth_service.dart';
@@ -98,11 +94,11 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                 iconSize: 18,
                 padding: const EdgeInsets.symmetric(horizontal: 15,vertical: 10),
                 gap: 8,tabs: const[
-                GButton(icon: CupertinoIcons.home, text: 'Trang chủ',textStyle: TextStyle(fontSize: 13,color: MyColor.primaryColor,fontWeight: FontWeight.bold),),
-                GButton(icon: FontAwesomeIcons.bookBookmark,text: 'Kệ sách',textStyle: TextStyle(fontSize: 13,color: MyColor.primaryColor,fontWeight: FontWeight.bold),),
-                GButton(icon: CupertinoIcons.search,text: 'Tìm kiếm',textStyle: TextStyle(fontSize: 13,color: MyColor.primaryColor,fontWeight: FontWeight.bold),),
-                GButton(icon: Icons.notification_important_rounded,text: 'Thông báo',textStyle: TextStyle(fontSize: 13,color: MyColor.primaryColor,fontWeight: FontWeight.bold),),
-                GButton(icon: CupertinoIcons.person_alt_circle,text: 'Tài khoản',textStyle: TextStyle(fontSize: 13,color: MyColor.primaryColor,fontWeight: FontWeight.bold),)
+                GButton(icon: CupertinoIcons.home,iconSize: 20, text: 'Trang chủ',textStyle: TextStyle(fontSize: 15,color: MyColor.primaryColor,fontWeight: FontWeight.bold),),
+                GButton(icon: FontAwesomeIcons.bookBookmark,iconSize: 20,text: 'Kệ sách',textStyle: TextStyle(fontSize: 15,color: MyColor.primaryColor,fontWeight: FontWeight.bold),),
+                GButton(icon: CupertinoIcons.search,iconSize: 20,text: 'Tìm kiếm',textStyle: TextStyle(fontSize: 15,color: MyColor.primaryColor,fontWeight: FontWeight.bold),),
+                GButton(icon: Icons.notification_important_rounded,iconSize: 20,text: 'Thông báo',textStyle: TextStyle(fontSize: 15,color: MyColor.primaryColor,fontWeight: FontWeight.bold),),
+                GButton(icon: CupertinoIcons.person_alt_circle,iconSize: 20,text: 'Tài khoản',textStyle: TextStyle(fontSize: 15,color: MyColor.primaryColor,fontWeight: FontWeight.bold),)
               ],
 
                 selectedIndex: _tabState.selectedTab,

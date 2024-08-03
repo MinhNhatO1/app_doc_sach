@@ -41,25 +41,25 @@ class _TrangChuWidgetState extends State<TrangChuWidget>
       Tab(
         child: Text(
           'Khám phá',
-          style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
         ),
       ),
       Tab(
         child: Text(
           'Nổi bật',
-          style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
         ),
       ),
       Tab(
         child: Text(
           'Mới nhất',
-          style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
         ),
       ),
       Tab(
         child: Text(
           'Danh mục',
-          style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
         ),
       ),
     ];

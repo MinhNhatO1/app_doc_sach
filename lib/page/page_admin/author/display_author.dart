@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:app_doc_sach/const.dart';
+import 'package:app_doc_sach/const/constant.dart';
 import 'package:app_doc_sach/page/page_admin/book/slideleftroutes.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -109,17 +110,21 @@ class _DisplayAuthorState extends State<DisplayAuthor> {
       appBar: AppBar(
         title: const Text('Quản lý tác giả'),
         elevation: 0.0,
-        backgroundColor: Colors.blue,
+        backgroundColor: backgroundColor,
         actions: [
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
             child: ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(SlideLeftRoute(page: const CreateAuthor()));
               },
-              child: const Text('Tạo mới'),
+              child: const Text(
+                'Tạo mới',
+                style: TextStyle(fontSize: 16),
+              ),
             ),
           )
+
         ],
       ),
       drawer: const SideWidgetMenu(),
@@ -152,14 +157,18 @@ class _DisplayAuthorState extends State<DisplayAuthor> {
                     if (snapshot.data!.isEmpty) {
                       return const Center(child: Text('Không tìm thấy tác giả'));
                     } else {
-                      return ListView.builder(
+                      return ListView.separated(
                         itemCount: filteredAuthors.length,
+                        separatorBuilder: (context, index) => const SizedBox(height: 12),
                         itemBuilder: (BuildContext context, index) {
                           final author = filteredAuthors[index];
-                          return InkWell(
-                            child: ListTile(
-                              title: Text(author.authorName),
-                              subtitle: Text(author.bio),
+                          return Card(
+                            elevation: 3,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -168,6 +177,64 @@ class _DisplayAuthorState extends State<DisplayAuthor> {
                                   ),
                                 );
                               },
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: Colors.blue.shade100,
+                                      child: Text(
+                                        author.authorName.isNotEmpty ? author.id.toString() : '?',
+                                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue.shade800),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            author.authorName,
+                                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              Text(
+                                                'Quốc tịch: ', // Nhãn cho quốc tịch
+                                                style: TextStyle(color: Colors.grey.shade300, fontWeight: FontWeight.bold,fontSize: 16),
+                                              ),
+                                              Text(
+                                                author.nationality,
+                                                style: TextStyle(color: Colors.grey.shade300, fontSize: 15),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Mô tả: ', // Nhãn cho mô tả
+                                                style: TextStyle(color: Colors.grey.shade300, fontWeight: FontWeight.bold,fontSize: 16),
+                                              ),
+                                              Text(
+                                                author.bio,
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(color: Colors.grey.shade300,fontSize: 15),
+                                              ),
+                                            ],
+                                          ),
+
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           );
                         },

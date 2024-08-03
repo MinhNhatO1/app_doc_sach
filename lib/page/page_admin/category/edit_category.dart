@@ -7,6 +7,7 @@ import 'package:app_doc_sach/page/page_admin/category/textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
 
 import '../../../const.dart';
 
@@ -57,12 +58,167 @@ class _EditCategoryState extends State<EditCategory> {
         },
         body: body);
     print(response.body);
-    Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-            builder: (BuildContext context) => const DisplayCategory()),
-        (Route<dynamic> route) => false);
+    showSuccessDialog(context);  // Hiển thị thông báo thành công
+    Future.delayed(Duration(seconds: 2), () {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (BuildContext context) => const DisplayCategory()),
+            (Route<dynamic> route) => false,
+      );
+    });
   }
-
+  void showConfirmUpdateDialog(BuildContext context, Function onConfirm) {
+    showGeneralDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.5),
+      transitionBuilder: (context, a1, a2, widget) {
+        return Transform.scale(
+          scale: Curves.easeInOut.transform(a1.value),
+          child: Opacity(
+            opacity: a1.value,
+            child: AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              backgroundColor: Color(0xFF2A2D3E),
+              content: Container(
+                width: 300,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF3A3F55),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.update,
+                        color: Colors.white,
+                        size: 48,
+                      ),
+                    ),
+                    SizedBox(height: 24),
+                    Text(
+                      'Xác nhận cập nhật',
+                      style: GoogleFonts.roboto(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Bạn có chắc chắn muốn cập nhật thông tin thể loại này?',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.roboto(
+                        fontSize: 16,
+                        color: Colors.white70,
+                      ),
+                    ),
+                    SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton(
+                          child: Text('Hủy'),
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white, backgroundColor: Colors.grey[600],
+                            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                        ElevatedButton(
+                          child: Text('Cập nhật'),
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white, backgroundColor: Colors.blue,
+                            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            onConfirm();
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+      transitionDuration: Duration(milliseconds: 300),
+      barrierDismissible: false,
+      barrierLabel: '',
+      pageBuilder: (context, animation1, animation2) => Container(),
+    );
+  }
+  void showSuccessDialog(BuildContext context) {
+    showGeneralDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.5),
+      transitionBuilder: (context, a1, a2, widget) {
+        return Transform.scale(
+          scale: a1.value,
+          child: Opacity(
+            opacity: a1.value,
+            child: AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Lottie.asset(
+                    'assets/lotte1.json',
+                    width: 200,
+                    height: 200,
+                    fit: BoxFit.contain,
+                    repeat: false,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Cập nhật thành công!',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Thể loại đã được cập nhật.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  SizedBox(height: 24),
+                  ElevatedButton(
+                    child: Text('Đóng',style: TextStyle(color: Colors.white),),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      transitionDuration: Duration(milliseconds: 200),
+      barrierDismissible: false,
+      barrierLabel: '',
+      pageBuilder: (context, animation1, animation2) {
+        return Container();
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
     final _formKey = GlobalKey<FormState>();
@@ -291,13 +447,18 @@ class _EditCategoryState extends State<EditCategory> {
                                 },
                               );
                             } else {
-                              editCategory(categories: widget.categories!,
-                                            name: nameController.text,
-                                              Description: descriptionController.text);
+                              showConfirmUpdateDialog(
+                                context,
+                                    () {
+                                  editCategory(
+                                    categories: widget.categories!,
+                                    name: nameController.text,
+                                    Description: descriptionController.text,
+                                  );
+                                },
+                              );
                             }
                           }
-
-
                         },
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,

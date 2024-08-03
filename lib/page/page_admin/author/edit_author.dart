@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 
 class EditAuthor extends StatefulWidget {
   final Author? authors;
@@ -68,26 +69,62 @@ class _EditAuthorState extends State<EditAuthor> {
       });
     }
   }
+  void _showSuccessDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Cập nhật thành công'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Lottie.asset(
+                'assets/lotte1.json',
+                width: 200,
+                height: 200,
+                fit: BoxFit.contain,
+                repeat: false,
+              ),
+              SizedBox(height: 20),
+              Text('Cập nhật tác giả thành công!'),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   void editAuthor({
     required Author authors,
-    required String authorName,
-    required DateTime birthDate,
-    required String born,
-    required String telphone,
-    required String nationality,
-    required String bio,
+    String? authorName,
+    DateTime? birthDate,
+    String? born,
+    String? telphone,
+    String? nationality,
+    String? bio,
+    required BuildContext context, // Thêm BuildContext để hiển thị Snackbar
   }) async {
-    Map data = {
+    Map<String, dynamic> data = {
       'data': {
-        "authorName": authorName,
-        "birthDate": DateFormat('yyyy-MM-dd').format(birthDate),
-        "born": born,
-        "telephone": telphone,
-        "nationality": nationality,
-        "bio": bio,
+        if (authorName != null) "authorName": authorName,
+        if (birthDate != null) "birthDate": DateFormat('yyyy-MM-dd').format(birthDate),
+        if (born != null) "born": born,
+        if (telphone != null) "telephone": telphone,
+        if (nationality != null) "nationality": nationality,
+        if (bio != null) "bio": bio,
       }
     };
+
+    // Loại bỏ các trường có giá trị null
+    data['data'].removeWhere((key, value) => value == null);
 
     // Encode Map to JSON
     var body = json.encode(data);
@@ -101,11 +138,9 @@ class _EditAuthorState extends State<EditAuthor> {
         body: body,
       );
 
-      print("Data after update: $data");
-      print("Response status code: ${response.statusCode}");
-
       if (response.statusCode == 200) {
-        // Nếu thành công, chuyển hướng về trang DisplayAuthor
+        _showSuccessDialog(context);
+        // Chuyển hướng về trang DisplayAuthor
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(
             builder: (BuildContext context) => const DisplayAuthor(),
@@ -113,19 +148,22 @@ class _EditAuthorState extends State<EditAuthor> {
               (Route<dynamic> route) => false,
         );
       } else {
-        // Xử lý lỗi, hiển thị thông báo lỗi phù hợp
-        setState(() {
-          print("Failed to update author. Please try again.");
-        });
+        // Hiển thị thông báo lỗi khi cập nhật thất bại
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cập nhật tác giả không thành công. Vui lòng thử lại.',style: TextStyle(color: Colors.white)),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     } catch (e) {
-      // Xử lý lỗi trong trường hợp request bị lỗi
-      setState(() {
-       print("Error: $e");
-      });
-    } finally {
-      setState(() {
-      });
+      // Hiển thị thông báo lỗi khi có lỗi trong quá trình request
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi xảy ra: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -152,38 +190,9 @@ class _EditAuthorState extends State<EditAuthor> {
           key: _formKey,
           child: SingleChildScrollView(
             child: Container(
-              // padding: const EdgeInsets.all(20),
-              // height: 700,
-              // decoration: BoxDecoration(
-              //   borderRadius: BorderRadius.circular(10),
-              //   color: Colors.white,
-              //   boxShadow: [
-              //     BoxShadow(
-              //       color: Colors.grey.withOpacity(0.3),
-              //       spreadRadius: 2,
-              //       blurRadius: 5,
-              //       offset: const Offset(0, 3),
-              //     ),
-              //   ],
-              // ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Container(
-                  //   width: double.infinity,
-                  //   color: Colors.white,
-                  //   child: Textfield(
-                  //     controller: authorNameController,
-                  //     onChanged: (val) {
-                  //       setState(() {
-                  //         authorNameController.text = val;
-                  //       });
-                  //     },
-                  //     hintText: 'Name',
-                  //     icon: const Icon(Icons.book_sharp),
-                  //     hintStyle: const TextStyle(color: Colors.black54),
-                  //   ),
-                  // ),
                   Container(
                     height: 80,
                     padding: const EdgeInsets.only(top: 10),
@@ -218,27 +227,6 @@ class _EditAuthorState extends State<EditAuthor> {
                       ),
                     ),
                   ),
-                  // const SizedBox(height: 20),
-                  // Container(
-                  //   width: double.infinity,
-                  //   child: GestureDetector(
-                  //     onTap: () => _selectDate(context),
-                  //     child: AbsorbPointer(
-                  //       child: Textfield(
-                  //         controller: birthDateController,
-                  //         onChanged: (val) {
-                  //           setState(() {
-                  //             widget.authors?.birthDate =
-                  //                 DateFormat('dd-MM-yyyy').parse(val);
-                  //           });
-                  //         },
-                  //         hintText: 'Birth Date',
-                  //         hintStyle: const TextStyle(color: Colors.black54),
-                  //         icon: const Icon(Icons.date_range),
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
                   Container(
                     height: 80,
                     padding: const EdgeInsets.only(top: 10),
@@ -279,21 +267,6 @@ class _EditAuthorState extends State<EditAuthor> {
                       ),
                     ),
                   ),
-                  // const SizedBox(height: 20),
-                  // Container(
-                  //   width: double.infinity,
-                  //   child: Textfield(
-                  //     controller: bornController,
-                  //     onChanged: (val) {
-                  //       setState(() {
-                  //         widget.authors?.born = val;
-                  //       });
-                  //     },
-                  //     hintText: 'Born',
-                  //     hintStyle: const TextStyle(color: Colors.black54),
-                  //     icon: const Icon(Icons.description),
-                  //   ),
-                  // ),
                   Container(
                     height: 80,
                     padding: const EdgeInsets.only(top: 10),
@@ -328,21 +301,6 @@ class _EditAuthorState extends State<EditAuthor> {
                       ),
                     ),
                   ),
-                  // const SizedBox(height: 20),
-                  // Container(
-                  //   width: double.infinity,
-                  //   child: Textfield(
-                  //     controller: teleController,
-                  //     onChanged: (val) {
-                  //       setState(() {
-                  //         widget.authors?.telphone = val;
-                  //       });
-                  //     },
-                  //     hintText: 'Telephone',
-                  //     hintStyle: const TextStyle(color: Colors.black54),
-                  //     icon: const Icon(Icons.description),
-                  //   ),
-                  // ),
                   Container(
                     height: 80,
                     padding: const EdgeInsets.only(top: 10),
@@ -377,32 +335,6 @@ class _EditAuthorState extends State<EditAuthor> {
                       ),
                     ),
                   ),
-                  // const SizedBox(height: 20),
-                  // Container(
-                  //   width: double.infinity,
-                  //   child: GestureDetector(
-                  //     onTap: () {
-                  //       showCountryPicker(
-                  //         context: context,
-                  //         showPhoneCode: false,
-                  //         onSelect: (Country country) {
-                  //           setState(() {
-                  //             widget.authors?.nationality = country.name;
-                  //             nationalityController.text = country.name;
-                  //           });
-                  //         },
-                  //       );
-                  //     },
-                  //     child: AbsorbPointer(
-                  //       child: Textfield(
-                  //         controller: nationalityController,
-                  //         hintText: 'Nationality',
-                  //         hintStyle: const TextStyle(color: Colors.black54),
-                  //         icon: const Icon(Icons.description), onChanged: (String val) {  },
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
                   Container(
                     height: 80,
                     padding: const EdgeInsets.only(top: 10),
@@ -453,21 +385,6 @@ class _EditAuthorState extends State<EditAuthor> {
                       ),
                     ),
                   ),
-                  // const SizedBox(height: 20),
-                  // Container(
-                  //   width: double.infinity,
-                  //   child: Textfield(
-                  //     controller: bioController,
-                  //     onChanged: (val) {
-                  //       setState(() {
-                  //         widget.authors?.bio = val;
-                  //       });
-                  //     },
-                  //     hintText: 'Bio',
-                  //     hintStyle: const TextStyle(color: Colors.black54),
-                  //     icon: const Icon(Icons.description),
-                  //   ),
-                  // ),
                   Container(
                     height: 200,
                     padding: const EdgeInsets.only(top: 10),
@@ -505,55 +422,6 @@ class _EditAuthorState extends State<EditAuthor> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // SizedBox(
-                  //   width: double.infinity,
-                  //   child: ElevatedButton(
-                  //     style: ElevatedButton.styleFrom(
-                  //       foregroundColor: Colors.white,
-                  //       backgroundColor: Colors.black,
-                  //       padding: const EdgeInsets.symmetric(vertical: 15),
-                  //       shape: RoundedRectangleBorder(
-                  //         borderRadius: BorderRadius.circular(10),
-                  //       ),
-                  //     ),
-                  //     onPressed: () {
-                  //       showDialog(
-                  //         context: context,
-                  //         builder: (BuildContext context) {
-                  //           return AlertDialog(
-                  //             title: Text('Xác nhận cập nhật'),
-                  //             content: Text('Bạn có chắc chắn muốn cập nhật thông tin này không?'),
-                  //             actions: <Widget>[
-                  //               TextButton(
-                  //                 child: Text('Huỷ'),
-                  //                 onPressed: () {
-                  //                   Navigator.of(context).pop(); // Đóng dialog
-                  //                 },
-                  //               ),
-                  //               TextButton(
-                  //                 child: Text('Đồng ý'),
-                  //                 onPressed: () {
-                  //                   // Gọi hàm để thực hiện cập nhật ở đây
-                  //                   editAuthor(
-                  //                     authors: widget.authors!,
-                  //                     authorName: authorNameController.text,
-                  //                     birthDate: DateFormat('dd-MM-yyyy').parse(birthDateController.text),
-                  //                     born: bornController.text,
-                  //                     telphone: teleController.text,
-                  //                     nationality: nationalityController.text,
-                  //                     bio: bioController.text,
-                  //                   );
-                  //                   Navigator.of(context).pop(); // Đóng dialog
-                  //                 },
-                  //               ),
-                  //             ],
-                  //           );
-                  //         },
-                  //       );
-                  //     },
-                  //     child: const Text('Save'),
-                  //   ),
-                  // ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -561,7 +429,7 @@ class _EditAuthorState extends State<EditAuthor> {
                         style: ButtonStyle(
                           backgroundColor: MaterialStateProperty.all<Color>(MyColor.primaryColor), // Màu nền
                           foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Màu chữ
-                          minimumSize: MaterialStateProperty.all(Size(120, 50)), // Kích thước tối thiểu của button
+                          minimumSize: MaterialStateProperty.all(Size(200, 50)), // Kích thước tối thiểu của button
                           padding: MaterialStateProperty.all<EdgeInsetsGeometry>(EdgeInsets.all(16)), // Đệm bên trong button
                           textStyle: MaterialStateProperty.all<TextStyle>(
                             TextStyle(fontSize: 15), // Cỡ chữ
@@ -588,10 +456,10 @@ class _EditAuthorState extends State<EditAuthor> {
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           const SizedBox(height: 20,),
-                                          Image.asset('assets/icon/error.png',width: 50,),
+                                          Image.asset('assets/icon/error.png',width: 70,),
                                           const SizedBox(height: 20,),
                                           Text('Thông tin bạn nhập chưa đầy đủ',
-                                              style: GoogleFonts.montserrat(fontSize: 11, color: const Color(0xffEC5B5B), fontWeight: FontWeight.bold)),
+                                              style: GoogleFonts.montserrat(fontSize: 15, color: const Color(0xffEC5B5B), fontWeight: FontWeight.bold)),
                                           const SizedBox(height: 5,),
                                           Column(
                                             mainAxisSize: MainAxisSize.min,
@@ -599,22 +467,22 @@ class _EditAuthorState extends State<EditAuthor> {
                                             children: [
                                               if (authorNameController.text.isEmpty)
                                                 Text('• Vui lòng nhập tên tác giả',
-                                                    style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
+                                                    style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w300)),
                                               if (DateFormat('dd-MM-yyyy').parse(birthDateController.text).year > 2006)
                                                 Text('• Vui lòng điều chỉnh lại năm sinh',
-                                                    style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
+                                                    style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w300)),
                                               if (bornController.text.isEmpty)
                                                 Text('• Vui lòng nhập nơi sinh',
-                                                    style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
+                                                    style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w300)),
                                               if (teleController.text.isEmpty)
                                                 Text('• Vui lòng nhập số điện thoại',
-                                                    style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
+                                                    style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w300)),
                                               if (nationalityController.text.isEmpty)
                                                 Text('• Vui lòng nhập quốc gia',
-                                                    style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
+                                                    style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w300)),
                                               if (bioController.text.isEmpty)
                                                 Text('• Vui lòng nhập sơ yếu lý lịch',
-                                                    style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w300)),
+                                                    style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w300)),
                                               const SizedBox(height: 20,),
                                               Center(
                                                 child: OutlinedButton(
@@ -637,22 +505,25 @@ class _EditAuthorState extends State<EditAuthor> {
                                 },
                               );
                             } else {
-                              editAuthor(authors: widget.authors!,
-                                          authorName: authorNameController.text,
-                                            birthDate: DateFormat('dd-MM-yyyy').parse(birthDateController.text),
-                                              born: bornController.text,
-                                                telphone: teleController.text,
-                                                  nationality: nationalityController.text,
-                                                    bio: bioController.text);
+                              editAuthor(
+                                context: context,
+                                authors: widget.authors!,
+                                authorName: authorNameController.text.isNotEmpty ? authorNameController.text : null,
+                                birthDate: birthDateController.text.isNotEmpty ? DateFormat('dd-MM-yyyy').parse(birthDateController.text) : null,
+                                born: bornController.text.isNotEmpty ? bornController.text : null,
+                                telphone: teleController.text.isNotEmpty ? teleController.text : null,
+                                nationality: nationalityController.text.isNotEmpty ? nationalityController.text : null,
+                                bio: bioController.text.isNotEmpty ? bioController.text : null,
+                              );
                             }
                           }
                         },
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.add_circle_outline_sharp,color: Colors.white,), // Biểu tượng
+                            Icon(Icons.update,color: Colors.white,), // Biểu tượng
                             SizedBox(width: 5), // Khoảng cách giữa icon và văn bản
-                            Text('Lưu thông tin'), // Văn bản
+                            Text('Cập nhật tác giả'), // Văn bản
                           ],
                         ),
                       ),

@@ -125,7 +125,7 @@ class MyApp extends StatelessWidget {
 
         return GetMaterialApp(
           debugShowCheckedModeBanner: false,
-          home: const DashboardAdminWidget(),
+          home: const SlashScreen(),
           initialRoute: AppRoute.dashboard,
           initialBinding: DashboardBinding(),
           getPages: /*[

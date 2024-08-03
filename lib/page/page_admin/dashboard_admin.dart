@@ -9,6 +9,7 @@ import 'package:app_doc_sach/page/page_admin/book_admin.dart';
 import 'package:app_doc_sach/page/page_admin/user/user_admin.dart';
 import 'package:app_doc_sach/page/page_admin/user_vip/uservip_admin.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../view/dashboard/dashboard_screen.dart';
 import 'book/book_admin.dart';
@@ -25,6 +26,13 @@ class DashboardAdminWidget extends StatelessWidget{
       theme: ThemeData(
         scaffoldBackgroundColor: backgroundColor,
         brightness: Brightness.dark,
+        appBarTheme: const AppBarTheme(
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: backgroundColor,
+            statusBarIconBrightness: Brightness.light,
+            statusBarBrightness: Brightness.dark,
+          ),
+        ),
       ),
       home: const MainScreen(),
       routes: {

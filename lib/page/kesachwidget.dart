@@ -39,25 +39,25 @@ class _KeSachWidgetState extends State<KeSachWidget> with SingleTickerProviderSt
       Tab(
         child: Text(
           'Lịch sử đọc',
-          style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
         ),
       ),
       Tab(
         child: Text(
           'Yêu thích',
-          style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
         ),
       ),
       Tab(
         child: Text(
           'Danh ngôn',
-          style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
         ),
       ),
       Tab(
         child: Text(
           'Bộ sưu tập',
-          style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
         ),
       ),
     ];

@@ -131,6 +131,7 @@ class Book {
         'language': language,
         'likes': likes,
         'view': view,
+        'status': status,
         "authors": {
           "connect": authors?.map((author) => author.id).toList() ?? [], // Kiểm tra nếu authors là null
         },

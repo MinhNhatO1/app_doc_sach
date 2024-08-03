@@ -752,7 +752,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                   ),
                                 ),
                               ),
-                              Center(child: CommentScreen()), // Placeholder for comments
+                              Center(child: CommentScreen(bookId: book.id.toString(),)), // Placeholder for comments
                               FutureBuilder<List<Book>>(
                                 future: _fetchRelatedBooks(),
                                 builder: (context, snapshot) {

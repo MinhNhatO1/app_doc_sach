@@ -24,12 +24,12 @@ class Users {
   Users({
     this.id,
     this.email,
-    required this.fullName,
-    required this.phone,
-    required this.gender,
-    required this.address,
-    required this.age,
-    required this.avatar,
+     this.fullName,
+     this.phone,
+     this.gender,
+     this.address,
+    this.age,
+    this.avatar,
   });
 
   factory Users.fromJson(Map<String, dynamic> data) {

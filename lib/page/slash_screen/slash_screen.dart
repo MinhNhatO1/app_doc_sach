@@ -1,4 +1,5 @@
 import 'package:app_doc_sach/color/mycolor.dart';
+import 'package:app_doc_sach/const/constant.dart';
 import 'package:app_doc_sach/view/dashboard/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -56,6 +57,11 @@ class _SlashScreenState extends State<SlashScreen>
 
       if (userRole == 'admin') {
         // Chuyển đến trang Admin
+        // Đặt màu status bar và icon khi chuyển đến trang admin
+        SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+          statusBarColor: backgroundColor, // Màu của status bar cho trang admin
+          statusBarIconBrightness: Brightness.light, // Màu icon cho trang admin
+        ));
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
             pageBuilder: (_, __, ___) => const DashboardAdminWidget(),
@@ -127,18 +133,33 @@ class _SlashScreenState extends State<SlashScreen>
             width: double.infinity,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [MyColor.primaryColor, MyColor.secondaryColor],
+                colors: [Colors.green.shade400 ,Colors.green.shade400],
                 begin: Alignment.topRight,
                 end: Alignment.bottomLeft,
               ),
             ),
-            child: const Column(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image(
-                  image: AssetImage('assets/icon/logoapp.png'),
-                  width: 100,
+                Container(
                   height: 100,
+                  width: 100,
+                  margin: const EdgeInsets.only(top: 15),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2), // Màu sắc của bóng
+                        spreadRadius: 2, // Độ lan của bóng
+                        blurRadius: 5, // Độ mờ của bóng
+                        offset: Offset(0, 3), // Vị trí của bóng (x, y)
+                      ),
+                    ],
+                  ),
+                  child: const CircleAvatar(
+                    backgroundImage: AssetImage('assets/icon/logoapp.png'),
+                    radius: 45, // Đảm bảo bán kính phù hợp với kích thước của CircleAvatar
+                  ),
                 ),
                 /*SizedBox(
                     height: 20,

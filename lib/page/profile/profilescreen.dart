@@ -29,7 +29,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-
+  Users? _currentUser;
   late Future<Users> futureUser;
   String? selectedGender;
   File? _imageFile;
@@ -61,24 +61,18 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
     String userEmail = authController.user.value?.email ?? '';
     String? token = authController.getToken();
 
-    // Gọi fetchUserByEmail để lấy dữ liệu người dùng
     futureUser = fetchUserByEmail(userEmail, token!);
 
-    // Sau khi lấy được dữ liệu người dùng, khởi tạo selectedGender dựa trên giới tính của người dùng
     futureUser.then((user) {
       setState(() {
-        if (user.gender == 'Nam') {
-          selectedGender = 'Nam';
-        } else if (user.gender == 'Nữ') {
-          selectedGender = 'Nữ';
-        } else if (user.gender == 'Khác') {
-          selectedGender = 'Khác';
-        }
-        else{
-          selectedGender = '';
-        }
+        _currentUser = user;
+        _nameController.text = user.fullName ?? '';
+        _phoneController.text = user.phone ?? '';
+        _addressController.text = user.address ?? '';
+        _emailController.text = user.email ?? '';
+        selectedGender = user.gender ?? '';
+        _ageController.text = formatDate(user.age ?? DateTime.now());
       });
-      _ageController.text = formatDate(user.age!);
     }).catchError((error) {
       print('Error initializing data: $error');
     });
@@ -169,13 +163,16 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
         AuthController authController = Get.find();
         var imageUrl = await uploadImage(_imageFile!);
 
+        setState(() {
+          _currentUser?.avatar = imageUrl;
+        });
+
         // Update profile with the image URL
         String userId = authController.user.value?.id.toString() ?? '';
         var profileUpdateResponse = await updateProfileImage(userId, imageUrl);
 
         // Handle response from profile update API
         if (profileUpdateResponse.statusCode == 200) {
-          // Profile image updated successfully
           print('Profile image updated successfully.');
         } else {
           throw Exception('Failed to update profile image. Status code: ${profileUpdateResponse.statusCode}');
@@ -335,6 +332,9 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                                   controller: _nameController,
                                   style: TextStyle(fontSize: 15),
                                   maxLines: 1,
+                                  onChanged: (value) {
+                                    _currentUser?.fullName = value;
+                                  },
                                   decoration: const InputDecoration(
                                     border: InputBorder.none,
                                   ),
@@ -360,9 +360,11 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                                 padding: EdgeInsets.only(top: 5, left: 10, bottom: 5),
                                 child: TextFormField(
                                   controller: _emailController,
-                                  enabled: false,
-                                  style: TextStyle(fontSize: 15,color:  Colors.black),
+                                  style: TextStyle(fontSize: 15),
                                   maxLines: 1,
+                                  onChanged: (value) {
+                                    _currentUser?.email = value;
+                                  },
                                   decoration: const InputDecoration(
                                     border: InputBorder.none,
                                   ),
@@ -390,6 +392,9 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                                   controller: _phoneController,
                                   style: TextStyle(fontSize: 15),
                                   maxLines: 1,
+                                  onChanged: (value) {
+                                    _currentUser?.phone = value;
+                                  },
                                   decoration: const InputDecoration(
                                     border: InputBorder.none,
                                   ),
@@ -417,11 +422,11 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                                         onChanged: (value) {
                                           setState(() {
                                             selectedGender = value;
-                                            // Cập nhật giá trị cho user.gender tại đây nếu cần
+                                            _currentUser?.gender = value;
                                           });
                                         },
                                       ),
-                                      const Text('Nam',style: TextStyle(fontSize: 18),),
+                                      const Text('Nam', style: TextStyle(fontSize: 18),),
                                     ],
                                   ),
                                 ),
@@ -434,11 +439,11 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                                         onChanged: (value) {
                                           setState(() {
                                             selectedGender = value;
-                                            // Cập nhật giá trị cho user.gender tại đây nếu cần
+                                            _currentUser?.gender = value;
                                           });
                                         },
                                       ),
-                                      const Text('Nữ',style: TextStyle(fontSize: 18),),
+                                      const Text('Nữ', style: TextStyle(fontSize: 18),),
                                     ],
                                   ),
                                 ),
@@ -451,11 +456,11 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                                         onChanged: (value) {
                                           setState(() {
                                             selectedGender = value;
-                                            // Cập nhật giá trị cho user.gender tại đây nếu cần
+                                            _currentUser?.gender = value;
                                           });
                                         },
                                       ),
-                                      const Text('Khác',style: TextStyle(fontSize: 18),),
+                                      const Text('Khác', style: TextStyle(fontSize: 18),),
                                     ],
                                   ),
                                 ),
@@ -483,6 +488,9 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                                   controller: _addressController,
                                   style: TextStyle(fontSize: 15),
                                   maxLines: 1,
+                                  onChanged: (value) {
+                                    _currentUser?.address = value;
+                                  },
                                   decoration: const InputDecoration(
                                     border: InputBorder.none,
                                   ),
@@ -530,6 +538,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                                           if (pickedDate != null) {
                                             setState(() {
                                               _ageController.text = formatDate(pickedDate);
+                                              _currentUser?.age = pickedDate;
                                             });
                                           } else {
                                             print('No date selected');

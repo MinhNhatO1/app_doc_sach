@@ -245,10 +245,59 @@ class _BookCreateState extends State<BookCreate> {
         print(newBook.toJson());
         bool success = await BookController.instance.createBook(newBook);
         if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Sách đã được tạo thành công')),
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return Dialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Container(
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xff2A303E),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset('assets/icon/success.png', width: 70),
+                      SizedBox(height: 20),
+                      Text(
+                        'Thêm sách thành công',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 18,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Sách "${_titleController.text}" đã được thêm vào thư viện.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 14,
+                          color: Colors.white70,
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      ElevatedButton(
+                        child: Text('Đóng'),
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white, backgroundColor: MyColor.primaryColor,
+                          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          _refreshForm();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           );
-          _refreshForm();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Không thể tạo sách. Vui lòng thử lại')),

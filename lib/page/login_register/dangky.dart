@@ -1,20 +1,13 @@
-import 'package:app_doc_sach/controller/controller.dart';
 import 'package:app_doc_sach/page/login_register/button/button_global_dk.dart';
-import 'package:app_doc_sach/page/login_register/dangnhap.dart';
 import 'package:app_doc_sach/page/login_register/service/auth_service.dart';
-import 'package:app_doc_sach/view/dashboard/dashboard_screen.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
 
 import '../../color/mycolor.dart';
 import '../../controller/auth_controller.dart';
-import '../../model/user_model.dart';
-import 'button/button_global.dart';
 import 'form/form_dangnhap/text_form.dart';
 class DangKyWidget extends StatefulWidget {
   const DangKyWidget({super.key});
@@ -109,10 +102,24 @@ class _DangKyWidgetState extends State<DangKyWidget> {
                   Container(
                     alignment: Alignment.center,
                     child: Container(
-                      height: 90,
-                      width: 90,
-                      child: const Image(
-                          image: AssetImage('assets/icon/logoapp.png')),
+                      height: 100,
+                      width: 100,
+                      margin: const EdgeInsets.only(top: 15),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2), // Màu sắc của bóng
+                            spreadRadius: 2, // Độ lan của bóng
+                            blurRadius: 5, // Độ mờ của bóng
+                            offset: Offset(0, 3), // Vị trí của bóng (x, y)
+                          ),
+                        ],
+                      ),
+                      child: const CircleAvatar(
+                        backgroundImage: AssetImage('assets/icon/logoapp.png'),
+                        radius: 45, // Đảm bảo bán kính phù hợp với kích thước của CircleAvatar
+                      ),
                     ),
                   ),
 
